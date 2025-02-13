@@ -1,0 +1,34 @@
+<!-- web/templates/dashboard.html -->
+{% extends "base.html" %}
+{% block title %}Dashboard - Data Scraping{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Dashboard de données e-commerce</h2>
+    <div>
+        <label for="keyword">Rechercher un produit :</label>
+        <input type="text" id="keyword" class="form-control" placeholder="Entrez un mot-clé">
+        <button id="searchBtn" class="btn btn-primary mt-2">Rechercher</button>
+    </div>
+    <div id="results" class="mt-4">
+        <!-- Les résultats s'afficheront ici -->
+    </div>
+</div>
+
+<script>
+document.getElementById('searchBtn').addEventListener('click', function() {
+  let keyword = document.getElementById('keyword').value;
+  if (!keyword) return alert('Veuillez entrer un mot-clé');
+  fetch(`/api/produits?keyword=${encodeURIComponent(keyword)}`)
+    .then(response => response.json())
+    .then(data => {
+      let resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Erreur lors de la récupération des données');
+    });
+});
+</script>
+{% endblock %}

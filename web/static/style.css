@@ -1,0 +1,123 @@
+﻿/* static/style.css */
+
+/* Réinitialisation globale */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Utilisation de la police Roboto pour le corps et Playfair Display pour les titres */
+body {
+    font-family: 'Roboto', sans-serif;
+    background: #f2f2f2;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Conteneur principal */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Navigation – liste de boutons horizontale */
+.button-list {
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: center;
+}
+
+    .button-list li {
+        display: inline-block !important;
+        margin-right: 10px;
+    }
+
+        .button-list li:last-child {
+            margin-right: 0;
+        }
+
+    .button-list a {
+        text-decoration: none;
+        padding: 8px 15px;
+        background-color: #007BFF;
+        color: #fff;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+        .button-list a:hover {
+            background-color: #0056b3;
+        }
+
+/* Hero Section */
+.hero {
+    background-size: cover;
+    background-position: center;
+}
+
+/* Effets de transition pour les liens */
+a {
+    transition: color 0.3s ease;
+}
+
+/* Styles pour les formulaires */
+form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+}
+
+form .form-control {
+    margin-bottom: 15px;
+}
+
+/* Header et Footer */
+header, footer {
+    background: #fff;
+}
+
+    footer p {
+        margin: 0;
+    }
+
+/* Social links dans le footer */
+.social-links a {
+    color: #007BFF;
+    text-decoration: none;
+    margin-right: 10px;
+    transition: color 0.3s ease;
+}
+
+    .social-links a:hover {
+        color: #0056b3;
+    }
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .button-list {
+        display: block;
+    }
+
+        .button-list li {
+            display: block;
+            margin: 5px 0;
+        }
+}
+
+/* Utilitaires */
+.mt-3 {
+    margin-top: 1rem;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.py-3 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}

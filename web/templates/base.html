@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}OmniData{% endblock %}</title>
+    <!-- Google Fonts: Roboto et Playfair Display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+          integrity="sha512-dN/2oHxUJzSbI/bdP5aPNPj3Il0AaZGGc0IY/4zzhA+3qGcbn/mk1UVQ/FF4S0ymBO+FXuS2H0Q6bH0YkmOZPw=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Feuille de style custom -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- En-tête sticky avec logo centré et navigation épurée -->
+    <header class="bg-light py-3 mb-4 sticky-top shadow-sm">
+        <div class="container d-flex justify-content-between align-items-center">
+            <!-- Logo avec Playfair Display -->
+            <h1 class="h5 mb-0">
+                <a href="{{ url_for('web.index') }}" class="text-dark text-decoration-none">
+                    <i class="fas fa-balance-scale-left mr-2"></i>OmniData
+                </a>
+            </h1>
+            <nav>
+                <ul class="button-list">
+                    <li><a href="{{ url_for('web.index') }}">Accueil</a></li>
+                    {# Liens vers d'autres pages peuvent être ajoutés ultérieurement #}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-light py-3 mt-4">
+        <div class="container text-center">
+            <p>&copy; 2025 OmniData. Tous droits réservés.</p>
+            <p class="small">
+                <em>Mentions d'affiliation : Nous recevons une commission sur certains achats effectués via les liens présents sur ce site.</em>
+            </p>
+            <div class="social-links mt-2">
+                <a href="#" class="mr-2"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="mr-2"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+            integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-LtrjvnR4Twt/qOuYxI8V6T1JH2/ZeC7aGvF/24K2HCX0xiTR+zpbP1HZGv8C7h/+"
+            crossorigin="anonymous"></script>
+</body>
+</html>
