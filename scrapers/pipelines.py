@@ -1,9 +1,6 @@
 # scrapers/pipelines.py
-
+from core.category_mapping import map_category, extract_leaf_category
 from core.db_connection import get_connection
-import logging
-
-logger = logging.getLogger(__name__)
 
 class MySQLPipeline:
     def open_spider(self, spider):
@@ -23,6 +20,13 @@ class MySQLPipeline:
             spider.logger.error(f"Erreur lors de la fermeture de la DB: {e}")
 
     def process_item(self, item, spider):
+        # Transformation de la chaîne de catégorie : ne garder que le dernier segment pertinent.
+        if item.get("category"):
+            original_category = item["category"]
+            leaf_category = extract_leaf_category(item["category"])
+            item["category"] = leaf_category
+            spider.logger.debug(f"Transformation catégorie : '{original_category}' -> '{leaf_category}'")
+
         # Vérifier si le produit existe déjà via item_id
         select_sql = "SELECT product_id FROM product WHERE item_id = %s"
         self.cursor.execute(select_sql, (item.get("item_id"),))
@@ -46,7 +50,7 @@ class MySQLPipeline:
                 item.get("image_url", ""),
                 item.get("shipping_cost"),
                 item.get("seller_username", ""),
-                item.get("category", "")
+                item.get("category", "")  # On conserve ici la version transformée (leaf)
             )
             try:
                 self.cursor.execute(insert_product_sql, product_values)
@@ -56,6 +60,20 @@ class MySQLPipeline:
             except Exception as e:
                 spider.logger.error(f"Erreur lors de l'insertion du produit: {e}")
                 return item
+
+        # Mapping de la catégorie et mise à jour du champ category_id
+        scraped_category = item.get("category", "")
+        mapped_category_id = map_category(scraped_category)
+        if mapped_category_id:
+            update_sql = "UPDATE product SET category_id = %s WHERE product_id = %s"
+            try:
+                self.cursor.execute(update_sql, (mapped_category_id, product_db_id))
+                self.conn.commit()
+                spider.logger.info(f"Produit {product_db_id} mis à jour avec category_id {mapped_category_id}")
+            except Exception as e:
+                spider.logger.error(f"Erreur lors de la mise à jour du category_id: {e}")
+        else:
+            spider.logger.info(f"Aucun mapping trouvé pour la catégorie: {scraped_category}")
 
         # Insertion du relevé de prix dans la table price_history
         insert_price_sql = """
