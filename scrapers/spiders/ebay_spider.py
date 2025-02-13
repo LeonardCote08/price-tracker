@@ -11,8 +11,19 @@ class EbaySpider(scrapy.Spider):
 
     def __init__(self, keyword=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.keyword = keyword if keyword else "smartphone"
-        self.start_urls = [f"https://www.ebay.com/sch/i.html?_nkw={quote_plus(self.keyword)}"]
+        # Choisis un ZIP code US, par exemple 90210 (Beverly Hills)
+        zip_code = "90210"
+
+        if keyword:
+            # Ajout de _stpos=ZIPCODE dans l'URL
+            self.start_urls = [
+                f"https://www.ebay.com/sch/i.html?_nkw={quote_plus(keyword)}&_stpos={zip_code}"
+            ]
+        else:
+            # Mot-clé par défaut
+            self.start_urls = [
+                f"https://www.ebay.com/sch/i.html?_nkw=smartphone&_stpos={zip_code}"
+            ]
 
     custom_settings = {
         "DOWNLOAD_DELAY": 2.0,
@@ -78,14 +89,22 @@ class EbaySpider(scrapy.Spider):
             item["image_url"] = image_url if image_url else ""
 
             if item["item_url"]:
+                # Forcer l'ajout de _stpos=90210 sur l'URL du détail
+                forced_url = item["item_url"]
+                if "?" in forced_url:
+                    forced_url += "&_stpos=90210"
+                else:
+                    forced_url += "?_stpos=90210"
+
                 yield scrapy.Request(
-                    item["item_url"],
+                    forced_url,
                     callback=self.parse_item,
                     meta={'item': item},
                     dont_filter=True
                 )
             else:
                 yield item
+
 
         # Pagination
         next_page_url = response.xpath("//a[@aria-label='Suivant' or @aria-label='Next']/@href").get()
