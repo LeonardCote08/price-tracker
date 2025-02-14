@@ -1,18 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Accueil - OmniData{% endblock %}
+{% block title %}Home - PriceTracker{% endblock %}
 
 {% block content %}
-<!-- Section Hero avec dégradé et call-to-action -->
 <section class="hero text-center py-5" style="background: linear-gradient(135deg, #66a3ff, #3366cc); color: white;">
     <div class="container">
-        <h2 class="display-4">Bienvenue sur OmniData</h2>
-        <p class="lead">Comparez instantanément les données de plusieurs sites e-commerce.</p>
-        <a href="{{ url_for('web.index') }}" class="btn btn-light btn-lg mt-3">Accéder au Dashboard</a>
+        <h2 class="display-4">Welcome to PriceTracker</h2>
+        <p class="lead">Track and analyze price data from multiple e-commerce platforms.</p>
+       
+        <a href="{{ url_for('web.products_list') }}" class="btn btn-light btn-lg mt-3">View Products</a>
     </div>
 </section>
 
-<!-- Section d'introduction -->
 <section class="text-center my-4">
-    <p class="h5">Explorez nos analyses et données pour dénicher les meilleures opportunités.</p>
+    <p class="h5">Discover historical price trends and find the best deals.</p>
 </section>
 {% endblock %}

@@ -1,34 +1,68 @@
-<!-- web/templates/dashboard.html -->
+<!-- scrapers/templates/dashboard.html -->
 {% extends "base.html" %}
-{% block title %}Dashboard - Data Scraping{% endblock %}
+{% block title %}Dashboard - Produit {{ product_id }}{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Dashboard de données e-commerce</h2>
-    <div>
-        <label for="keyword">Rechercher un produit :</label>
-        <input type="text" id="keyword" class="form-control" placeholder="Entrez un mot-clé">
-        <button id="searchBtn" class="btn btn-primary mt-2">Rechercher</button>
-    </div>
-    <div id="results" class="mt-4">
-        <!-- Les résultats s'afficheront ici -->
-    </div>
+    <h2>Historique de prix pour le produit {{ product_id }}</h2>
+
+    <!-- Affichage des statistiques -->
+    <p><strong>Prix minimum :</strong> {{ min_price }} €</p>
+    <p><strong>Prix maximum :</strong> {{ max_price }} €</p>
+    <p><strong>Prix moyen :</strong> {{ avg_price|round(2) }} €</p>
+
+    <!-- Canvas pour Chart.js -->
+    <canvas id="priceChart" width="800" height="400"></canvas>
 </div>
 
+<!-- Inclure Chart.js depuis un CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-document.getElementById('searchBtn').addEventListener('click', function() {
-  let keyword = document.getElementById('keyword').value;
-  if (!keyword) return alert('Veuillez entrer un mot-clé');
-  fetch(`/api/produits?keyword=${encodeURIComponent(keyword)}`)
-    .then(response => response.json())
-    .then(data => {
-      let resultsDiv = document.getElementById('results');
-      resultsDiv.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
-    })
-    .catch(err => {
-      console.error(err);
-      alert('Erreur lors de la récupération des données');
-    });
-});
+  // Récupérer les données passées depuis Flask via Jinja
+  const dates = {{ dates|tojson }};
+  const prices = {{ prices|tojson }};
+
+  // Initialiser le graphique
+  const ctx = document.getElementById('priceChart').getContext('2d');
+  const priceChart = new Chart(ctx, {
+      type: 'line', // type de graphique
+      data: {
+          labels: dates,
+          datasets: [{
+              label: 'Prix (€)',
+              data: prices,
+              borderColor: 'rgba(75, 192, 192, 1)',
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              fill: true,
+              tension: 0.2
+          }]
+      },
+      options: {
+          responsive: true,
+          plugins: {
+              legend: {
+                  position: 'top',
+              },
+              title: {
+                  display: true,
+                  text: 'Évolution des prix'
+              }
+          },
+          scales: {
+              x: {
+                  title: {
+                      display: true,
+                      text: 'Date'
+                  }
+              },
+              y: {
+                  title: {
+                      display: true,
+                      text: 'Prix en €'
+                  }
+              }
+          }
+      }
+  });
 </script>
 {% endblock %}
