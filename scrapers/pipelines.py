@@ -20,14 +20,7 @@ class MySQLPipeline:
             spider.logger.error(f"Erreur lors de la fermeture de la DB: {e}")
 
     def process_item(self, item, spider):
-        # Transformation de la chaîne de catégorie : ne garder que le dernier segment pertinent.
-        if item.get("category"):
-            original_category = item["category"]
-            leaf_category = extract_leaf_category(item["category"])
-            item["category"] = leaf_category
-            spider.logger.debug(f"Transformation catégorie : '{original_category}' -> '{leaf_category}'")
-
-        # Vérifier si le produit existe déjà via item_id
+        # Vérifie si le produit existe déjà via item_id
         select_sql = "SELECT product_id FROM product WHERE item_id = %s"
         self.cursor.execute(select_sql, (item.get("item_id"),))
         result = self.cursor.fetchone()
@@ -35,8 +28,22 @@ class MySQLPipeline:
         if result:
             product_db_id = result[0]
             spider.logger.info(f"Produit existant trouvé avec l'id {product_db_id}")
+
+            # <-- ICI on met à jour le titre pour écraser l'ancien
+            update_sql = """
+                UPDATE product
+                SET title = %s
+                WHERE product_id = %s
+            """
+            try:
+                self.cursor.execute(update_sql, (item["title"], product_db_id))
+                self.conn.commit()
+                spider.logger.info(f"Titre mis à jour pour le produit {product_db_id}")
+            except Exception as e:
+                spider.logger.error(f"Erreur lors de la mise à jour du titre: {e}")
+
         else:
-            # Insertion du produit dans la table product
+            # Insertion du produit si pas trouvé
             insert_product_sql = """
                 INSERT INTO product 
                 (item_id, title, item_condition, url, image_url, shipping_cost, seller_username, category)
@@ -50,7 +57,7 @@ class MySQLPipeline:
                 item.get("image_url", ""),
                 item.get("shipping_cost"),
                 item.get("seller_username", ""),
-                item.get("category", "")  # On conserve ici la version transformée (leaf)
+                item.get("category", "")
             )
             try:
                 self.cursor.execute(insert_product_sql, product_values)

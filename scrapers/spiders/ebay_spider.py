@@ -51,6 +51,9 @@ class EbaySpider(scrapy.Spider):
                     title_text = " ".join(title_parts).strip()
             else:
                 title_text = ""
+
+            # Supprime "| eBay" à la fin, en ignorant la casse et les espaces
+            title_text = re.sub(r"\s*\|\s*ebay\s*$", "", title_text, flags=re.IGNORECASE).strip()
             item["title"] = title_text
 
             # Extraction du prix
@@ -126,8 +129,13 @@ class EbaySpider(scrapy.Spider):
 
         # Titre fallback si absent
         if not item.get("title"):
-            title = response.xpath('//meta[@property="og:title"]/@content').get() or response.xpath('//title/text()').get()
-            item["title"] = title.strip() if title else ""
+            title = response.xpath('//meta[@property="og:title"]/@content').get() or response.xpath('//title/text()').get() or ""
+            # Supprime "| eBay" à la fin
+            title = re.sub(r"\s*\|\s*ebay\s*$", "", title, flags=re.IGNORECASE).strip()
+
+            item["title"] = title
+
+
 
         # Mise à jour de l'image via meta si disponible
         try:
