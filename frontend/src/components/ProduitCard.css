@@ -1,0 +1,48 @@
+/* ProduitCard.css */
+
+.produit-card {
+    background-color: var(--card-bg);
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 10px;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    /* Effet au survol */
+    .produit-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Image responsive */
+    .produit-card img {
+        width: 100%;
+        height: 200px; /* hauteur fixe, tu peux ajuster */
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    .produit-card h3 {
+        font-size: 1rem;
+        margin: 0.5em 0;
+    }
+
+    .product-price {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: var(--price-color);
+    }
+
+    .price-info {
+        font-size: 0.8rem;
+        color: var(--text-color);
+    }
+
+
+    /* Frais de livraison */
+    .produit-card p {
+        margin: 0.25em 0;
+        font-size: 0.9rem;
+        color: #666;
+    }

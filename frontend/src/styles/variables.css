@@ -1,0 +1,13 @@
+:root {
+    --bg-color: #1F2B3A; /* arrière-plan principal */
+    --text-color: #F5F5F5; /* texte clair pour un bon contraste */
+    --card-bg: #2C3E50; /* fond des cartes */
+    --accent-color: #2980B9; /* boutons, titres */
+    --price-color: #1ABC9C; /* pour mettre en valeur le prix */
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Roboto', sans-serif; /* Assure-toi d'importer Roboto dans index.html */
+}

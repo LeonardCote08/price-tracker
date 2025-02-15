@@ -1,0 +1,19 @@
+/* Header.css */
+.app-header {
+    background-color: var(--bg-color);
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--accent-color);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.site-title {
+    font-family: 'Orbitron', sans-serif; /* Assure-toi d'importer cette police dans ton index.html */
+    font-size: 2rem;
+    color: var(--accent-color);
+    margin: 0;
+}

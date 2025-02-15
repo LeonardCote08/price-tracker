@@ -1,16 +1,12 @@
-# app.py
 from flask import Flask
-from scrapers.routes import web_bp  # Blueprint pour l'interface web
+from api.api_routes import api_bp
 
-# On indique à Flask où se trouvent les templates :
-app = Flask(__name__,
-            template_folder='web/templates',
-            static_folder='web/static')
-
+app = Flask(__name__)
 
 app.secret_key = "change_me_in_production"
 
-app.register_blueprint(web_bp)
+# On enregistre uniquement le blueprint de l'API
+app.register_blueprint(api_bp)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
