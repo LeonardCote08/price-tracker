@@ -2,10 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchProduit, fetchHistoriquePrix } from '../services/api';
-// 1) Import du composant Chart
 import HistoriquePrixChart from '../components/HistoriquePrixChart';
 
-const DetailProduitPage = () => {
+function DetailProduitPage() {
     const { id } = useParams();
     const [produit, setProduit] = useState(null);
     const [historique, setHistorique] = useState({ dates: [], prices: [] });
@@ -28,22 +27,17 @@ const DetailProduitPage = () => {
             });
     }, [id]);
 
-    if (loading) return <p>Chargement...</p>;
-    if (error) return <p>Erreur : {error}</p>;
-    if (!produit) return <p>Produit introuvable</p>;
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Error: {error}</p>;
+    if (!produit) return <p>Product not found</p>;
 
     return (
         <div>
             <h2>{produit.title}</h2>
             <img src={produit.image_url} alt={produit.title} style={{ maxWidth: '300px' }} />
-
-            {/* 2) Affiche le composant Chart avec les données historique */}
-            <HistoriquePrixChart
-                dates={historique.dates}
-                prices={historique.prices}
-            />
+            <HistoriquePrixChart dates={historique.dates} prices={historique.prices} />
         </div>
     );
-};
+}
 
 export default DetailProduitPage;

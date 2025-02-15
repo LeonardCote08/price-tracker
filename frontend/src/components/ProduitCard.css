@@ -1,11 +1,14 @@
 /* ProduitCard.css */
 
+/* Carte en ligne : petite image à gauche, texte à droite */
 .produit-card {
+    display: flex;
+    align-items: center;
     background-color: var(--card-bg);
     border: 1px solid #ddd;
     border-radius: 6px;
-    padding: 10px;
-    text-align: center;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -15,34 +18,37 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
-    /* Image responsive */
+    /* Image réduite (vignette) */
     .produit-card img {
-        width: 100%;
-        height: 200px; /* hauteur fixe, tu peux ajuster */
+        width: 60px;
+        height: 60px;
         object-fit: cover;
         border-radius: 4px;
+        margin-right: 1rem;
     }
 
+    /* Titre */
     .produit-card h3 {
         font-size: 1rem;
         margin: 0.5em 0;
     }
 
-    .product-price {
-        font-size: 1.1rem;
-        font-weight: bold;
-        color: var(--price-color);
-    }
+/* Prix en valeur */
+.product-price {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--price-color);
+}
 
-    .price-info {
-        font-size: 0.8rem;
-        color: var(--text-color);
-    }
+/* Info complémentaire sur le prix */
+.price-info {
+    font-size: 0.8rem;
+    color: var(--text-color);
+}
 
-
-    /* Frais de livraison */
-    .produit-card p {
-        margin: 0.25em 0;
-        font-size: 0.9rem;
-        color: #666;
-    }
+/* Paragraphes divers (ex: frais de livraison) */
+.produit-card p {
+    margin: 0.25em 0;
+    font-size: 0.9rem;
+    color: #666;
+}

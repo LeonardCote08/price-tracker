@@ -7,7 +7,7 @@ const HistoriquePrixChart = ({ dates, prices }) => {
         labels: dates,
         datasets: [
             {
-                label: 'Prix (€)',
+                label: 'Price ($)',
                 data: prices,
                 borderColor: 'rgba(75, 192, 192, 1)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -19,29 +19,14 @@ const HistoriquePrixChart = ({ dates, prices }) => {
 
     const options = {
         responsive: true,
-        maintainAspectRatio: false,  // Allow custom aspect ratio
+        maintainAspectRatio: false,
         plugins: {
-            legend: {
-                position: 'top',
-            },
-            title: {
-                display: true,
-                text: 'Historique des prix',
-            },
+            legend: { position: 'top' },
+            title: { display: true, text: 'Price History' },
         },
         scales: {
-            x: {
-                title: {
-                    display: true,
-                    text: 'Date',
-                },
-            },
-            y: {
-                title: {
-                    display: true,
-                    text: 'Prix en €',
-                },
-            },
+            x: { title: { display: true, text: 'Date' } },
+            y: { title: { display: true, text: 'Price in $' } },
         },
     };
 

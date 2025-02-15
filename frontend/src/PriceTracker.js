@@ -1,11 +1,14 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './PriceTracker.css';
 
 const PriceTracker = ({ children }) => {
     return (
-        <div className="price-tracker-app cyberpunk-theme">
+        <div className="price-tracker-app">
             <header className="app-header">
-                PriceTracker
+                <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    PriceTracker
+                </Link>
             </header>
             <main className="content">
                 {children}
