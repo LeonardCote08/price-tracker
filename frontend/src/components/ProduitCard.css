@@ -4,8 +4,8 @@
 .produit-card {
     display: flex;
     align-items: flex-start;
-    background-color: var(--card-bg);
-    border: none; /* pas de bordure, on limite les couleurs */
+    background-color: var(--card-bg-color); /* Unifie la variable */
+    border: none; /* pas de bordure supplémentaire */
     border-radius: 6px;
     padding: 1rem;
     margin-bottom: 1rem;
@@ -37,7 +37,7 @@
 .product-title {
     font-size: 1rem;
     margin: 0 0 0.3rem;
-    color: var(--text-color);
+    color: var(--text-color); /* Couleur de texte par défaut */
 }
 
 /* Bloc contenant le prix (total + breakdown) */

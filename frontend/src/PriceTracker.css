@@ -30,7 +30,7 @@
     padding: 1rem 2rem;
 }
 
-/* Section des graphiques, si vous l’utilisez dans DetailProduitPage */
+/* Section des graphiques, si tu l’utilises dans DetailProduitPage */
 .charts-section {
     width: 100%;
     display: flex;
@@ -40,7 +40,7 @@
 }
 
 .chart-container {
-    background-color: var(--card-bg);
+    background-color: var(--card-bg-color);
     border: 1px solid var(--accent-color);
     border-radius: 8px;
     padding: 1rem;
