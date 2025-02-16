@@ -52,12 +52,14 @@
     font-size: 1.2rem;
     font-weight: 700;
     color: var(--price-color);
+    font-family: 'Montserrat', sans-serif; /* on applique Montserrat */
 }
 
 /* Breakdown en plus petit, même couleur de base */
 .price-breakdown {
     font-size: 0.85rem;
     color: var(--text-color);
+    font-family: 'Montserrat', sans-serif;
 }
 
 /* Prix de base et frais de livraison */
