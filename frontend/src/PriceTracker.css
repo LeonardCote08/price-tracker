@@ -1,26 +1,20 @@
-/* PriceTracker.css */
+/* frontend/src/PriceTracker.css */
 
-/* Palette de couleurs : thème bleu foncé professionnel */
-:root {
-    --bg-color: #1F2B3A; /* Arrière-plan principal (bleu profond) */
-    --card-bg-color: #2C3E50; /* Fond des cartes (bleu légèrement plus clair) */
-    --text-color: #F5F5F5; /* Texte clair pour un bon contraste */
-    --accent-color: #2980B9; /* Accent pour titres, bordures et liens */
-    --price-color: #1ABC9C; /* Couleur mise en valeur pour le prix */
+/* Animation fade-in globale */
+.price-tracker-app {
+    opacity: 0;
+    animation: fadeIn 0.5s ease-in-out forwards;
 }
 
-/* Styles globaux */
-body, .price-tracker-app {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    font-family: 'Roboto', sans-serif;
-    margin: 0;
-    padding: 0;
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
 }
 
-/* Header */
+/* Header principal */
 .app-header {
-    font-family: 'Orbitron', sans-serif; /* Pour un titre moderne et sobre */
+    font-family: 'Orbitron', sans-serif;
     font-size: 2rem;
     text-align: left;
     padding: 1rem 2rem;
@@ -36,63 +30,7 @@ body, .price-tracker-app {
     padding: 1rem 2rem;
 }
 
-/* Section des produits en liste verticale */
-.product-cards {
-    width: 100%;
-}
-
-/* Carte produit individuelle */
-.product-card {
-    display: flex;
-    align-items: center;
-    background-color: var(--card-bg-color);
-    border: 1px solid var(--accent-color);
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 0 8px rgba(41, 128, 185, 0.3);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-    .product-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 0 12px rgba(41, 128, 185, 0.5);
-    }
-
-/* Image du produit */
-.product-image {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 4px;
-    margin-right: 1rem;
-    border: 1px solid #fff;
-}
-
-/* Détails du produit */
-.product-details {
-    display: flex;
-    flex-direction: column;
-}
-
-.product-title {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1.1em;
-    margin-bottom: 0.3rem;
-    color: var(--accent-color);
-}
-
-.product-price, .product-update {
-    margin: 0.2rem 0;
-    font-size: 1em;
-}
-
-.price-value {
-    color: var(--price-color);
-    font-weight: bold;
-}
-
-/* Section des graphiques */
+/* Section des graphiques, si vous l’utilisez dans DetailProduitPage */
 .charts-section {
     width: 100%;
     display: flex;
@@ -102,7 +40,7 @@ body, .price-tracker-app {
 }
 
 .chart-container {
-    background-color: var(--card-bg-color);
+    background-color: var(--card-bg);
     border: 1px solid var(--accent-color);
     border-radius: 8px;
     padding: 1rem;
@@ -117,15 +55,3 @@ body, .price-tracker-app {
         height: auto;
         margin: 0 auto;
     }
-
-/* Animation de fade-in pour l'ensemble de l'application */
-.price-tracker-app {
-    opacity: 0;
-    animation: fadeIn 0.5s ease-in-out forwards;
-}
-
-@keyframes fadeIn {
-    to {
-        opacity: 1;
-    }
-}

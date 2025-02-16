@@ -182,4 +182,6 @@ class EbaySpider(scrapy.Spider):
             self.logger.error(f"Erreur lors de l'extraction de la catégorie: {e}")
             item["category"] = ""
 
+
+
         yield item

@@ -1,54 +1,75 @@
-/* ProduitCard.css */
+/* frontend/src/components/ProduitCard.css */
 
-/* Carte en ligne : petite image à gauche, texte à droite */
+/* Carte produit principale */
 .produit-card {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     background-color: var(--card-bg);
-    border: 1px solid #ddd;
+    border: none; /* pas de bordure, on limite les couleurs */
     border-radius: 6px;
-    padding: 0.5rem;
+    padding: 1rem;
     margin-bottom: 1rem;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-    /* Effet au survol */
     .produit-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 
-    /* Image réduite (vignette) */
-    .produit-card img {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        border-radius: 4px;
-        margin-right: 1rem;
-    }
-
-    /* Titre */
-    .produit-card h3 {
-        font-size: 1rem;
-        margin: 0.5em 0;
-    }
-
-/* Prix en valeur */
-.product-price {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: var(--price-color);
+/* Image du produit */
+.product-image {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-right: 1rem;
 }
 
-/* Info complémentaire sur le prix */
-.price-info {
-    font-size: 0.8rem;
+/* Bloc d'infos (titre + prix) */
+.product-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Titre du produit */
+.product-title {
+    font-size: 1rem;
+    margin: 0 0 0.3rem;
     color: var(--text-color);
 }
 
-/* Paragraphes divers (ex: frais de livraison) */
+/* Bloc contenant le prix (total + breakdown) */
+.price-block {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+/* Prix total (le plus important) */
+.price-total {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--price-color);
+}
+
+/* Breakdown en plus petit, même couleur de base */
+.price-breakdown {
+    font-size: 0.85rem;
+    color: var(--text-color);
+}
+
+/* Prix de base et frais de livraison */
+.price-base,
+.price-shipping {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+/* Paragraphes éventuels */
 .produit-card p {
     margin: 0.25em 0;
     font-size: 0.9rem;
-    color: #666;
+    color: var(--text-color);
 }

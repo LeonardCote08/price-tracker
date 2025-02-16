@@ -11,3 +11,13 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Option : unifier la couleur des liens */
+a {
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+    a:hover {
+        color: var(--price-color); /* si vous voulez un effet survol cohérent */
+    }
