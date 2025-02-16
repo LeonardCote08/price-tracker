@@ -11,7 +11,6 @@ import './styles/header.css';
 function App() {
     return (
         <Router>
-            {/* Ici, on ne rend plus de header, le composant PriceTracker l'inclut déjà */}
             <PriceTracker>
                 <Routes>
                     <Route path="/" element={<ListeProduitsPage />} />

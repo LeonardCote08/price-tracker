@@ -1,10 +1,10 @@
 /* frontend/src/styles/variables.css */
 :root {
-    --bg-color: #1F2B3A; /* arrière-plan principal */
-    --text-color: #F5F5F5; /* texte clair */
-    --card-bg: #2C3E50; /* fond des cartes */
-    --accent-color: #2980B9; /* boutons, titres, etc. */
-    --price-color: #1ABC9C; /* couleur pour le prix */
+    --bg-color: #1F2B3A; /* Arrière-plan principal */
+    --text-color: #F5F5F5; /* Couleur de texte principale */
+    --card-bg-color: #2C3E50; /* Fond des cartes */
+    --accent-color: #2980B9; /* Couleur d'accent (bordures, titres, etc.) */
+    --price-color: #1ABC9C; /* Couleur pour le prix */
 }
 
 body {

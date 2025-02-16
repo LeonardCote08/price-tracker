@@ -30,7 +30,7 @@
     padding: 1rem 2rem;
 }
 
-/* Section des graphiques, si tu l’utilises dans DetailProduitPage */
+/* Section des graphiques (DetailProduitPage), si besoin */
 .charts-section {
     width: 100%;
     display: flex;
