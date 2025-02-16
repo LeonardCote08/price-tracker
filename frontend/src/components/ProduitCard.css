@@ -6,21 +6,22 @@
     align-items: flex-start;
     background-color: var(--card-bg-color);
     border: none; /* pas de bordure supplémentaire */
-    border-radius: 6px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* ombre par défaut */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;  
 }
 
     .produit-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25); /* ombre plus marquée */
     }
 
 /* Image du produit */
 .product-image {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
     object-fit: cover;
     border-radius: 4px;
     margin-right: 1rem;
@@ -35,10 +36,12 @@
 
 /* Titre du produit */
 .product-title {
-    font-size: 1rem;
-    margin: 0 0 0.3rem;
+    font-size: 1.1rem; /* au lieu de 1rem */
+    font-weight: 600; /* un peu plus gras */
+    margin: 0 0 0.4rem;
     color: var(--text-color);
 }
+
 
 /* Bloc contenant le prix (total + breakdown) */
 .price-block {
