@@ -1,10 +1,10 @@
 /* frontend/src/styles/variables.css */
 :root {
-    --bg-color: #1D2A39; /* Fond global */
+    --bg-color: #192734; /* Fond global */
     --text-color: #F5F5F5; /* Texte clair */
-    --card-bg-color: #34495E; /* Fond cartes, un peu plus clair que 2C3E50 */
+    --card-bg-color: #2A3C4E; /* Fond cartes, un peu plus clair que 2C3E50 */
     --accent-color: #2980B9; /* On peut laisser tel quel */
-    --price-color: #FFC107; /* Couleur “gold” pour le prix */
+    --price-color: #2589CC;
 }
 
 

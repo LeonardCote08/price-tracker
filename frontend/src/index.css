@@ -17,5 +17,5 @@ a {
 }
 
     a:hover {
-        color: var(--price-color);
+        color: var(--accent-color);
     }

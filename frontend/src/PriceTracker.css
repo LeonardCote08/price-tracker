@@ -3,12 +3,19 @@
 /* Animation fade-in globale */
 .price-tracker-app {
     opacity: 0;
-    animation: fadeIn 0.5s ease-in-out forwards;
+    animation: fadeInUp 0.4s ease forwards;
+    animation-delay: 1s; /* on peut différer un peu l'apparition */
 }
 
-@keyframes fadeIn {
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
     to {
         opacity: 1;
+        transform: translateY(0);
     }
 }
 
@@ -18,11 +25,14 @@
     font-size: 2rem;
     padding: 1rem 2rem;
     color: var(--accent-color);
+    /* Ajout du dégradé de fond */
+    background: linear-gradient(135deg, #1D2A39 0%, #34495E 100%);
     border-bottom: 2px solid var(--accent-color);
     display: flex;
     justify-content: center;
     align-items: center;
 }
+
 
 /* Mise en page principale */
 .content {
