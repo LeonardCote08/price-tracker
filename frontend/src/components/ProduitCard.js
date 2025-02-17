@@ -5,8 +5,8 @@ import './ProduitCard.css';
 
 function ProduitCard({ produit }) {
     const price = typeof produit.price === 'number' ? produit.price : 0;
-    const shippingCost = typeof produit.shipping_cost === 'number' ? produit.shipping_cost : 0;
-    const totalPrice = price + shippingCost;
+    const shippingCost = typeof produit.shipping_cost === 'number' ? produit.shipping_cost : null;
+    const totalPrice = price + (shippingCost || 0);
 
     return (
         <Link
@@ -30,15 +30,25 @@ function ProduitCard({ produit }) {
                             ${totalPrice.toFixed(2)}
                         </span>
 
-                        {shippingCost > 0 && (
-                            <small className="price-breakdown">
-                                (Item: <span className="price-base">
-                                    ${price.toFixed(2)}
-                                </span>{' '}
-                                + <span className="price-shipping">
-                                    ${shippingCost.toFixed(2)}
-                                </span>)
-                            </small>
+                        {/* Si shippingCost n'est pas null, on affiche le détail */}
+                        {shippingCost !== null && (
+                            shippingCost > 0 ? (
+                                <small className="price-breakdown">
+                                    (Base: <span className="price-base">
+                                        ${price.toFixed(2)}
+                                    </span>{' '}
+                                    + Shipping: <span className="price-shipping">
+                                        ${shippingCost.toFixed(2)}
+                                    </span>)
+                                </small>
+                            ) : (
+                                <small className="price-breakdown">
+                                    (Base: <span className="price-base">
+                                        ${price.toFixed(2)}
+                                    </span>{' '}
+                                    + <span className="price-shipping">FREE shipping</span>)
+                                </small>
+                            )
                         )}
                     </div>
                 </div>
