@@ -24,7 +24,11 @@ DOWNLOADER_MIDDLEWARES = {
     'core.middlewares.RandomUserAgentMiddleware': 400,
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
     'core.random_delay_middleware.RandomDelayMiddleware': 500,
+    'core.middlewares.ProxyMiddleware': 600, 
 }
+
+
+PROXIES_FILE = 'webshare_proxies.txt'
 
 AUTOTHROTTLE_ENABLED = True
 AUTOTHROTTLE_START_DELAY = 2.0
