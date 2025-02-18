@@ -17,6 +17,8 @@ def get_connection():
         port=DB_PORT,
         user=DB_USER,
         password=DB_PASSWORD,
-        database=DB_NAME
+        database=DB_NAME,
+        charset='utf8mb4',
+        use_unicode=True
     )
     return conn
