@@ -67,12 +67,12 @@ def get_produits():
             "item_condition": item_condition,
             "url": url,
             "image_url": image_url,
-            "shipping_cost": float(shipping_cost) if shipping_cost is not None else None,
             "seller_username": seller_username,
             "category": cat_leaf,            # <-- on met la leaf au lieu du breadcrumb complet
             "leaf_category_name": leaf_name, # on laisse ce champ si on veut comparer
             "price": float(last_price) if last_price is not None else None
         })
+
 
     return jsonify(result)
 
@@ -136,7 +136,6 @@ def get_produit(product_id):
             "item_condition": item_condition,
             "url": url,
             "image_url": image_url,
-            "shipping_cost": float(shipping_cost) if shipping_cost is not None else None,
             "seller_username": seller_username,
             "category": cat_leaf,            # <-- on met la leaf
             "leaf_category_name": leaf_name,

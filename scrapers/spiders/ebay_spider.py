@@ -71,33 +71,6 @@ class EbaySpider(scrapy.Spider):
             condition = product.xpath('.//span[@class="SECONDARY_INFO"]/text()').get()
             item["item_condition"] = condition.strip() if condition else ""
 
-            # Extraction du coût de livraison
-            # Après (nouvelle version) :
-            shipping_parts = product.xpath(
-                ".//span[contains(@class, 's-item__shipping') or contains(@class, 's-item__logisticsCost')]//text()"
-            ).getall()
-
-            shipping = " ".join(s.strip() for s in shipping_parts if s.strip())
-
-            if shipping:
-                shipping_lower = shipping.lower()
-
-                if "free" in shipping_lower:
-                    item["shipping_cost"] = 0.0
-                else:
-                    approx_match = re.search(r'approx\.?\s*us\s*\$\s*([\d.,]+)', shipping_lower, re.IGNORECASE)
-                    if approx_match:
-                        cost_str = approx_match.group(1).replace(",", "")
-                        item["shipping_cost"] = float(cost_str)
-                    else:
-                        match = re.search(r'[\d.,]+', shipping)
-                        if match:
-                            item["shipping_cost"] = float(match.group(0).replace(",", ""))
-                        else:
-                            item["shipping_cost"] = None
-            else:
-                item["shipping_cost"] = None
-
 
 
             # Extraction des URL et de l'image

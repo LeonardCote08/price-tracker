@@ -46,8 +46,8 @@ class MySQLPipeline:
             # Insertion du produit si pas trouvé
             insert_product_sql = """
                 INSERT INTO product 
-                (item_id, title, item_condition, url, image_url, shipping_cost, seller_username, category)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                (item_id, title, item_condition, url, image_url, seller_username, category)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
             product_values = (
                 item.get("item_id", ""),
@@ -55,10 +55,11 @@ class MySQLPipeline:
                 item.get("item_condition", ""),
                 item.get("item_url", ""),
                 item.get("image_url", ""),
-                item.get("shipping_cost"),
                 item.get("seller_username", ""),
                 item.get("category", "")
             )
+
+
             try:
                 self.cursor.execute(insert_product_sql, product_values)
                 self.conn.commit()

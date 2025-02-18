@@ -4,9 +4,11 @@ import { Link } from 'react-router-dom';
 import './ProduitCard.css';
 
 function ProduitCard({ produit }) {
+    // Récupère le prix du produit (si le champ est numérique, sinon 0)
     const price = typeof produit.price === 'number' ? produit.price : 0;
-    const shippingCost = typeof produit.shipping_cost === 'number' ? produit.shipping_cost : null;
-    const totalPrice = price + (shippingCost || 0);
+
+    // Le prix total sera uniquement le prix de base (le shipping_cost est retiré)
+    const totalPrice = price;
 
     return (
         <Link
@@ -26,30 +28,10 @@ function ProduitCard({ produit }) {
                     </h3>
 
                     <div className="price-block">
+                        {/* Affiche uniquement le prix total qui correspond au prix de base */}
                         <span className="price-total">
                             ${totalPrice.toFixed(2)}
                         </span>
-
-                        {/* Si shippingCost n'est pas null, on affiche le détail */}
-                        {shippingCost !== null && (
-                            shippingCost > 0 ? (
-                                <small className="price-breakdown">
-                                    (Base: <span className="price-base">
-                                        ${price.toFixed(2)}
-                                    </span>{' '}
-                                    + Shipping: <span className="price-shipping">
-                                        ${shippingCost.toFixed(2)}
-                                    </span>)
-                                </small>
-                            ) : (
-                                <small className="price-breakdown">
-                                    (Base: <span className="price-base">
-                                        ${price.toFixed(2)}
-                                    </span>{' '}
-                                    + <span className="price-shipping">FREE shipping</span>)
-                                </small>
-                            )
-                        )}
                     </div>
                 </div>
             </div>
