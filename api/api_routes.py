@@ -144,7 +144,7 @@ def get_produit(product_id):
         return jsonify(result)
     else:
         return jsonify({"error": "Produit non trouvé"}), 404
-
+    #
 
 @api_bp.route('/produits/<int:product_id>/historique-prix', methods=['GET'])
 def get_historique_prix(product_id):
