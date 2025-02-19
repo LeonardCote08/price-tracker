@@ -6,8 +6,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 class RandomDelayMiddleware:
-    # Délais aléatoires entre 1 et 3 secondes (modifie selon tes besoins)
+    # Délais aléatoires entre 2 et 5 secondes
     def process_request(self, request, spider):
-        delay = random.uniform(1, 3)
+        delay = random.uniform(2, 5)
         logger.debug(f"Pause de {delay:.2f} secondes avant la requête {request.url}")
         time.sleep(delay)
+

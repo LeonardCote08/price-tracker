@@ -17,14 +17,23 @@ DEFAULT_REQUEST_HEADERS = {
         "(KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
     ),
     "Accept-Language": "en-US,en;q=0.9",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
 }
+
+# Active le retry
+RETRY_ENABLED = True
+# Nombre maximum de tentatives (tu peux ajuster ce nombre)
+RETRY_TIMES = 5  
+# Liste des codes HTTP pour lesquels retry
+RETRY_HTTP_CODES = [429, 500, 503]
+
 
 DOWNLOADER_MIDDLEWARES = {
     'core.middlewares.RandomUserAgentMiddleware': 400,
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
     'core.random_delay_middleware.RandomDelayMiddleware': 500,
     'core.middlewares.ProxyMiddleware': 600, 
+    'core.captcha_middleware.CaptchaDetectionMiddleware': 610, 
 }
 
 
