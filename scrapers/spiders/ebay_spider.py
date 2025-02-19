@@ -179,6 +179,21 @@ class EbaySpider(scrapy.Spider):
             self.logger.error(f"Error extracting time_remaining: {e}")
             item["time_remaining"] = None
 
+        # 4. Extraction du prix Buy It Now (buy_it_now_price) pour les listings "auction_with_bin"
+        if item["listing_type"] == "auction_with_bin":
+            bin_price_str = response.css('div[data-testid="x-bin-price"] span.ux-textspans::text').get()
+            if bin_price_str:
+                match = re.search(r'[\d,.]+', bin_price_str)
+                if match:
+                    item["buy_it_now_price"] = float(match.group(0).replace(",", ""))
+                else:
+                    item["buy_it_now_price"] = None
+            else:
+                item["buy_it_now_price"] = None
+        else:
+            item["buy_it_now_price"] = None
+
+
         # Extraction de la catégorie via JSON‑LD ou XPath (inchangé)
         try:
             ld_json = response.xpath('//script[@type="application/ld+json"]/text()').get()

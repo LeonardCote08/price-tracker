@@ -16,3 +16,4 @@ class EbayItem(scrapy.Item):
     bids_count = scrapy.Field()       # Nombre d'enchères (pour les auctions)
     time_remaining = scrapy.Field()   # Temps restant de l'enchère (texte brut)
     listing_type = scrapy.Field()     # Type d'annonce ("auction", "auction_with_bin", "fixed_price")
+    buy_it_now_price = scrapy.Field()

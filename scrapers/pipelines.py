@@ -29,24 +29,37 @@ class MySQLPipeline:
             product_db_id = result[0]
             spider.logger.info(f"Produit existant trouvé avec l'id {product_db_id}")
 
-            # <-- ICI on met à jour le titre pour écraser l'ancien
+            # Mise à jour du produit existant, incluant le champ buy_it_now_price
             update_sql = """
                 UPDATE product
-                SET title = %s, listing_type = %s, bids_count = %s, time_remaining = %s
+                SET title = %s, 
+                    listing_type = %s, 
+                    bids_count = %s, 
+                    time_remaining = %s,
+                    buy_it_now_price = %s
                 WHERE product_id = %s
             """
             try:
-                self.cursor.execute(update_sql, (item["title"], item.get("listing_type", ""), item.get("bids_count"), item.get("time_remaining"), product_db_id))
+                self.cursor.execute(update_sql, (
+                    item["title"], 
+                    item.get("listing_type", ""), 
+                    item.get("bids_count"), 
+                    item.get("time_remaining"),
+                    item.get("buy_it_now_price"),
+                    product_db_id
+                ))
                 self.conn.commit()
-                spider.logger.info(f"Titre mis à jour pour le produit {product_db_id}")
+                spider.logger.info(f"Produit {product_db_id} mis à jour.")
             except Exception as e:
-                spider.logger.error(f"Erreur lors de la mise à jour du titre: {e}")
+                spider.logger.error(f"Erreur lors de la mise à jour du produit: {e}")
 
         else:
+            # Insertion d'un nouveau produit avec le champ buy_it_now_price
             insert_product_sql = """
                 INSERT INTO product 
-                (item_id, title, item_condition, url, image_url, seller_username, category, listing_type, bids_count, time_remaining)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (item_id, title, item_condition, url, image_url, seller_username, category, 
+                 listing_type, bids_count, time_remaining, buy_it_now_price)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             product_values = (
                 item.get("item_id", ""),
@@ -58,9 +71,9 @@ class MySQLPipeline:
                 item.get("category", ""),
                 item.get("listing_type", ""),
                 item.get("bids_count"),
-                item.get("time_remaining")
+                item.get("time_remaining"),
+                item.get("buy_it_now_price")
             )
-
 
             try:
                 self.cursor.execute(insert_product_sql, product_values)
@@ -75,9 +88,9 @@ class MySQLPipeline:
         scraped_category = item.get("category", "")
         mapped_category_id = map_category(scraped_category)
         if mapped_category_id:
-            update_sql = "UPDATE product SET category_id = %s WHERE product_id = %s"
+            update_cat_sql = "UPDATE product SET category_id = %s WHERE product_id = %s"
             try:
-                self.cursor.execute(update_sql, (mapped_category_id, product_db_id))
+                self.cursor.execute(update_cat_sql, (mapped_category_id, product_db_id))
                 self.conn.commit()
                 spider.logger.info(f"Produit {product_db_id} mis à jour avec category_id {mapped_category_id}")
             except Exception as e:
@@ -85,13 +98,17 @@ class MySQLPipeline:
         else:
             spider.logger.info(f"Aucun mapping trouvé pour la catégorie: {scraped_category}")
 
-        # Insertion du relevé de prix dans la table price_history
+        # Insertion du relevé de prix dans la table price_history, incluant buy_it_now_price
         insert_price_sql = """
-            INSERT INTO price_history (product_id, price)
-            VALUES (%s, %s)
+            INSERT INTO price_history (product_id, price, buy_it_now_price)
+            VALUES (%s, %s, %s)
         """
         try:
-            self.cursor.execute(insert_price_sql, (product_db_id, item.get("price", 0)))
+            self.cursor.execute(insert_price_sql, (
+                product_db_id, 
+                item.get("price", 0),
+                item.get("buy_it_now_price")
+            ))
             self.conn.commit()
             spider.logger.info(f"Historique de prix inséré pour le produit {product_db_id}")
         except Exception as e:
