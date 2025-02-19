@@ -22,7 +22,6 @@ def get_produits():
                p.item_condition,
                p.url,
                p.image_url,
-               p.shipping_cost,
                p.seller_username,
                p.category,
                p.listing_type,
@@ -51,14 +50,13 @@ def get_produits():
         item_condition = row[3]
         url            = row[4]
         image_url      = row[5]
-        shipping_cost  = row[6]
-        seller_username= row[7]
-        breadcrumb_cat = row[8]  # ex: "Electronics > Video Games & Consoles > Video Games ..."
-        listing_type   = row[9]
-        bids_count     = row[10]
-        time_remaining = row[11]
-        leaf_name      = row[12]  # la leaf category depuis la table category
-        last_price     = row[13]  # subselect sur price_history
+        seller_username= row[6]
+        breadcrumb_cat = row[7]  # ex: "Electronics > Video Games & Consoles > Video Games ..."
+        listing_type   = row[8]
+        bids_count     = row[9]
+        time_remaining = row[10]
+        leaf_name      = row[11]  # la leaf category depuis la table category
+        last_price     = row[12]  # subselect sur price_history
 
         # Extraction de la "leaf" de la catégorie
         cat_leaf = extract_leaf_category(breadcrumb_cat) if breadcrumb_cat else None
@@ -70,7 +68,6 @@ def get_produits():
             "item_condition": item_condition,
             "url": url,
             "image_url": image_url,
-            "shipping_cost": shipping_cost,
             "seller_username": seller_username,
             "category": cat_leaf,            # on met la leaf
             "leaf_category_name": leaf_name, # champ complémentaire
@@ -98,7 +95,6 @@ def get_produit(product_id):
                p.item_condition,
                p.url,
                p.image_url,
-               p.shipping_cost,
                p.seller_username,
                p.category,
                p.listing_type,
@@ -127,14 +123,13 @@ def get_produit(product_id):
         item_condition = row[3]
         url            = row[4]
         image_url      = row[5]
-        shipping_cost  = row[6]
-        seller_username= row[7]
-        breadcrumb_cat = row[8]
-        listing_type   = row[9]
-        bids_count     = row[10]
-        time_remaining = row[11]
-        leaf_name      = row[12]
-        last_price     = row[13]
+        seller_username= row[6]
+        breadcrumb_cat = row[7]
+        listing_type   = row[8]
+        bids_count     = row[9]
+        time_remaining = row[10]
+        leaf_name      = row[11]
+        last_price     = row[12]
 
         cat_leaf = extract_leaf_category(breadcrumb_cat) if breadcrumb_cat else None
 
@@ -145,7 +140,6 @@ def get_produit(product_id):
             "item_condition": item_condition,
             "url": url,
             "image_url": image_url,
-            "shipping_cost": shipping_cost,
             "seller_username": seller_username,
             "category": cat_leaf,            # on met la leaf
             "leaf_category_name": leaf_name,

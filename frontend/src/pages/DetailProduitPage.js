@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { fetchProduit, fetchHistoriquePrix } from '../services/api';
 import HistoriquePrixChart from '../components/HistoriquePrixChart';
-import './DetailProduitPage.css';  // <-- AJOUTER l'import du CSS
+import './DetailProduitPage.css';  // <-- Import du CSS
 
 function DetailProduitPage() {
     const { id } = useParams();
@@ -32,10 +32,9 @@ function DetailProduitPage() {
     if (error) return <p>Error: {error}</p>;
     if (!produit) return <p>Product not found</p>;
 
-    // Exemples : on récupère plus d'infos
-    const shippingCost = produit.shipping_cost;
+    // Le prix total correspond uniquement au prix de base
     const price = typeof produit.price === 'number' ? produit.price : 0;
-    const totalPrice = price + (shippingCost || 0);
+    const totalPrice = price;
 
     return (
         <div className="detail-container">
@@ -44,7 +43,7 @@ function DetailProduitPage() {
                 <h2 className="detail-title">{produit.title}</h2>
             </div>
 
-            {/* Contenu principal : image à gauche, infos à droite */}
+            {/* Contenu principal : image et infos */}
             <div className="detail-content">
                 <div className="detail-image">
                     <img
@@ -54,16 +53,12 @@ function DetailProduitPage() {
                 </div>
 
                 <div className="detail-info">
-                    {/* Par exemple : prix total + shipping */}
                     <p>
                         <strong>Price:</strong> ${totalPrice.toFixed(2)}
-                        {shippingCost === 0 && ' (FREE shipping)'}
                     </p>
-
                     <p><strong>Condition:</strong> {produit.item_condition || 'N/A'}</p>
                     <p><strong>Seller:</strong> {produit.seller_username || 'Unknown'}</p>
                     <p><strong>Category:</strong> {produit.category || 'N/A'}</p>
-                    {/* Ajoutez ici d’autres infos si vous voulez */}
                 </div>
             </div>
 
