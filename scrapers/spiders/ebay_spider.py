@@ -120,6 +120,13 @@ class EbaySpider(scrapy.Spider):
             title = re.sub(r"\s*\|\s*ebay\s*$", "", title, flags=re.IGNORECASE).strip()
             item["title"] = title
 
+        # Filtrage : on exige "doom" dans le titre
+        title_lower = item["title"].lower()
+        if "doom" not in title_lower:
+            self.logger.info(f"Ignoring item (title doesn't match 'doom'): {item['title']}")
+            return
+
+
         # Mise à jour de l'image via meta si disponible
         try:
             image_url = response.xpath('//meta[@property="og:image"]/@content').get()
