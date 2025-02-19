@@ -120,11 +120,19 @@ class EbaySpider(scrapy.Spider):
             title = re.sub(r"\s*\|\s*ebay\s*$", "", title, flags=re.IGNORECASE).strip()
             item["title"] = title
 
-        # Filtrage : on exige "doom" dans le titre
+        # --- Filtrage des bundles ---
         title_lower = item["title"].lower()
-        if "doom" not in title_lower:
-            self.logger.info(f"Ignoring item (title doesn't match 'doom'): {item['title']}")
+        # Vérifier si le titre contient des mots-clés typiques d'un bundle
+        bundle_keywords = ["lot", "bundle", "set"]
+        if any(keyword in title_lower for keyword in bundle_keywords):
+            self.logger.info(f"Ignoring bundle due to keyword in title: {item['title']}")
             return
+
+        # Optionnel : Si le titre contient des connecteurs comme "and" ou "&" et plusieurs références (par exemple plusieurs "#")
+        if (" and " in title_lower or "&" in title_lower) and item["title"].count("#") > 1:
+            self.logger.info(f"Ignoring bundle due to multiple references in title: {item['title']}")
+            return
+
 
 
         # Mise à jour de l'image via meta si disponible
