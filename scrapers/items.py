@@ -13,3 +13,6 @@ class EbayItem(scrapy.Item):
     shipping_cost = scrapy.Field()    # Frais d'expédition
     seller_username = scrapy.Field()  # Nom du vendeur
     category = scrapy.Field()         # Catégorie eBay
+    bids_count = scrapy.Field()       # Nombre d'enchères (pour les auctions)
+    time_remaining = scrapy.Field()   # Temps restant de l'enchère (texte brut)
+    listing_type = scrapy.Field()     # Type d'annonce ("auction", "auction_with_bin", "fixed_price")

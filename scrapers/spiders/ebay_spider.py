@@ -103,7 +103,7 @@ class EbaySpider(scrapy.Spider):
             yield scrapy.Request(url=next_page_url, callback=self.parse)
 
     def parse_item(self, response):
-        """Extrait l'ID, le vendeur et la catégorie depuis la page détaillée du produit."""
+        """Extrait l'ID, le vendeur, la catégorie et les nouveaux champs depuis la page détaillée."""
         item = response.meta.get("item", EbayItem())
         item["item_url"] = response.url
 
@@ -118,12 +118,8 @@ class EbaySpider(scrapy.Spider):
         # Titre fallback si absent
         if not item.get("title"):
             title = response.xpath('//meta[@property="og:title"]/@content').get() or response.xpath('//title/text()').get() or ""
-            # Supprime "| eBay" à la fin
             title = re.sub(r"\s*\|\s*ebay\s*$", "", title, flags=re.IGNORECASE).strip()
-
             item["title"] = title
-
-
 
         # Mise à jour de l'image via meta si disponible
         try:
@@ -132,7 +128,6 @@ class EbaySpider(scrapy.Spider):
                 item["image_url"] = image_url.strip()
         except Exception as e:
             self.logger.error(f"Erreur lors de l'extraction de l'URL de l'image: {e}")
-
 
         # Extraction du vendeur
         try:
@@ -143,8 +138,48 @@ class EbaySpider(scrapy.Spider):
             self.logger.error(f"Error extracting seller username: {e}")
             item["seller_username"] = ""
 
+        # --- Nouveaux champs à ajouter ---
 
-        # Extraction de la catégorie via JSON‑LD ou XPath
+        # 1. Extraction du type d'annonce (listing_type)
+        bid_button = response.xpath("//*[starts-with(@id, 'bidBtn_btn')]").get()
+        bin_button = response.xpath("//*[starts-with(@id, 'binBtn_btn')]").get()
+        countdown = response.xpath("//*[contains(@id, 'vi-cdown')]").get()
+        if bid_button or countdown:
+            if bin_button:
+                item["listing_type"] = "auction_with_bin"
+            else:
+                item["listing_type"] = "auction"
+        else:
+            item["listing_type"] = "fixed_price"
+        self.logger.info(f"DEBUG: listing_type = {item.get('listing_type')}")
+
+        # 2. Extraction du nombre d'enchères (bids_count) – uniquement pour les auctions
+        if item["listing_type"] in ["auction", "auction_with_bin"]:
+            try:
+                bid_container = response.xpath('//div[@data-testid="x-bid-count"]')
+                bids_text = bid_container.xpath('.//span/text()').re_first(r'(\d+)')
+                item["bids_count"] = int(bids_text) if bids_text else 0
+            except Exception as e:
+                self.logger.error(f"Error extracting bids_count: {e}")
+                item["bids_count"] = 0
+        else:
+            item["bids_count"] = None
+
+        # 3. Extraction du temps restant (time_remaining)
+        try:
+            raw_texts = response.css('.ux-timer__text::text').getall()
+            if raw_texts:
+                if len(raw_texts) >= 2:
+                    item["time_remaining"] = raw_texts[1].strip()
+                else:
+                    item["time_remaining"] = raw_texts[0].replace("Ends in", "").strip()
+            else:
+                item["time_remaining"] = None
+        except Exception as e:
+            self.logger.error(f"Error extracting time_remaining: {e}")
+            item["time_remaining"] = None
+
+        # Extraction de la catégorie via JSON‑LD ou XPath (inchangé)
         try:
             ld_json = response.xpath('//script[@type="application/ld+json"]/text()').get()
             if ld_json:
@@ -170,6 +205,5 @@ class EbaySpider(scrapy.Spider):
             self.logger.error(f"Erreur lors de l'extraction de la catégorie: {e}")
             item["category"] = ""
 
-
-
         yield item
+

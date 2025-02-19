@@ -25,6 +25,9 @@ def get_produits():
                p.shipping_cost,
                p.seller_username,
                p.category,
+               p.listing_type,
+               p.bids_count,
+               p.time_remaining,
                c.name AS leaf_name,
                (
                  SELECT ph.price
@@ -42,23 +45,23 @@ def get_produits():
 
     result = []
     for row in rows:
-        product_id       = row[0]
-        item_id          = row[1]
-        title            = row[2]
-        item_condition   = row[3]
-        url              = row[4]
-        image_url        = row[5]
-        shipping_cost    = row[6]
-        seller_username  = row[7]
-        breadcrumb_cat   = row[8]  # ex: "Electronics > Video Games & Consoles > Video Games ..."
-        leaf_name        = row[9]  # la leaf category depuis la table category
-        last_price       = row[10] # subselect sur price_history
+        product_id     = row[0]
+        item_id        = row[1]
+        title          = row[2]
+        item_condition = row[3]
+        url            = row[4]
+        image_url      = row[5]
+        shipping_cost  = row[6]
+        seller_username= row[7]
+        breadcrumb_cat = row[8]  # ex: "Electronics > Video Games & Consoles > Video Games ..."
+        listing_type   = row[9]
+        bids_count     = row[10]
+        time_remaining = row[11]
+        leaf_name      = row[12]  # la leaf category depuis la table category
+        last_price     = row[13]  # subselect sur price_history
 
-        # ==> NOUVEAU : on utilise extract_leaf_category pour remplacer le breadcrumb complet
-        # par sa portion "leaf" dans le champ "category"
-        cat_leaf = None
-        if breadcrumb_cat:
-            cat_leaf = extract_leaf_category(breadcrumb_cat)
+        # Extraction de la "leaf" de la catégorie
+        cat_leaf = extract_leaf_category(breadcrumb_cat) if breadcrumb_cat else None
 
         result.append({
             "product_id": product_id,
@@ -67,12 +70,15 @@ def get_produits():
             "item_condition": item_condition,
             "url": url,
             "image_url": image_url,
+            "shipping_cost": shipping_cost,
             "seller_username": seller_username,
-            "category": cat_leaf,            # <-- on met la leaf au lieu du breadcrumb complet
-            "leaf_category_name": leaf_name, # on laisse ce champ si on veut comparer
+            "category": cat_leaf,            # on met la leaf
+            "leaf_category_name": leaf_name, # champ complémentaire
+            "listing_type": listing_type,
+            "bids_count": bids_count,
+            "time_remaining": time_remaining,
             "price": float(last_price) if last_price is not None else None
         })
-
 
     return jsonify(result)
 
@@ -95,6 +101,9 @@ def get_produit(product_id):
                p.shipping_cost,
                p.seller_username,
                p.category,
+               p.listing_type,
+               p.bids_count,
+               p.time_remaining,
                c.name AS leaf_name,
                (
                  SELECT ph.price
@@ -112,22 +121,22 @@ def get_produit(product_id):
     conn.close()
 
     if row:
-        product_id       = row[0]
-        item_id          = row[1]
-        title            = row[2]
-        item_condition   = row[3]
-        url              = row[4]
-        image_url        = row[5]
-        shipping_cost    = row[6]
-        seller_username  = row[7]
-        breadcrumb_cat   = row[8]
-        leaf_name        = row[9]
-        last_price       = row[10]
+        product_id     = row[0]
+        item_id        = row[1]
+        title          = row[2]
+        item_condition = row[3]
+        url            = row[4]
+        image_url      = row[5]
+        shipping_cost  = row[6]
+        seller_username= row[7]
+        breadcrumb_cat = row[8]
+        listing_type   = row[9]
+        bids_count     = row[10]
+        time_remaining = row[11]
+        leaf_name      = row[12]
+        last_price     = row[13]
 
-        # ==> On fait la même chose : extraire la leaf
-        cat_leaf = None
-        if breadcrumb_cat:
-            cat_leaf = extract_leaf_category(breadcrumb_cat)
+        cat_leaf = extract_leaf_category(breadcrumb_cat) if breadcrumb_cat else None
 
         result = {
             "product_id": product_id,
@@ -136,15 +145,19 @@ def get_produit(product_id):
             "item_condition": item_condition,
             "url": url,
             "image_url": image_url,
+            "shipping_cost": shipping_cost,
             "seller_username": seller_username,
-            "category": cat_leaf,            # <-- on met la leaf
+            "category": cat_leaf,            # on met la leaf
             "leaf_category_name": leaf_name,
+            "listing_type": listing_type,
+            "bids_count": bids_count,
+            "time_remaining": time_remaining,
             "price": float(last_price) if last_price is not None else None
         }
         return jsonify(result)
     else:
         return jsonify({"error": "Produit non trouvé"}), 404
-    #
+
 
 @api_bp.route('/produits/<int:product_id>/historique-prix', methods=['GET'])
 def get_historique_prix(product_id):
@@ -167,6 +180,5 @@ def get_historique_prix(product_id):
     data = {
         "dates": [row[0] for row in rows],
         "prices": [float(row[1]) for row in rows]
-
     }
     return jsonify(data)

@@ -32,22 +32,21 @@ class MySQLPipeline:
             # <-- ICI on met à jour le titre pour écraser l'ancien
             update_sql = """
                 UPDATE product
-                SET title = %s
+                SET title = %s, listing_type = %s, bids_count = %s, time_remaining = %s
                 WHERE product_id = %s
             """
             try:
-                self.cursor.execute(update_sql, (item["title"], product_db_id))
+                self.cursor.execute(update_sql, (item["title"], item.get("listing_type", ""), item.get("bids_count"), item.get("time_remaining"), product_db_id))
                 self.conn.commit()
                 spider.logger.info(f"Titre mis à jour pour le produit {product_db_id}")
             except Exception as e:
                 spider.logger.error(f"Erreur lors de la mise à jour du titre: {e}")
 
         else:
-            # Insertion du produit si pas trouvé
             insert_product_sql = """
                 INSERT INTO product 
-                (item_id, title, item_condition, url, image_url, seller_username, category)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                (item_id, title, item_condition, url, image_url, seller_username, category, listing_type, bids_count, time_remaining)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             product_values = (
                 item.get("item_id", ""),
@@ -56,7 +55,10 @@ class MySQLPipeline:
                 item.get("item_url", ""),
                 item.get("image_url", ""),
                 item.get("seller_username", ""),
-                item.get("category", "")
+                item.get("category", ""),
+                item.get("listing_type", ""),
+                item.get("bids_count"),
+                item.get("time_remaining")
             )
 
 
