@@ -20,9 +20,9 @@ class CaptchaDetectionMiddleware:
             try:
                 page_text = response.text
             except Exception as e:
-                logger.debug(f"Erreur avec response.text, utilisation de body_as_unicode(): {e}")
+                logger.debug(f"Erreur avec response.text, utilisation de response.body.decode(): {e}")
                 try:
-                    page_text = response.body_as_unicode()
+                    page_text = response.body.decode('utf-8', errors='ignore')
                 except Exception as e2:
                     logger.error(f"Erreur lors de la conversion du contenu en texte: {e2}")
                     page_text = ""
