@@ -6,18 +6,34 @@ logger = logging.getLogger(__name__)
 
 class CaptchaDetectionMiddleware:
     def process_response(self, request, response, spider):
-        # Vérifie si la réponse contient un indice de CAPTCHA
+        # Liste des indicateurs de CAPTCHA
         captcha_indicators = [
-            r"captcha", 
-            r"please verify", 
-            r"pardon our interruption", 
+            r"captcha",
+            r"please verify",
+            r"pardon our interruption",
             r"are you a human"
         ]
-        if any(re.search(indicator, response.text, re.IGNORECASE) for indicator in captcha_indicators):
+        
+        # Vérifie que le Content-Type indique un contenu textuel (HTML)
+        content_type = response.headers.get('Content-Type', b'').decode('utf-8', errors='ignore')
+        if "html" in content_type.lower():
+            try:
+                page_text = response.text
+            except Exception as e:
+                logger.debug(f"Erreur avec response.text, utilisation de body_as_unicode(): {e}")
+                try:
+                    page_text = response.body_as_unicode()
+                except Exception as e2:
+                    logger.error(f"Erreur lors de la conversion du contenu en texte: {e2}")
+                    page_text = ""
+        else:
+            # Si le contenu n'est pas du HTML, on ne fait pas de détection CAPTCHA
+            return response
+
+        # Recherche des indicateurs de CAPTCHA dans le texte de la page
+        if any(re.search(indicator, page_text, re.IGNORECASE) for indicator in captcha_indicators):
             logger.warning(f"CAPTCHA détecté sur {response.url}. Changement de proxy ou pause nécessaire.")
-            # On peut choisir ici de:
-            # - Laisser la requête échouer et être retentée par le retry middleware
-            # - Ou lever une exception pour l'ignorer (IgnoreRequest)
-            # Ici, nous utilisons IgnoreRequest pour déclencher un retry avec un autre proxy.
+            # Déclenche IgnoreRequest pour permettre au middleware Retry de gérer le changement de proxy
             raise IgnoreRequest("CAPTCHA détecté, requête ignorée pour changer de proxy.")
+        
         return response
