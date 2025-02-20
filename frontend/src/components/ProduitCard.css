@@ -79,19 +79,6 @@
     color: var(--text-color);
 }
 
-/* Bloc des infos supplémentaires */
-.product-meta {
-    display: flex; /* on peut jouer avec flex ou block */
-    flex-wrap: wrap; /* si l’espace est trop petit, ça passe à la ligne */
-    gap: 0.5rem; /* un petit espace entre les infos */
-    font-size: 0.9rem; /* un peu plus petit que le titre */
-    margin-bottom: 0.5rem; /* un léger espace sous le bloc */
-}
-
-.meta-item {
-    color: var(--text-color);
-    /* tu peux ajouter un style, ex. font-weight: 500; */
-}
 
 
 /* Paragraphes éventuels */
