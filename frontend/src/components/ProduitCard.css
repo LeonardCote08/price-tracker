@@ -20,8 +20,8 @@
 
 /* Image du produit */
 .product-image {
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
     object-fit: cover;
     border-radius: 4px;
     margin-right: 1rem;
@@ -33,6 +33,13 @@
     flex-direction: column;
     justify-content: center;
 }
+
+    .product-info p {
+        margin: 0.2rem 0;
+        font-size: 0.9rem;
+        color: var(--text-color);
+    }
+
 
 /* Titre du produit */
 .product-title {

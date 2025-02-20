@@ -40,7 +40,14 @@ def get_produits():
                  WHERE ph.product_id = p.product_id
                  ORDER BY ph.date_scraped DESC
                  LIMIT 1
-               ) AS last_price
+               ) AS last_price,
+               (
+                 SELECT DATE_FORMAT(ph.date_scraped, '%%Y-%%m-%%d')
+                 FROM price_history ph
+                 WHERE ph.product_id = p.product_id
+                 ORDER BY ph.date_scraped DESC
+                 LIMIT 1
+               ) AS last_scraped_date
         FROM product p
         LEFT JOIN category c ON p.category_id = c.category_id
     """)
@@ -66,6 +73,7 @@ def get_produits():
         time_remaining       = row[13]
         leaf_name            = row[14]  # La "leaf" de la catégorie depuis la table category
         last_price           = row[15]  # Dernier prix relevé
+        last_scraped_date    = row[16] 
 
         # Extraction de la "leaf" de la catégorie (au cas où)
         cat_leaf = extract_leaf_category(breadcrumb_cat) if breadcrumb_cat else None
@@ -86,7 +94,8 @@ def get_produits():
             "listing_type": listing_type,
             "bids_count": bids_count,
             "time_remaining": time_remaining,
-            "price": float(last_price) if last_price is not None else None
+            "price": float(last_price) if last_price is not None else None,
+            "last_scraped_date": last_scraped_date
         })
 
     return jsonify(result)
