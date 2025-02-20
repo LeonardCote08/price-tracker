@@ -30,7 +30,12 @@ function ProduitCard({ produit }) {
                     {produit.listing_type === 'auction' && (
                         <>
                             <p>Listing: Auction</p>
-                            <p>Bids: {produit.bids_count || 'N/A'}</p>
+                            <p>Bids: {
+                                (produit.bids_count === 0)
+                                    ? 0
+                                    : (produit.bids_count ?? 'N/A')
+                            }
+                            </p>
                             <p>Time remaining: {produit.time_remaining || 'N/A'}</p>
                         </>
                     )}
