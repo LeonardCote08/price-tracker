@@ -11,6 +11,7 @@
     margin-bottom: 1.0rem;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* ombre par défaut */
     transition: transform 0.4s ease, box-shadow 0.4s ease;
+    min-height: 150px;
 }
 
     .produit-card:hover {
