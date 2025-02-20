@@ -126,7 +126,7 @@ class EbaySpider(scrapy.Spider):
         raw_condition = item.get("item_condition", "").strip().lower()
         # Regroupe "brand new" et "new (other)" en "new"
         if raw_condition in ["brand new", "new (other)"]:
-            item["normalized_condition"] = "New"
+            item["normalized_condition"] = "new"
         else:
             item["normalized_condition"] = raw_condition
 
@@ -154,7 +154,7 @@ class EbaySpider(scrapy.Spider):
                 item["in_box"] = False
             else:
                 # Si aucune indication claire, on laisse inconnu (None)
-                item["in_box"] = None
+                item["in_box"] = True
 
 
         # --- Filtrage des bundles ---
