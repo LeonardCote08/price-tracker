@@ -9,9 +9,12 @@ api_bp = Blueprint('api', __name__, url_prefix='/api')
 def get_produits():
     """
     Retourne la liste de tous les produits.
-    On fait :
-      - un sub-select pour le dernier prix (last_price)
-      - un left join sur la table category pour récupérer c.name (leaf_name)
+    On récupère également :
+      - normalized_condition (regroupe Brand New et New (Other) en "New")
+      - signed (True si le titre contient "signed", sinon False)
+      - in_box (indique si la figurine est dans sa boîte)
+      - le dernier prix relevé via un sub-select
+      - le nom de la catégorie via un LEFT JOIN sur la table category (leaf_name)
     """
     conn = get_connection()
     cursor = conn.cursor()
@@ -20,6 +23,9 @@ def get_produits():
                p.item_id,
                p.title,
                p.item_condition,
+               p.normalized_condition,
+               p.signed,
+               p.in_box,
                p.url,
                p.image_url,
                p.seller_username,
@@ -44,21 +50,24 @@ def get_produits():
 
     result = []
     for row in rows:
-        product_id     = row[0]
-        item_id        = row[1]
-        title          = row[2]
-        item_condition = row[3]
-        url            = row[4]
-        image_url      = row[5]
-        seller_username= row[6]
-        breadcrumb_cat = row[7]  # ex: "Electronics > Video Games & Consoles > Video Games ..."
-        listing_type   = row[8]
-        bids_count     = row[9]
-        time_remaining = row[10]
-        leaf_name      = row[11]  # la leaf category depuis la table category
-        last_price     = row[12]  # subselect sur price_history
+        product_id           = row[0]
+        item_id              = row[1]
+        title                = row[2]
+        item_condition       = row[3]
+        normalized_condition = row[4]
+        signed               = row[5]
+        in_box               = row[6]
+        url                  = row[7]
+        image_url            = row[8]
+        seller_username      = row[9]
+        breadcrumb_cat       = row[10]  # ex: "Electronics > Video Games & Consoles > Video Games ..."
+        listing_type         = row[11]
+        bids_count           = row[12]
+        time_remaining       = row[13]
+        leaf_name            = row[14]  # La "leaf" de la catégorie depuis la table category
+        last_price           = row[15]  # Dernier prix relevé
 
-        # Extraction de la "leaf" de la catégorie
+        # Extraction de la "leaf" de la catégorie (au cas où)
         cat_leaf = extract_leaf_category(breadcrumb_cat) if breadcrumb_cat else None
 
         result.append({
@@ -66,11 +75,14 @@ def get_produits():
             "item_id": item_id,
             "title": title,
             "item_condition": item_condition,
+            "normalized_condition": normalized_condition,
+            "signed": bool(signed),
+            "in_box": in_box,  # Valeur du champ in_box
             "url": url,
             "image_url": image_url,
             "seller_username": seller_username,
-            "category": cat_leaf,            # on met la leaf
-            "leaf_category_name": leaf_name, # champ complémentaire
+            "category": cat_leaf,  # On utilise la "leaf" de la catégorie
+            "leaf_category_name": leaf_name,
             "listing_type": listing_type,
             "bids_count": bids_count,
             "time_remaining": time_remaining,
@@ -79,12 +91,11 @@ def get_produits():
 
     return jsonify(result)
 
-
 @api_bp.route('/produits/<int:product_id>', methods=['GET'])
 def get_produit(product_id):
     """
     Retourne le détail d'un produit (un seul).
-    Même logique que ci-dessus, on récupère la leaf category + dernier prix
+    Même logique que ci-dessus, on récupère également normalized_condition, signed et in_box.
     """
     conn = get_connection()
     cursor = conn.cursor()
@@ -93,6 +104,9 @@ def get_produit(product_id):
                p.item_id,
                p.title,
                p.item_condition,
+               p.normalized_condition,
+               p.signed,
+               p.in_box,
                p.url,
                p.image_url,
                p.seller_username,
@@ -117,19 +131,22 @@ def get_produit(product_id):
     conn.close()
 
     if row:
-        product_id     = row[0]
-        item_id        = row[1]
-        title          = row[2]
-        item_condition = row[3]
-        url            = row[4]
-        image_url      = row[5]
-        seller_username= row[6]
-        breadcrumb_cat = row[7]
-        listing_type   = row[8]
-        bids_count     = row[9]
-        time_remaining = row[10]
-        leaf_name      = row[11]
-        last_price     = row[12]
+        product_id           = row[0]
+        item_id              = row[1]
+        title                = row[2]
+        item_condition       = row[3]
+        normalized_condition = row[4]
+        signed               = row[5]
+        in_box               = row[6]
+        url                  = row[7]
+        image_url            = row[8]
+        seller_username      = row[9]
+        breadcrumb_cat       = row[10]
+        listing_type         = row[11]
+        bids_count           = row[12]
+        time_remaining       = row[13]
+        leaf_name            = row[14]
+        last_price           = row[15]
 
         cat_leaf = extract_leaf_category(breadcrumb_cat) if breadcrumb_cat else None
 
@@ -138,10 +155,13 @@ def get_produit(product_id):
             "item_id": item_id,
             "title": title,
             "item_condition": item_condition,
+            "normalized_condition": normalized_condition,
+            "signed": bool(signed),
+            "in_box": in_box,  # Valeur du champ in_box
             "url": url,
             "image_url": image_url,
             "seller_username": seller_username,
-            "category": cat_leaf,            # on met la leaf
+            "category": cat_leaf,  # On utilise la "leaf" de la catégorie
             "leaf_category_name": leaf_name,
             "listing_type": listing_type,
             "bids_count": bids_count,
@@ -151,7 +171,6 @@ def get_produit(product_id):
         return jsonify(result)
     else:
         return jsonify({"error": "Produit non trouvé"}), 404
-
 
 @api_bp.route('/produits/<int:product_id>/historique-prix', methods=['GET'])
 def get_historique_prix(product_id):

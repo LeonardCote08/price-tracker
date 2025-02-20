@@ -32,6 +32,8 @@ class EbaySpider(scrapy.Spider):
         "AUTOTHROTTLE_START_DELAY": 2.0,
         "AUTOTHROTTLE_MAX_DELAY": 10.0,
         "AUTOTHROTTLE_TARGET_CONCURRENCY": 2.0,
+        "CLOSESPIDER_PAGECOUNT" : 5
+
     }
 
     def parse(self, response):
@@ -119,6 +121,41 @@ class EbaySpider(scrapy.Spider):
             title = response.xpath('//meta[@property="og:title"]/@content').get() or response.xpath('//title/text()').get() or ""
             title = re.sub(r"\s*\|\s*ebay\s*$", "", title, flags=re.IGNORECASE).strip()
             item["title"] = title
+
+        # Normalisation de l'état
+        raw_condition = item.get("item_condition", "").strip().lower()
+        # Regroupe "brand new" et "new (other)" en "new"
+        if raw_condition in ["brand new", "new (other)"]:
+            item["normalized_condition"] = "New"
+        else:
+            item["normalized_condition"] = raw_condition
+
+        # Détection de la signature dans le titre
+        if "signed" in item["title"].lower():
+            item["signed"] = True
+        else:
+            item["signed"] = False
+
+        # Détermination de la présence de la boîte
+        # Pour les items "new", on considère qu'ils sont toujours in-box
+        if item["normalized_condition"] == "new":
+            item["in_box"] = True
+        else:
+            # Pour les items utilisés, on cherche dans le titre des indices sur la boîte
+            title_lower = item["title"].lower()
+            # Mots indiquant que l'article est dans sa boîte
+            in_box_keywords = ["in box", "with box", "nib", "mib"]
+            # Mots indiquant que l'article est hors boîte
+            out_box_keywords = ["loose", "oob", "no box", "out of box", "ex-box"]
+    
+            if any(keyword in title_lower for keyword in in_box_keywords) and not any(keyword in title_lower for keyword in out_box_keywords):
+                item["in_box"] = True
+            elif any(keyword in title_lower for keyword in out_box_keywords) and not any(keyword in title_lower for keyword in in_box_keywords):
+                item["in_box"] = False
+            else:
+                # Si aucune indication claire, on laisse inconnu (None)
+                item["in_box"] = None
+
 
         # --- Filtrage des bundles ---
         title_lower = item["title"].lower()

@@ -29,10 +29,14 @@ class MySQLPipeline:
             product_db_id = result[0]
             spider.logger.info(f"Produit existant trouvé avec l'id {product_db_id}")
 
-            # Mise à jour du produit existant, incluant le champ buy_it_now_price
+            # Mise à jour du produit existant, incluant les nouveaux champs normalized_condition, signed et in_box
             update_sql = """
                 UPDATE product
                 SET title = %s, 
+                    item_condition = %s,
+                    normalized_condition = %s,
+                    signed = %s,
+                    in_box = %s,
                     listing_type = %s, 
                     bids_count = %s, 
                     time_remaining = %s,
@@ -41,9 +45,13 @@ class MySQLPipeline:
             """
             try:
                 self.cursor.execute(update_sql, (
-                    item["title"], 
-                    item.get("listing_type", ""), 
-                    item.get("bids_count"), 
+                    item.get("title", ""),
+                    item.get("item_condition", ""),
+                    item.get("normalized_condition", ""),
+                    item.get("signed", False),
+                    item.get("in_box"),  # nouveau champ
+                    item.get("listing_type", ""),
+                    item.get("bids_count"),
                     item.get("time_remaining"),
                     item.get("buy_it_now_price"),
                     product_db_id
@@ -54,17 +62,20 @@ class MySQLPipeline:
                 spider.logger.error(f"Erreur lors de la mise à jour du produit: {e}")
 
         else:
-            # Insertion d'un nouveau produit avec le champ buy_it_now_price
+            # Insertion d'un nouveau produit incluant les nouveaux champs normalized_condition, signed et in_box
             insert_product_sql = """
                 INSERT INTO product 
-                (item_id, title, item_condition, url, image_url, seller_username, category, 
+                (item_id, title, item_condition, normalized_condition, signed, in_box, url, image_url, seller_username, category, 
                  listing_type, bids_count, time_remaining, buy_it_now_price)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             product_values = (
                 item.get("item_id", ""),
                 item.get("title", ""),
                 item.get("item_condition", ""),
+                item.get("normalized_condition", ""),
+                item.get("signed", False),
+                item.get("in_box"),  # nouveau champ
                 item.get("item_url", ""),
                 item.get("image_url", ""),
                 item.get("seller_username", ""),
