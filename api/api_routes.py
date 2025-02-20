@@ -42,7 +42,7 @@ def get_produits():
                  LIMIT 1
                ) AS last_price,
                (
-                 SELECT DATE_FORMAT(ph.date_scraped, '%%Y-%%m-%%d')
+                 SELECT DATE_FORMAT(ph.date_scraped, '%Y-%m-%d')
                  FROM price_history ph
                  WHERE ph.product_id = p.product_id
                  ORDER BY ph.date_scraped DESC
