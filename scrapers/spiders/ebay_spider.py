@@ -121,6 +121,14 @@ class EbaySpider(scrapy.Spider):
             title = re.sub(r"\s*\|\s*ebay\s*$", "", title, flags=re.IGNORECASE).strip()
             item["title"] = title
 
+        multi_variation_button = response.xpath(
+            '//button[contains(@class, "listbox-button__control") and '
+            'contains(@class, "btn--form") and @value="Select"]'
+        )
+        if multi_variation_button:
+            self.logger.info(f"Ignoring multi-variation listing with MPN: Select: {item['title']}")
+            return
+
         # Normalisation de l'état
         raw_condition = item.get("item_condition", "").strip().lower()
         # Regroupe "brand new" et "new (other)" en "new"
@@ -158,16 +166,19 @@ class EbaySpider(scrapy.Spider):
 
         # --- Filtrage des bundles ---
         title_lower = item["title"].lower()
+        
+        # 1) Ignorer s'il y a au moins deux références #xxx dans le titre
+        if item["title"].count("#") > 1:
+            self.logger.info(f"Ignoring multi-figure listing: {item['title']}")
+            return
+        
         # Vérifier si le titre contient des mots-clés typiques d'un bundle
         bundle_keywords = ["lot", "bundle", "set"]
         if any(keyword in title_lower for keyword in bundle_keywords):
             self.logger.info(f"Ignoring bundle due to keyword in title: {item['title']}")
             return
 
-        # Optionnel : Si le titre contient des connecteurs comme "and" ou "&" et plusieurs références (par exemple plusieurs "#")
-        if (" and " in title_lower or "&" in title_lower) and item["title"].count("#") > 1:
-            self.logger.info(f"Ignoring bundle due to multiple references in title: {item['title']}")
-            return
+
 
 
 
