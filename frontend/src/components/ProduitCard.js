@@ -20,18 +20,27 @@ function ProduitCard({ produit }) {
 
                 <div className="product-info">
 
-                    {/* Titre du produit */}
+                    {/* Titre du produit + badge Signed */}
                     <h3 className="product-title">
                         {produit.title || 'Untitled product'}
-                        {/* Affiche un badge "Signed" si signed === true */}
                         {produit.signed && (
-                            <span className="badge-signed" style={{ marginLeft: '0.5rem', backgroundColor: '#E74C3C', color: '#fff', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.8rem' }}>
+                            <span
+                                className="badge-signed"
+                                style={{
+                                    marginLeft: '0.5rem',
+                                    backgroundColor: '#E74C3C',
+                                    color: '#fff',
+                                    padding: '0.2rem 0.4rem',
+                                    borderRadius: '4px',
+                                    fontSize: '0.8rem'
+                                }}
+                            >
                                 Signed
                             </span>
                         )}
                     </h3>
 
-                    {/* Condition (sans le préfixe "Condition:") */}
+                    {/* Condition (ex: 'new', 'pre-owned', etc.) */}
                     <p>
                         {produit.normalized_condition && produit.normalized_condition.trim() !== ''
                             ? produit.normalized_condition
@@ -39,7 +48,7 @@ function ProduitCard({ produit }) {
                         }
                     </p>
 
-                    {/* Listing type */}
+                    {/* Listing type (Fixed Price, Auction, Auction+BIN) */}
                     {produit.listing_type === 'fixed_price' && (
                         <p>Fixed Price</p>
                     )}
@@ -69,29 +78,29 @@ function ProduitCard({ produit }) {
                         </>
                     )}
 
-                    {/* Date de mise à jour (remplace "Last scraped") */}
-                    <p>Updated: {produit.last_scraped_date || 'N/A'}</p>
-
-                    {/* Bloc du prix principal (selon le listing_type) */}
+                    {/* Bloc du prix principal (plus gros) */}
                     <div className="price-block">
                         {produit.listing_type === 'fixed_price' && (
                             <span className="price-total">
                                 ${price.toFixed(2)}
                             </span>
                         )}
-
                         {produit.listing_type === 'auction' && (
                             <span className="price-total">
                                 ${price.toFixed(2)}
                             </span>
                         )}
-
                         {produit.listing_type === 'auction_with_bin' && (
                             <span className="price-total">
                                 ${price.toFixed(2)}
                             </span>
                         )}
                     </div>
+
+                    {/* Date de mise à jour en bas, plus discret */}
+                    <p className="updated-date">
+                        Updated: {produit.last_scraped_date || 'N/A'}
+                    </p>
 
                 </div>
             </div>
