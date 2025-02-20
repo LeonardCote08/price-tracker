@@ -129,13 +129,15 @@ class EbaySpider(scrapy.Spider):
             self.logger.info(f"Ignoring multi-variation listing with MPN: Select: {item['title']}")
             return
 
-        # Normalisation de l'état
+        # Normalisation simplifiée à seulement "New" ou "Used"
         raw_condition = item.get("item_condition", "").strip().lower()
-        # Regroupe "brand new" et "new (other)" en "new"
-        if raw_condition in ["brand new", "new (other)"]:
-            item["normalized_condition"] = "new"
+
+        # Si le mot "new" apparaît quelque part (brand new, new (other), etc.)
+        if "new" in raw_condition:
+            item["normalized_condition"] = "New"
         else:
-            item["normalized_condition"] = raw_condition
+            item["normalized_condition"] = "Used"
+
 
         # Détection de la signature dans le titre
         if "signed" in item["title"].lower():

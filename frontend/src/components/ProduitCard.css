@@ -60,6 +60,29 @@
     gap: 0.5rem;
 }
 
+/* Une ligne de prix : label + valeur */
+.price-line {
+    display: flex;
+    gap: 0.4rem;
+    align-items: baseline;
+    margin: 0.25rem 0; /* un petit espace vertical */
+}
+
+/* Petit label (Current Bid, Buy It Now, etc.) */
+.price-label {
+    font-size: 0.85rem;
+    color: #bbb; /* un gris un peu plus discret */
+    font-weight: 400;
+}
+
+/* Valeur du prix en plus grand */
+.price-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--price-color);
+    font-family: 'Montserrat', sans-serif;
+}
+
 /* Prix total (le plus important) */
 .price-total {
     font-size: 1.4rem;
@@ -75,11 +98,8 @@
     font-family: 'Montserrat', sans-serif;
 }
 
-.updated-date {
-    font-size: 0.3rem; /* plus petit que 0.9 ou 1rem */
-    color: #bbb; /* gris clair, moins contrasté */
-    margin-top: 0.5rem; /* petit espace au-dessus */
-}
+
+
 
 
 /* Prix de base et frais de livraison */
@@ -89,6 +109,12 @@
     color: var(--text-color);
 }
 
+.price-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* centre horizontalement */
+    margin-top: 0.5rem; /* un petit espace au-dessus */
+}
 
 
 /* Paragraphes éventuels */
@@ -97,3 +123,9 @@
     font-size: 0.9rem;
     color: var(--text-color);
 }
+
+    .produit-card p.updated-date {
+        font-size: 0.6rem;
+        color: #bbb;
+        margin-top: 0.5rem;
+    }

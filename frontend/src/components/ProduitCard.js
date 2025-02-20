@@ -4,14 +4,35 @@ import { Link } from 'react-router-dom';
 import './ProduitCard.css';
 
 function ProduitCard({ produit }) {
-    // Récupère le prix d'enchère actuel (ou 0 si non défini)
     const price = typeof produit.price === 'number' ? produit.price : 0;
+    const buyItNow = typeof produit.buy_it_now_price === 'number'
+        ? produit.buy_it_now_price
+        : null;
+
+    // Récupération d'un texte plus court pour la condition
+    const conditionText = produit.normalized_condition?.trim() || 'Not specified';
+
+    // Détermine le label de type d’annonce
+    let listingLabel = '';
+    if (produit.listing_type === 'fixed_price') {
+        listingLabel = 'Fixed Price';
+    } else if (produit.listing_type === 'auction') {
+        listingLabel = 'Auction';
+    } else if (produit.listing_type === 'auction_with_bin') {
+        listingLabel = 'Auction + BIN';
+    }
+
+    // Vérifie si on doit afficher la section Bids + Time
+    const isAuction = (produit.listing_type === 'auction' || produit.listing_type === 'auction_with_bin');
 
     return (
-        <Link to={`/produits/${produit.product_id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+        <Link
+            to={`/produits/${produit.product_id}`}
+            style={{ textDecoration: 'none', color: 'inherit' }}
+        >
             <div className="produit-card">
 
-                {/* Image du produit */}
+                {/* Image principale */}
                 <img
                     className="product-image"
                     src={produit.image_url}
@@ -19,16 +40,14 @@ function ProduitCard({ produit }) {
                 />
 
                 <div className="product-info">
-
-                    {/* Titre du produit + badge Signed */}
+                    {/* Titre + badge Signed */}
                     <h3 className="product-title">
                         {produit.title || 'Untitled product'}
                         {produit.signed && (
                             <span
-                                className="badge-signed"
                                 style={{
                                     marginLeft: '0.5rem',
-                                    backgroundColor: '#E74C3C',
+                                    backgroundColor: '#E74C3C', // Rouge pour le badge
                                     color: '#fff',
                                     padding: '0.2rem 0.4rem',
                                     borderRadius: '4px',
@@ -40,68 +59,52 @@ function ProduitCard({ produit }) {
                         )}
                     </h3>
 
-                    {/* Condition (ex: 'new', 'pre-owned', etc.) */}
-                    <p>
-                        {produit.normalized_condition && produit.normalized_condition.trim() !== ''
-                            ? produit.normalized_condition
-                            : 'Not specified'
-                        }
+                    {/* Condition + type de listing sur une seule ligne */}
+                    <p style={{ color: '#bbb', margin: '0.3rem 0' }}>
+                        {conditionText} &nbsp;|&nbsp; {listingLabel}
                     </p>
 
-                    {/* Listing type (Fixed Price, Auction, Auction+BIN) */}
-                    {produit.listing_type === 'fixed_price' && (
-                        <p>Fixed Price</p>
+                    {/* Bids + Time Left (si c’est un auction) sur une seule ligne */}
+                    {isAuction && (
+                        <p style={{ color: '#bbb', margin: '0.3rem 0' }}>
+                            Bids: {produit.bids_count ?? 0} &nbsp;|&nbsp;
+                            Time left: {produit.time_remaining || 'N/A'}
+                        </p>
                     )}
 
-                    {produit.listing_type === 'auction' && (
-                        <>
-                            <p>Auction</p>
-                            <p>Bids: {
-                                (produit.bids_count === 0)
-                                    ? 0
-                                    : (produit.bids_count ?? 'N/A')
-                            }</p>
-                            <p>Time left: {produit.time_remaining || 'N/A'}</p>
-                        </>
-                    )}
-
-                    {produit.listing_type === 'auction_with_bin' && (
-                        <>
-                            <p>Auction + BIN</p>
-                            <p>Bids: {produit.bids_count || 'N/A'}</p>
-                            <p>Time left: {produit.time_remaining || 'N/A'}</p>
-                            <p>Current Bid: ${price.toFixed(2)}</p>
-                            <p>Buy It Now: {produit.buy_it_now_price
-                                ? `$${produit.buy_it_now_price.toFixed(2)}`
-                                : 'N/A'
-                            }</p>
-                        </>
-                    )}
-
-                    {/* Bloc du prix principal (plus gros) */}
-                    <div className="price-block">
-                        {produit.listing_type === 'fixed_price' && (
-                            <span className="price-total">
-                                ${price.toFixed(2)}
-                            </span>
+                    {/* Bloc des prix */}
+                    <div className="price-section" style={{ marginTop: '0.5rem' }}>
+                        {/* Auction / Auction+BIN => Current Bid */}
+                        {isAuction && (
+                            <div className="price-line">
+                                <span className="price-label">Current Bid:</span>
+                                <span className="price-value">${price.toFixed(2)}</span>
+                            </div>
                         )}
-                        {produit.listing_type === 'auction' && (
-                            <span className="price-total">
-                                ${price.toFixed(2)}
-                            </span>
-                        )}
+
+                        {/* Auction+BIN => Buy It Now */}
                         {produit.listing_type === 'auction_with_bin' && (
-                            <span className="price-total">
-                                ${price.toFixed(2)}
-                            </span>
+                            <div className="price-line">
+                                <span className="price-label">Buy It Now:</span>
+                                <span className="price-value">
+                                    {buyItNow ? `$${buyItNow.toFixed(2)}` : 'N/A'}
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Fixed Price => Price */}
+                        {produit.listing_type === 'fixed_price' && (
+                            <div className="price-line">
+                                <span className="price-label">Price:</span>
+                                <span className="price-value">${price.toFixed(2)}</span>
+                            </div>
                         )}
                     </div>
 
-                    {/* Date de mise à jour en bas, plus discret */}
-                    <p className="updated-date">
+                    {/* Date (petit, en bas) */}
+                    <p style={{ fontSize: '0.7rem', color: '#777', marginTop: '0.5rem' }}>
                         Updated: {produit.last_scraped_date || 'N/A'}
                     </p>
-
                 </div>
             </div>
         </Link>
