@@ -3,29 +3,29 @@
 /* Carte produit principale */
 .produit-card {
     display: flex;
-    align-items: flex-start;
+    flex-direction: column; /* Empile l’image et le texte en colonne */
+    align-items: center; /* Centre horizontalement */
+    text-align: center; /* Centre le texte */
+
     background-color: var(--card-bg-color);
-    border: none; /* pas de bordure supplémentaire */
     border-radius: 10px;
-    padding: 1.0rem;
-    margin-bottom: 1.0rem;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* ombre par défaut */
+    padding: 1rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: transform 0.4s ease, box-shadow 0.4s ease;
-    min-height: 150px;
 }
 
     .produit-card:hover {
-        transform: translateY(-2px) scale(1.005); /* soulève et zoom légèrement */
+        transform: translateY(-2px) scale(1.005);
         box-shadow: 0 6px 15px rgba(0,0,0,0.35);
     }
 
 /* Image du produit */
 .product-image {
-    width: 120px;
-    height: 120px;
+    width: 150px;
+    height: 150px;
     object-fit: cover;
     border-radius: 4px;
-    margin-right: 1rem;
+    margin-bottom: 0.5rem; /* plus d’espace en bas de l’image */
 }
 
 /* Bloc d'infos (titre + prix) */
