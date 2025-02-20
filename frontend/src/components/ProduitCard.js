@@ -40,17 +40,42 @@ function ProduitCard({ produit }) {
                             <p>Listing: Auction with BIN</p>
                             <p>Bids: {produit.bids_count || 'N/A'}</p>
                             <p>Time remaining: {produit.time_remaining || 'N/A'}</p>
-                            <p>Buy It Now: {produit.buy_it_now_price ? `$${produit.buy_it_now_price.toFixed(2)}` : 'N/A'}</p>
+
+                            {/* Affiche le prix actuel d’enchère */}
+                            <p>Current Bid: ${produit.price?.toFixed(2)}</p>
+
+                            {/* Affiche le prix Buy It Now */}
+                            <p>Buy It Now: {produit.buy_it_now_price
+                                ? `$${produit.buy_it_now_price.toFixed(2)}`
+                                : 'N/A'
+                            }</p>
                         </>
                     )}
+
 
                     <p>Last scraped: {produit.last_scraped_date || 'N/A'}</p>
 
                     <div className="price-block">
-                        <span className="price-total">
-                            ${price.toFixed(2)}
-                        </span>
+                        {produit.listing_type === 'fixed_price' && (
+                            <span className="price-total">
+                                ${price.toFixed(2)}
+                            </span>
+                        )}
+
+                        {produit.listing_type === 'auction' && (
+                            <span className="price-total">
+                                ${price.toFixed(2)} {/* prix d’enchère */}
+                            </span>
+                        )}
+
+                        {produit.listing_type === 'auction_with_bin' && (
+                            // Soit tu le supprimes, soit tu affiches un "prix principal" si tu veux
+                            <span className="price-total">
+                                ${price.toFixed(2)} {/* par ex. "enchère actuelle" */}
+                            </span>
+                        )}
                     </div>
+
                 </div>
             </div>
         </Link>

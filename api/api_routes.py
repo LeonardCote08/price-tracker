@@ -47,7 +47,8 @@ def get_produits():
                  WHERE ph.product_id = p.product_id
                  ORDER BY ph.date_scraped DESC
                  LIMIT 1
-               ) AS last_scraped_date
+               ) AS last_scraped_date,
+               p.buy_it_now_price
         FROM product p
         LEFT JOIN category c ON p.category_id = c.category_id
     """)
@@ -74,6 +75,7 @@ def get_produits():
         leaf_name            = row[14]  # La "leaf" de la catégorie depuis la table category
         last_price           = row[15]  # Dernier prix relevé
         last_scraped_date    = row[16] 
+        buy_it_now_price = row[17]
 
         # Extraction de la "leaf" de la catégorie (au cas où)
         cat_leaf = extract_leaf_category(breadcrumb_cat) if breadcrumb_cat else None
@@ -95,7 +97,8 @@ def get_produits():
             "bids_count": bids_count,
             "time_remaining": time_remaining,
             "price": float(last_price) if last_price is not None else None,
-            "last_scraped_date": last_scraped_date
+            "last_scraped_date": last_scraped_date,
+            "buy_it_now_price": float(buy_it_now_price) if buy_it_now_price is not None else None
         })
 
     return jsonify(result)
@@ -130,7 +133,8 @@ def get_produit(product_id):
                  WHERE ph.product_id = p.product_id
                  ORDER BY ph.date_scraped DESC
                  LIMIT 1
-               ) AS last_price
+               ) AS last_price,
+               p.buy_it_now_price
         FROM product p
         LEFT JOIN category c ON p.category_id = c.category_id
         WHERE p.product_id = %s
@@ -156,6 +160,7 @@ def get_produit(product_id):
         time_remaining       = row[13]
         leaf_name            = row[14]
         last_price           = row[15]
+        buy_it_now_price = row[16]
 
         cat_leaf = extract_leaf_category(breadcrumb_cat) if breadcrumb_cat else None
 
@@ -175,7 +180,8 @@ def get_produit(product_id):
             "listing_type": listing_type,
             "bids_count": bids_count,
             "time_remaining": time_remaining,
-            "price": float(last_price) if last_price is not None else None
+            "price": float(last_price) if last_price is not None else None,
+            "buy_it_now_price": float(buy_it_now_price) if buy_it_now_price is not None else None
         }
         return jsonify(result)
     else:
@@ -190,7 +196,7 @@ def get_historique_prix(product_id):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT DATE_FORMAT(date_scraped, '%%Y-%%m-%%d') as date_scraped, price
+        SELECT DATE_FORMAT(date_scraped, '%Y-%m-%d') as date_scraped, price
         FROM price_history
         WHERE product_id = %s
         ORDER BY date_scraped ASC
