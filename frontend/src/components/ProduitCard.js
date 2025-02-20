@@ -21,7 +21,12 @@ function ProduitCard({ produit }) {
                     </h3>
 
                     {/* Affichage des infos supplémentaires */}
-                    <p>Condition: {produit.normalized_condition || 'N/A'}</p>
+                    <p>
+                        Condition: {produit.normalized_condition && produit.normalized_condition.trim() !== ''
+                            ? produit.normalized_condition
+                            : 'Condition not specified'
+                        }
+                    </p>
 
                     {/* *** Afficher seulement si signed === true *** */}
                     {produit.signed && (
