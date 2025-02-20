@@ -23,6 +23,11 @@ function ProduitCard({ produit }) {
                     {/* Affichage des infos supplémentaires */}
                     <p>Condition: {produit.normalized_condition || 'N/A'}</p>
 
+                    {/* *** Afficher seulement si signed === true *** */}
+                    {produit.signed && (
+                        <p>Signed</p>
+                    )}
+
                     {produit.listing_type === 'fixed_price' && (
                         <p>Listing: Fixed Price</p>
                     )}
