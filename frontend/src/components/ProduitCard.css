@@ -2,6 +2,8 @@
 
 /* Carte produit principale */
 .produit-card {
+    max-width: 350px; 
+    width: 100%;
     display: flex;
     flex-direction: column; /* Empile l’image et le texte en colonne */
     align-items: center; /* Centre horizontalement */

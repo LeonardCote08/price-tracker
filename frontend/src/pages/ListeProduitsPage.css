@@ -1,15 +1,10 @@
 /* ListeProduitsPage.css */
 
 .produits-grid {
-    max-width: 1200px; /* Limite la largeur totale à 1200px */
-    margin: 0 auto; /* Centre le conteneur horizontalement */
-    padding: 1rem; /* Espace interne autour du conteneur */
-
-    display: grid; /* Active la grille */
+    max-width: 1200px;
+    margin: 2rem auto; /* 2rem de marge en haut et en bas, auto au milieu */
+    padding: 2rem; /* plus d’espace interne */
+    display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    /* ^ auto-fill crée autant de colonnes que possible
-       avec un minimum de 300px par colonne
-       et s’adapte à l’espace disponible */
-
-    gap: 1.5rem; /* Espace entre les cartes */
+    gap: 2rem; /* un plus grand espace entre les cartes */
 }
