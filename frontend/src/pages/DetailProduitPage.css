@@ -72,3 +72,37 @@
         display: block;
         margin: 0 auto;
     }
+
+/* Petit style pour le bouton de retour */
+.back-button {
+    display: inline-block;
+    margin-bottom: 1rem; /* espace sous le bouton */
+    color: var(--accent-color);
+    text-decoration: none;
+    border: 1px solid var(--accent-color);
+    border-radius: 4px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.85rem;
+    transition: background-color 0.2s ease;
+    margin-right: 1rem; /* si tu veux un petit espace à droite du bouton */
+}
+
+    .back-button:hover {
+        background-color: var(--accent-color);
+        color: #fff;
+    }
+
+/* Encadrés pour listing info & extra info */
+.listing-info-block,
+.extra-info-block {
+    background-color: var(--card-bg-color);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    margin-top: 0.5rem; /* un petit espace au-dessus */
+}
+
+    .listing-info-block p,
+    .extra-info-block p {
+        margin: 0.3rem 0;
+    }
