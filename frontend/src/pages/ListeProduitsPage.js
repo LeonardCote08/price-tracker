@@ -3,13 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { fetchProduits } from '../services/api';
 import ProduitCard from '../components/ProduitCard';
 import './ListeProduitsPage.css';
+import useScrollRestoration from '../hooks/useScrollRestoration';
 
 function ListeProduitsPage() {
+    useScrollRestoration();
     const [produits, setProduits] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // --- Fetch des produits ---
     useEffect(() => {
         console.log("[ListeProduitsPage] Début du fetch des produits");
         fetchProduits()
@@ -25,26 +26,29 @@ function ListeProduitsPage() {
             });
     }, []);
 
-    // --- Restauration du scroll après chargement ---
     useEffect(() => {
         if (!loading) {
+            // Vérifions la hauteur de la page et de la fenêtre
+            console.log("[ListeProduitsPage] document.body.scrollHeight =", document.body.scrollHeight);
+            console.log("[ListeProduitsPage] window.innerHeight =", window.innerHeight);
+
             const savedPosition = sessionStorage.getItem('scroll-/');
-            console.log("[ListeProduitsPage] Position de scroll enregistrée :", savedPosition);
+            console.log("[ListeProduitsPage] Position de scroll enregistrée =", savedPosition);
             if (savedPosition !== null) {
                 const position = parseInt(savedPosition, 10);
-                console.log("[ListeProduitsPage] Restauration du scroll à :", position);
+                console.log("[ListeProduitsPage] Restauration du scroll à =", position);
                 window.scrollTo(0, position);
             } else {
-                console.log("[ListeProduitsPage] Aucune position enregistrée, scroll à 0");
+                console.log("[ListeProduitsPage] Aucune position enregistrée => scroll à 0");
                 window.scrollTo(0, 0);
             }
         }
     }, [loading]);
 
-    // --- Sauvegarde du scroll lors du démontage ---
+    // Pour voir ce qui se passe au démontage
     useEffect(() => {
         return () => {
-            console.log("[ListeProduitsPage] Sauvegarde de la position de scroll :", window.pageYOffset);
+            console.log("[ListeProduitsPage] Sauvegarde de la position de scroll =", window.pageYOffset);
             sessionStorage.setItem('scroll-/', window.pageYOffset.toString());
         };
     }, []);

@@ -4,8 +4,10 @@ import { useParams, Link } from 'react-router-dom'; // <-- import Link ici
 import { fetchProduit, fetchHistoriquePrix } from '../services/api';
 import HistoriquePrixChart from '../components/HistoriquePrixChart';
 import './DetailProduitPage.css';
+import useScrollRestoration from '../hooks/useScrollRestoration';
 
 function DetailProduitPage() {
+    useScrollRestoration();
     const { id } = useParams();
     const [produit, setProduit] = useState(null);
     const [historique, setHistorique] = useState({ dates: [], prices: [] });
