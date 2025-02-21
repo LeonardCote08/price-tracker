@@ -106,3 +106,20 @@
     .extra-info-block p {
         margin: 0.3rem 0;
     }
+
+/* Ajout d'une classe pour le lien "View on eBay" */
+.ebay-link {
+    display: inline-block;
+    background-color: var(--accent-color); /* Utilise la variable CSS existante */
+    color: #fff; /* Texte blanc */
+    text-decoration: none;
+    font-weight: 600; /* Gras pour plus de visibilité */
+    padding: 0.4rem 0.6rem; /* Un peu de marge interne */
+    border-radius: 4px; /* Coins arrondis */
+    margin-left: 0.5rem; /* Petit espace à gauche (optionnel) */
+    transition: background-color 0.2s ease;
+}
+
+    .ebay-link:hover {
+        background-color: #1d6a90; /* Une nuance plus sombre au survol */
+    }

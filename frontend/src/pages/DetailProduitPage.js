@@ -121,6 +121,7 @@ function DetailProduitPage() {
                             <strong>Original eBay listing:</strong>{' '}
                             {produit.url ? (
                                 <a
+                                    className="ebay-link"   
                                     href={produit.url}
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -129,6 +130,7 @@ function DetailProduitPage() {
                                 </a>
                             ) : 'N/A'}
                         </p>
+
                     </div>
                 </div>
             </div>
