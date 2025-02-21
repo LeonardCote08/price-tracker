@@ -38,7 +38,7 @@
 .content {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 0.5rem;
     padding: 1rem 2rem;
 }
 
@@ -67,3 +67,20 @@
         height: auto;
         margin: 0 auto;
     }
+
+.subheader {
+    display: block;
+    width: fit-content; /* Ajuste la largeur au contenu */
+    white-space: nowrap;
+    margin: 1rem auto; /* Centre horizontalement le bloc */
+    padding: 0.5rem 1rem;
+    text-align: center;
+    color: #ddd;
+    font-size: 1rem;
+    font-style: italic;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 4px;
+    max-width: 600px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+

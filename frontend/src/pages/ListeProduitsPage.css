@@ -2,8 +2,8 @@
 
 .produits-grid {
     max-width: 1200px;
-    margin: 2rem auto; /* 2rem de marge en haut et en bas, auto au milieu */
-    padding: 2rem; /* plus d’espace interne */
+    margin: 0rem auto; /* 2rem de marge en haut et en bas, auto au milieu */
+    padding: 1.5rem; /* plus d’espace interne */
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 2rem; /* un plus grand espace entre les cartes */

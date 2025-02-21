@@ -1,4 +1,4 @@
-// src/pages/ListeProduitsPage.js
+// frontend/src/pages/ListeProduitsPage.js
 import React, { useEffect, useState } from 'react';
 import { fetchProduits } from '../services/api';
 import ProduitCard from '../components/ProduitCard';
@@ -26,7 +26,11 @@ function ListeProduitsPage() {
 
     return (
         <div>
-            <h2>Product List</h2>
+            {/* Subheader affiché uniquement ici, sur la page principale */}
+            <div className="subheader">
+                Currently tracking Funko Pop Doctor Doom #561 on eBay. More items to come soon!
+            </div>
+
             <div className="produits-grid">
                 {produits.map((p) => (
                     <ProduitCard key={p.product_id} produit={p} />
