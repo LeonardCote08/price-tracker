@@ -11,22 +11,28 @@ function ListeProduitsPage() {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        console.log("[ListeProduitsPage] Début du fetch des produits");
+        console.log("[ListeProduitsPage] Starting fetch of products");
         fetchProduits()
             .then(data => {
-                console.log("[ListeProduitsPage] Produits chargés :", data);
+                console.log("[ListeProduitsPage] Products loaded:", data);
                 setProduits(data);
                 setLoading(false);
             })
             .catch(err => {
-                console.error("[ListeProduitsPage] Erreur lors du fetch :", err);
+                console.error("[ListeProduitsPage] Error fetching products:", err);
                 setError(err.message);
                 setLoading(false);
             });
     }, []);
 
-    // Restaure le scroll uniquement quand le chargement est terminé
+    // Appel du hook avec shouldRestore défini en fonction du chargement
     useScrollRestoration(!loading);
+
+    useEffect(() => {
+        if (!loading) {
+            console.log("[ListeProduitsPage] Finished loading. Current scroll position:", window.pageYOffset);
+        }
+    }, [loading]);
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;

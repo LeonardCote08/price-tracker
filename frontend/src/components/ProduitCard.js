@@ -9,10 +9,8 @@ function ProduitCard({ produit }) {
         ? produit.buy_it_now_price
         : null;
 
-    // Récupération d'un texte plus court pour la condition
     const conditionText = produit.normalized_condition?.trim() || 'Not specified';
 
-    // Détermine le label de type d’annonce
     let listingLabel = '';
     if (produit.listing_type === 'fixed_price') {
         listingLabel = 'Fixed Price';
@@ -22,17 +20,19 @@ function ProduitCard({ produit }) {
         listingLabel = 'Auction + BIN';
     }
 
-    // Vérifie si on doit afficher la section Bids + Time
     const isAuction = (produit.listing_type === 'auction' || produit.listing_type === 'auction_with_bin');
 
     return (
         <Link
             to={`/produits/${produit.product_id}`}
             style={{ textDecoration: 'none', color: 'inherit' }}
+            onClick={() => {
+                const pos = window.pageYOffset;
+                console.log(`[ProduitCard] Saving scroll position for "/": ${pos}`);
+                sessionStorage.setItem('scroll-/', pos.toString());
+            }}
         >
             <div className="produit-card">
-
-                {/* Image principale */}
                 <img
                     className="product-image"
                     src={produit.image_url}
@@ -40,14 +40,13 @@ function ProduitCard({ produit }) {
                 />
 
                 <div className="product-info">
-                    {/* Titre + badge Signed */}
                     <h3 className="product-title">
                         {produit.title || 'Untitled product'}
                         {produit.signed && (
                             <span
                                 style={{
                                     marginLeft: '0.5rem',
-                                    backgroundColor: '#E74C3C', // Rouge pour le badge
+                                    backgroundColor: '#E74C3C',
                                     color: '#fff',
                                     padding: '0.2rem 0.4rem',
                                     borderRadius: '4px',
@@ -59,12 +58,10 @@ function ProduitCard({ produit }) {
                         )}
                     </h3>
 
-                    {/* Condition + type de listing sur une seule ligne */}
                     <p style={{ color: '#bbb', margin: '0.3rem 0' }}>
                         {conditionText} &nbsp;|&nbsp; {listingLabel}
                     </p>
 
-                    {/* Bids + Time Left (si c’est un auction) sur une seule ligne */}
                     {isAuction && (
                         <p style={{ color: '#bbb', margin: '0.3rem 0' }}>
                             Bids: {produit.bids_count ?? 0} &nbsp;|&nbsp;
@@ -72,9 +69,7 @@ function ProduitCard({ produit }) {
                         </p>
                     )}
 
-                    {/* Bloc des prix */}
                     <div className="price-section" style={{ marginTop: '0.5rem' }}>
-                        {/* Auction / Auction+BIN => Current Bid */}
                         {isAuction && (
                             <div className="price-line">
                                 <span className="price-label">Current Bid:</span>
@@ -82,7 +77,6 @@ function ProduitCard({ produit }) {
                             </div>
                         )}
 
-                        {/* Auction+BIN => Buy It Now */}
                         {produit.listing_type === 'auction_with_bin' && (
                             <div className="price-line">
                                 <span className="price-label">Buy It Now:</span>
@@ -92,7 +86,6 @@ function ProduitCard({ produit }) {
                             </div>
                         )}
 
-                        {/* Fixed Price => Price */}
                         {produit.listing_type === 'fixed_price' && (
                             <div className="price-line">
                                 <span className="price-label">Price:</span>
@@ -101,7 +94,6 @@ function ProduitCard({ produit }) {
                         )}
                     </div>
 
-                    {/* Date (petit, en bas) */}
                     <p style={{ fontSize: '0.7rem', color: '#777', marginTop: '0.5rem' }}>
                         Updated: {produit.last_scraped_date || 'N/A'}
                     </p>
