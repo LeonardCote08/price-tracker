@@ -29,7 +29,7 @@ class MySQLPipeline:
             product_db_id = result[0]
             spider.logger.info(f"Produit existant trouvé avec l'id {product_db_id}")
 
-            # Mise à jour du produit existant, incluant les nouveaux champs normalized_condition, signed et in_box
+            # Mise à jour du produit existant, incluant les champs normalized_condition, signed, in_box et ended
             update_sql = """
                 UPDATE product
                 SET title = %s, 
@@ -40,7 +40,8 @@ class MySQLPipeline:
                     listing_type = %s, 
                     bids_count = %s, 
                     time_remaining = %s,
-                    buy_it_now_price = %s
+                    buy_it_now_price = %s,
+                    ended = %s
                 WHERE product_id = %s
             """
             try:
@@ -49,11 +50,12 @@ class MySQLPipeline:
                     item.get("item_condition", ""),
                     item.get("normalized_condition", ""),
                     item.get("signed", False),
-                    item.get("in_box"),  # nouveau champ
+                    item.get("in_box"),
                     item.get("listing_type", ""),
                     item.get("bids_count"),
                     item.get("time_remaining"),
                     item.get("buy_it_now_price"),
+                    item.get("ended", False),
                     product_db_id
                 ))
                 self.conn.commit()
@@ -62,12 +64,12 @@ class MySQLPipeline:
                 spider.logger.error(f"Erreur lors de la mise à jour du produit: {e}")
 
         else:
-            # Insertion d'un nouveau produit incluant les nouveaux champs normalized_condition, signed et in_box
+            # Insertion d'un nouveau produit incluant les champs normalized_condition, signed, in_box et ended
             insert_product_sql = """
                 INSERT INTO product 
                 (item_id, title, item_condition, normalized_condition, signed, in_box, url, image_url, seller_username, category, 
-                 listing_type, bids_count, time_remaining, buy_it_now_price)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                 listing_type, bids_count, time_remaining, buy_it_now_price, ended)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             product_values = (
                 item.get("item_id", ""),
@@ -75,7 +77,7 @@ class MySQLPipeline:
                 item.get("item_condition", ""),
                 item.get("normalized_condition", ""),
                 item.get("signed", False),
-                item.get("in_box"),  # nouveau champ
+                item.get("in_box"),
                 item.get("item_url", ""),
                 item.get("image_url", ""),
                 item.get("seller_username", ""),
@@ -83,7 +85,8 @@ class MySQLPipeline:
                 item.get("listing_type", ""),
                 item.get("bids_count"),
                 item.get("time_remaining"),
-                item.get("buy_it_now_price")
+                item.get("buy_it_now_price"),
+                item.get("ended", False)
             )
 
             try:

@@ -13,6 +13,7 @@ def get_produits():
       - normalized_condition (regroupe Brand New et New (Other) en "New")
       - signed (True si le titre contient "signed", sinon False)
       - in_box (indique si la figurine est dans sa boîte)
+      - ended (True si l’annonce est terminée)
       - le dernier prix relevé via un sub-select (last_price)
       - la date de dernière mise à jour (last_scraped_date) via MAX(date_scraped)
       - le nom de la catégorie (leaf_name) via un LEFT JOIN sur la table category
@@ -30,6 +31,7 @@ def get_produits():
                p.url,
                p.image_url,
                p.seller_username,
+               p.ended,
                p.category,
                p.listing_type,
                p.bids_count,
@@ -57,6 +59,7 @@ def get_produits():
 
     result = []
     for row in rows:
+        # Les index changent à cause de l'ajout de "ended" à l'index 10
         product_id           = row[0]
         item_id              = row[1]
         title                = row[2]
@@ -67,17 +70,15 @@ def get_produits():
         url                  = row[7]
         image_url            = row[8]
         seller_username      = row[9]
-        breadcrumb_cat       = row[10]  # ex: "Electronics > Video Games & Consoles > Video Games ..."
-        listing_type         = row[11]
-        bids_count           = row[12]
-        time_remaining       = row[13]
-        leaf_name            = row[14]  # La "leaf" de la catégorie depuis la table category
-        last_price           = row[15]  # Dernier prix relevé
-        last_scraped_date    = row[16]  # Date MAX() récupérée
-        buy_it_now_price     = row[17]
-
-        # Extraction de la "leaf" de la catégorie (au cas où)
-        cat_leaf = extract_leaf_category(breadcrumb_cat) if breadcrumb_cat else None
+        ended                = row[10]
+        # row[11] est la colonne "category" qui n'est plus utilisée pour l'affichage
+        listing_type         = row[12]
+        bids_count           = row[13]
+        time_remaining       = row[14]
+        leaf_name            = row[15]
+        last_price           = row[16]
+        last_scraped_date    = row[17]
+        buy_it_now_price     = row[18]
 
         result.append({
             "product_id": product_id,
@@ -86,17 +87,16 @@ def get_produits():
             "item_condition": item_condition,
             "normalized_condition": normalized_condition,
             "signed": bool(signed),
-            "in_box": in_box,  # Valeur du champ in_box
+            "in_box": in_box,
             "url": url,
             "image_url": image_url,
             "seller_username": seller_username,
-            "category": cat_leaf,  # On utilise la "leaf" de la catégorie
-            "leaf_category_name": leaf_name,
+            "ended": bool(ended),
             "listing_type": listing_type,
             "bids_count": bids_count,
             "time_remaining": time_remaining,
             "price": float(last_price) if last_price is not None else None,
-            "last_scraped_date": last_scraped_date,  # Sera une string ou None
+            "last_scraped_date": last_scraped_date,
             "buy_it_now_price": float(buy_it_now_price) if buy_it_now_price is not None else None
         })
 
@@ -106,7 +106,7 @@ def get_produits():
 def get_produit(product_id):
     """
     Retourne le détail d'un produit (un seul).
-    On récupère également normalized_condition, signed, in_box, etc.
+    On récupère également normalized_condition, signed, in_box, ended, etc.
     """
     conn = get_connection()
     cursor = conn.cursor()
@@ -121,6 +121,7 @@ def get_produit(product_id):
                p.url,
                p.image_url,
                p.seller_username,
+               p.ended,
                p.category,
                p.listing_type,
                p.bids_count,
@@ -158,16 +159,14 @@ def get_produit(product_id):
         url                  = row[7]
         image_url            = row[8]
         seller_username      = row[9]
-        breadcrumb_cat       = row[10]
-        listing_type         = row[11]
-        bids_count           = row[12]
-        time_remaining       = row[13]
-        leaf_name            = row[14]
-        last_price           = row[15]
-        last_scraped_date    = row[16]
-        buy_it_now_price     = row[17]
-
-        cat_leaf = extract_leaf_category(breadcrumb_cat) if breadcrumb_cat else None
+        ended                = row[10]
+        listing_type         = row[12]
+        bids_count           = row[13]
+        time_remaining       = row[14]
+        leaf_name            = row[15]
+        last_price           = row[16]
+        last_scraped_date    = row[17]
+        buy_it_now_price     = row[18]
 
         result = {
             "product_id": product_id,
@@ -180,8 +179,7 @@ def get_produit(product_id):
             "url": url,
             "image_url": image_url,
             "seller_username": seller_username,
-            "category": cat_leaf,
-            "leaf_category_name": leaf_name,
+            "ended": bool(ended),
             "listing_type": listing_type,
             "bids_count": bids_count,
             "time_remaining": time_remaining,

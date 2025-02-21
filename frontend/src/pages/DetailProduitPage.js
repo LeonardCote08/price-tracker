@@ -72,7 +72,6 @@ function DetailProduitPage() {
                     </p>
 
                     <p><strong>Seller:</strong> {produit.seller_username || 'Unknown'}</p>
-                    <p><strong>Category:</strong> {produit.category || 'N/A'}</p>
 
                     {/* Bloc Listing Info */}
                     <div className="listing-info-block">

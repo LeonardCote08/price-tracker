@@ -107,6 +107,26 @@ class EbaySpider(scrapy.Spider):
         item = response.meta.get("item", EbayItem())
         item["item_url"] = response.url
 
+        # Détection d'une annonce terminée
+        ended_message = response.xpath(
+            '//div[@data-testid="d-statusmessage"]'
+            '//div[@data-testid="d-top-panel-message"]'
+            '//span[contains(@class,"ux-textspans--BOLD")]/text()'
+        ).get()
+
+        if ended_message:
+            ended_message_lower = ended_message.lower()
+            if ("this listing sold on" in ended_message_lower
+                or "bidding ended on" in ended_message_lower
+                or "this listing was ended by the seller" in ended_message_lower
+                or "item sold on" in ended_message_lower):
+                item["ended"] = True
+            else:
+                item["ended"] = False
+        else:
+            item["ended"] = False
+
+
         # Extraction de l'ID (item_id)
         try:
             item_id = response.url.split("/itm/")[1].split("?")[0]

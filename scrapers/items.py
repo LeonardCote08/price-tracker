@@ -19,3 +19,5 @@ class EbayItem(scrapy.Item):
     listing_type = scrapy.Field()     # Type d'annonce ("auction", "auction_with_bin", "fixed_price")
     buy_it_now_price = scrapy.Field()
     in_box = scrapy.Field()           # Indique si la figurine est dans sa boîte
+    ended = scrapy.Field()  # Indique si l’annonce est terminée
+
