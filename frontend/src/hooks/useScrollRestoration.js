@@ -1,22 +1,25 @@
 // src/hooks/useScrollRestoration.js
-import { useLayoutEffect } from 'react';
+import { useLayoutEffect, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-export default function useScrollRestoration() {
+export default function useScrollRestoration(shouldRestore = true) {
     const location = useLocation();
-    const key = location.pathname; // on utilise le chemin de la route comme clé
+    const key = location.pathname; // clé basée sur le chemin
 
+    // Restauration du scroll, exécutée avec useLayoutEffect
     useLayoutEffect(() => {
-        // Lorsqu'on arrive sur la page, on lit la position sauvegardée
-        const savedPosition = sessionStorage.getItem(`scroll-${key}`);
-        if (savedPosition !== null) {
-            window.scrollTo(0, parseInt(savedPosition, 10));
-        } else {
-            window.scrollTo(0, 0);
+        if (shouldRestore) {
+            const savedPosition = sessionStorage.getItem(`scroll-${key}`);
+            if (savedPosition !== null) {
+                window.scrollTo(0, parseInt(savedPosition, 10));
+            } else {
+                window.scrollTo(0, 0);
+            }
         }
+    }, [key, shouldRestore]);
 
-        // Lorsque le composant se démonte (ou que la route change),
-        // on enregistre la position de scroll actuelle
+    // Sauvegarde de la position lors du démontage
+    useEffect(() => {
         return () => {
             sessionStorage.setItem(`scroll-${key}`, window.pageYOffset.toString());
         };

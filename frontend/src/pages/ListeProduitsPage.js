@@ -6,7 +6,6 @@ import './ListeProduitsPage.css';
 import useScrollRestoration from '../hooks/useScrollRestoration';
 
 function ListeProduitsPage() {
-    useScrollRestoration();
     const [produits, setProduits] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -26,32 +25,8 @@ function ListeProduitsPage() {
             });
     }, []);
 
-    useEffect(() => {
-        if (!loading) {
-            // Vérifions la hauteur de la page et de la fenêtre
-            console.log("[ListeProduitsPage] document.body.scrollHeight =", document.body.scrollHeight);
-            console.log("[ListeProduitsPage] window.innerHeight =", window.innerHeight);
-
-            const savedPosition = sessionStorage.getItem('scroll-/');
-            console.log("[ListeProduitsPage] Position de scroll enregistrée =", savedPosition);
-            if (savedPosition !== null) {
-                const position = parseInt(savedPosition, 10);
-                console.log("[ListeProduitsPage] Restauration du scroll à =", position);
-                window.scrollTo(0, position);
-            } else {
-                console.log("[ListeProduitsPage] Aucune position enregistrée => scroll à 0");
-                window.scrollTo(0, 0);
-            }
-        }
-    }, [loading]);
-
-    // Pour voir ce qui se passe au démontage
-    useEffect(() => {
-        return () => {
-            console.log("[ListeProduitsPage] Sauvegarde de la position de scroll =", window.pageYOffset);
-            sessionStorage.setItem('scroll-/', window.pageYOffset.toString());
-        };
-    }, []);
+    // Restaure le scroll uniquement quand le chargement est terminé
+    useScrollRestoration(!loading);
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
