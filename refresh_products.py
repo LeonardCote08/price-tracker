@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Ce script charge les URLs des produits depuis la base de données,
-les revisite pour actualiser le champ "ended" et met à jour la base.
-Vous pouvez ensuite le planifier (via cron, par exemple) pour un refresh régulier.
+Ce script parcourt les produits en base, revisite leur URL pour actualiser le champ "ended"
+et met à jour la base de données.
 """
 
 import sys
@@ -13,11 +12,12 @@ from scrapers.spiders.ebay_spider import EbaySpider
 from scrapers.items import EbayItem
 
 def refresh_product(product):
+    # Utilisez la colonne "url" de la base pour récupérer l'URL,
+    # mais dans l'item, utilisez le champ "item_url".
     url = product["url"]
     if not url:
         return
 
-    # Télécharger la page du produit
     try:
         r = requests.get(url, timeout=10)
         r.raise_for_status()
@@ -25,21 +25,19 @@ def refresh_product(product):
         print(f"Erreur lors du téléchargement de {url} : {e}")
         return
 
-    # Créer une réponse Scrapy pour réutiliser parse_item
+    # Créer une réponse Scrapy pour utiliser parse_item
     response = TextResponse(url=url, body=r.text, encoding='utf-8')
-    # Simuler la requête avec l'item dans meta
     item = EbayItem()
-    item["url"] = url
+    # IMPORTANT : utiliser "item_url" et non "url"
     item["item_url"] = url
     item["title"] = product["title"]
     req = Request(url=url, meta={'item': item})
     response.request = req
 
-    # Instancier le spider (sans lancer le scraping complet)
     spider = EbaySpider()
-    # Appeler parse_item pour actualiser l'item (la logique "ended" s'y trouve)
+    # Appel de parse_item pour obtenir l'item mis à jour
     for updated_item in spider.parse_item(response):
-        return updated_item  # Retourne le premier item traité
+        return updated_item
 
 def main():
     conn = get_connection()
@@ -53,7 +51,6 @@ def main():
         if updated is None:
             continue
 
-        # Mettre à jour le champ "ended" dans la base
         update_sql = "UPDATE product SET ended = %s WHERE product_id = %s"
         cursor.execute(update_sql, (updated.get("ended", False), prod["product_id"]))
         conn.commit()
