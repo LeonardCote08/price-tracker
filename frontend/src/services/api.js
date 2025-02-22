@@ -1,10 +1,11 @@
 // src/services/api.js
 
-export const fetchProduits = async () => {
-    const response = await fetch('/api/produits');
+export const fetchProduits = async (status = "active") => {
+    const response = await fetch(`/api/produits?status=${status}`);
     if (!response.ok) throw new Error('Erreur lors du chargement des produits');
     return response.json();
 };
+
 
 export const fetchProduit = async (id) => {
     const response = await fetch(`/api/produits/${id}`);

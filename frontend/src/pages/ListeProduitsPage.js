@@ -1,5 +1,4 @@
-// frontend/src/pages/ListeProduitsPage.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { fetchProduits } from '../services/api';
 import ProduitCard from '../components/ProduitCard';
 import './ListeProduitsPage.css';
@@ -9,10 +8,11 @@ function ListeProduitsPage() {
     const [produits, setProduits] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [statusFilter, setStatusFilter] = useState("active"); // active ou ended
 
-    useEffect(() => {
+    const loadProducts = useCallback(() => {
         console.log("[ListeProduitsPage] Starting fetch of products");
-        fetchProduits()
+        fetchProduits(statusFilter)
             .then(data => {
                 console.log("[ListeProduitsPage] Products loaded:", data);
                 setProduits(data);
@@ -23,16 +23,14 @@ function ListeProduitsPage() {
                 setError(err.message);
                 setLoading(false);
             });
-    }, []);
-
-    // Appel du hook avec shouldRestore défini en fonction du chargement
-    useScrollRestoration(!loading);
+    }, [statusFilter]);
 
     useEffect(() => {
-        if (!loading) {
-            console.log("[ListeProduitsPage] Finished loading. Current scroll position:", window.pageYOffset);
-        }
-    }, [loading]);
+        setLoading(true);
+        loadProducts();
+    }, [loadProducts]);
+
+    useScrollRestoration(!loading);
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
@@ -40,7 +38,8 @@ function ListeProduitsPage() {
     return (
         <div>
             <div className="subheader">
-                Currently tracking Funko Pop Doctor Doom #561 on eBay. More items to come soon!
+                <button onClick={() => setStatusFilter("active")}>Produits en vente</button>
+                <button onClick={() => setStatusFilter("ended")}>Produits terminés</button>
             </div>
             <div className="produits-grid">
                 {produits.map((p) => (

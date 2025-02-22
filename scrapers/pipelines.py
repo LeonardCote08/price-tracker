@@ -1,4 +1,4 @@
-# scrapers/pipelines.py
+from scrapy.exceptions import DropItem
 from core.category_mapping import map_category, extract_leaf_category
 from core.db_connection import get_connection
 
@@ -20,6 +20,14 @@ class MySQLPipeline:
             spider.logger.error(f"Erreur lors de la fermeture de la DB: {e}")
 
     def process_item(self, item, spider):
+        # --- Filtrage des bundles ---
+        title = item.get("title", "")
+        title_lower = title.lower()
+        if title.count("#") > 1 or any(keyword in title_lower for keyword in ["lot", "bundle", "set"]):
+            spider.logger.info(f"Drop item bundle: {title}")
+            raise DropItem(f"Item bundle dropped: {title}")
+
+        # Suite du traitement...
         # Vérifie si le produit existe déjà via item_id
         select_sql = "SELECT product_id FROM product WHERE item_id = %s"
         self.cursor.execute(select_sql, (item.get("item_id"),))
@@ -29,7 +37,6 @@ class MySQLPipeline:
             product_db_id = result[0]
             spider.logger.info(f"Produit existant trouvé avec l'id {product_db_id}")
 
-            # Mise à jour du produit existant, incluant les champs normalized_condition, signed, in_box et ended
             update_sql = """
                 UPDATE product
                 SET title = %s, 
@@ -57,7 +64,7 @@ class MySQLPipeline:
                     item.get("time_remaining"),
                     item.get("buy_it_now_price"),
                     item.get("ended", False),
-                    item.get("item_url", ""),  # actualise l'URL au cas où elle changerait
+                    item.get("item_url", ""),
                     product_db_id
                 ))
                 self.conn.commit()
@@ -66,7 +73,6 @@ class MySQLPipeline:
                 spider.logger.error(f"Erreur lors de la mise à jour du produit: {e}")
 
         else:
-            # Insertion d'un nouveau produit incluant les champs normalized_condition, signed, in_box et ended
             insert_product_sql = """
                 INSERT INTO product 
                 (item_id, title, item_condition, normalized_condition, signed, in_box, url, image_url, seller_username, category, 

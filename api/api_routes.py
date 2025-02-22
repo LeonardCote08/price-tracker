@@ -7,20 +7,19 @@ api_bp = Blueprint('api', __name__, url_prefix='/api')
 
 @api_bp.route('/produits', methods=['GET'])
 def get_produits():
-    """
-    Retourne la liste de tous les produits.
-    On récupère également :
-      - normalized_condition (regroupe Brand New et New (Other) en "New")
-      - signed (True si le titre contient "signed", sinon False)
-      - in_box (indique si la figurine est dans sa boîte)
-      - ended (True si l’annonce est terminée)
-      - le dernier prix relevé via un sub-select (last_price)
-      - la date de dernière mise à jour (last_scraped_date) via MAX(date_scraped)
-      - le nom de la catégorie (leaf_name) via un LEFT JOIN sur la table category
-    """
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("""
+    
+    # Récupérer le paramètre status dans la query string (valeurs possibles: active, ended)
+    status_filter = request.args.get('status', None)
+    where_clause = ""
+    params = []
+    if status_filter == 'active':
+        where_clause = "WHERE p.ended = 0"
+    elif status_filter == 'ended':
+        where_clause = "WHERE p.ended = 1"
+
+    query = f"""
         SELECT p.product_id,
                p.item_id,
                p.title,
@@ -52,14 +51,16 @@ def get_produits():
                p.buy_it_now_price
         FROM product p
         LEFT JOIN category c ON p.category_id = c.category_id
-    """)
+        {where_clause}
+    """
+    cursor.execute(query, params)
     rows = cursor.fetchall()
     cursor.close()
     conn.close()
 
+    # Transformation et retour au format JSON (inchangé)
     result = []
     for row in rows:
-        # Les index changent à cause de l'ajout de "ended" à l'index 10
         product_id           = row[0]
         item_id              = row[1]
         title                = row[2]
@@ -71,7 +72,6 @@ def get_produits():
         image_url            = row[8]
         seller_username      = row[9]
         ended                = row[10]
-        # row[11] est la colonne "category" qui n'est plus utilisée pour l'affichage
         listing_type         = row[12]
         bids_count           = row[13]
         time_remaining       = row[14]
@@ -101,6 +101,7 @@ def get_produits():
         })
 
     return jsonify(result)
+
 
 @api_bp.route('/produits/<int:product_id>', methods=['GET'])
 def get_produit(product_id):
