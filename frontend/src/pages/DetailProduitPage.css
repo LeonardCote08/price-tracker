@@ -20,6 +20,8 @@
     margin: 0;
     font-family: 'Montserrat', sans-serif; /* Ou la police de votre choix */
     color: var(--accent-color);
+    white-space: normal;
+
 }
 
 /* Contenu principal : image + bloc d'infos */
