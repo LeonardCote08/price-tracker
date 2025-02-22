@@ -8,25 +8,22 @@ function ListeProduitsPage() {
     const [produits, setProduits] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [statusFilter, setStatusFilter] = useState("active"); // active ou ended
+    const [statusFilter, setStatusFilter] = useState("active"); // "active" ou "ended"
 
     const loadProducts = useCallback(() => {
-        console.log("[ListeProduitsPage] Starting fetch of products");
+        setLoading(true);
         fetchProduits(statusFilter)
             .then(data => {
-                console.log("[ListeProduitsPage] Products loaded:", data);
                 setProduits(data);
                 setLoading(false);
             })
             .catch(err => {
-                console.error("[ListeProduitsPage] Error fetching products:", err);
                 setError(err.message);
                 setLoading(false);
             });
     }, [statusFilter]);
 
     useEffect(() => {
-        setLoading(true);
         loadProducts();
     }, [loadProducts]);
 
@@ -37,10 +34,30 @@ function ListeProduitsPage() {
 
     return (
         <div>
+            {/* Bannière centrée avec le message informatif */}
             <div className="subheader">
-                <button onClick={() => setStatusFilter("active")}>Produits en vente</button>
-                <button onClick={() => setStatusFilter("ended")}>Produits terminés</button>
+                <p className="banner-text">
+                    Currently tracking Funko Pop Doctor Doom #561 on eBay. More items to come soon!
+                </p>
             </div>
+
+            {/* Conteneur séparé pour les boutons, également centré */}
+            <div className="button-group-centered">
+                <button
+                    className="filter-button"
+                    onClick={() => setStatusFilter("active")}
+                >
+                    Active Listings
+                </button>
+                <button
+                    className="filter-button"
+                    onClick={() => setStatusFilter("ended")}
+                >
+                    Ended Listings
+                </button>
+            </div>
+
+            {/* Grille de produits */}
             <div className="produits-grid">
                 {produits.map((p) => (
                     <ProduitCard key={p.product_id} produit={p} />

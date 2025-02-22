@@ -56,6 +56,18 @@ function ProduitCard({ produit }) {
                                 Signed
                             </span>
                         )}
+                        {produit.ended && (
+                            <span style={{
+                                backgroundColor: '#444',
+                                color: '#fff',
+                                padding: '0.1rem 0.3rem',
+                                borderRadius: '3px',
+                                marginLeft: '0.5rem',
+                                fontSize: '0.8rem'
+                            }}>
+                                Ended
+                            </span>
+                        )}
                     </h3>
 
                     <p style={{ color: '#bbb', margin: '0.3rem 0' }}>

@@ -1,10 +1,52 @@
 /* ListeProduitsPage.css */
 
+/* Grille des produits (inchangée) */
 .produits-grid {
     max-width: 1200px;
-    margin: 0rem auto; /* 2rem de marge en haut et en bas, auto au milieu */
-    padding: 1.5rem; /* plus d’espace interne */
+    margin: 0rem auto;
+    padding: 1.5rem;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 2rem; /* un plus grand espace entre les cartes */
+    gap: 2rem;
 }
+
+/* SUBHEADER : seulement la bannière */
+.subheader {
+    margin: 1rem auto;
+    padding: 0.5rem 1rem;
+    max-width: 600px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    text-align: center; /* centre le texte du message */
+}
+
+.banner-text {
+    font-size: 1rem;
+    color: #ddd;
+    margin: 0; /* pas de marge supplémentaire */
+}
+
+/* Boutons de filtre dans un conteneur séparé, centré */
+.button-group-centered {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 1rem 0; /* un peu d'espace au-dessus et en dessous */
+}
+
+/* Style des boutons */
+.filter-button {
+    background-color: var(--accent-color);
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .filter-button:hover {
+        background-color: #1d6a90; /* nuance plus sombre au survol */
+    }
