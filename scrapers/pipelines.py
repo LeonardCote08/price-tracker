@@ -122,15 +122,11 @@ class MySQLPipeline:
 
         # Insertion du relevé de prix dans la table price_history, incluant buy_it_now_price
         insert_price_sql = """
-            INSERT INTO price_history (product_id, price, buy_it_now_price)
-            VALUES (%s, %s, %s)
+            INSERT INTO price_history (product_id, price, buy_it_now_price, date_scraped)
+            VALUES (%s, %s, %s, NOW())
         """
         try:
-            self.cursor.execute(insert_price_sql, (
-                product_db_id, 
-                item.get("price", 0),
-                item.get("buy_it_now_price")
-            ))
+            self.cursor.execute(insert_price_sql, (product_db_id, item.get("price", 0), item.get("buy_it_now_price")))
             self.conn.commit()
             spider.logger.info(f"Historique de prix inséré pour le produit {product_db_id}")
         except Exception as e:

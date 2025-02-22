@@ -22,6 +22,8 @@ function ProduitCard({ produit }) {
 
     const isAuction = (produit.listing_type === 'auction' || produit.listing_type === 'auction_with_bin');
 
+
+
     return (
         <Link
             to={`/produits/${produit.product_id}`}
@@ -68,18 +70,13 @@ function ProduitCard({ produit }) {
                     {isAuction && (
                         <div className="auction-info-line">
                             <span>Bids: {produit.bids_count ?? 0}</span>
-                            <span className="separator"> | </span>
+                            <span className="separator"> • </span>
                             <span>Time left: {produit.time_remaining || 'N/A'}</span>
                         </div>
                     )}
 
 
-                    {isAuction && (
-                        <p style={{ color: '#bbb', margin: '0.3rem 0' }}>
-                            Bids: {produit.bids_count ?? 0} &nbsp;|&nbsp;
-                            Time left: {produit.time_remaining || 'N/A'}
-                        </p>
-                    )}
+                    
 
                     <div className="price-section" style={{ marginTop: '0.5rem' }}>
                         {isAuction && (
