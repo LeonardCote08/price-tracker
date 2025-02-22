@@ -1,35 +1,35 @@
 #!/usr/bin/env python3
 """
-Script pour mettre à jour le champ canonical_name dans la table product.
-Ce script parcourt tous les produits, calcule un nom canonique à partir du titre,
-et met à jour la base de données si nécessaire.
+Script pour mettre Ã  jour le champ canonical_name dans la table product.
+Ce script parcourt tous les produits, calcule un nom canonique Ã  partir du titre,
+et met Ã  jour la base de donnÃ©es si nÃ©cessaire.
 
-Vous pouvez adapter la fonction compute_canonical_name pour définir vos propres règles.
+Vous pouvez adapter la fonction compute_canonical_name pour dÃ©finir vos propres rÃ¨gles.
 """
 
 from core.db_connection import get_connection
 
 def compute_canonical_name(title):
     """
-    Calcule le nom canonique à partir du titre complet.
-    Par exemple, on peut choisir de prendre la partie avant la première virgule
-    ou de tronquer à 60 caractères.
+    Calcule le nom canonique Ã  partir du titre complet.
+    Par exemple, on peut choisir de prendre la partie avant la premiÃ¨re virgule
+    ou de tronquer Ã  60 caractÃ¨res.
     
-    Adaptez cette fonction selon vos règles.
+    Adaptez cette fonction selon vos rÃ¨gles.
     """
     if not title:
         return ""
-    # Exemple 1 : si une virgule est présente, on prend la partie avant la virgule
+    # Exemple 1 : si une virgule est prÃ©sente, on prend la partie avant la virgule
     if ',' in title:
         return title.split(',')[0].strip()
-    # Exemple 2 : sinon, on limite le titre à 60 caractères
+    # Exemple 2 : sinon, on limite le titre Ã  60 caractÃ¨res
     return title.strip()[:60]
 
 def update_canonical_names():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     
-    # Sélectionnez tous les produits (vous pouvez ajouter une clause WHERE si besoin)
+    # SÃ©lectionnez tous les produits (vous pouvez ajouter une clause WHERE si besoin)
     cursor.execute("SELECT product_id, title, canonical_name FROM product")
     products = cursor.fetchall()
     
@@ -37,7 +37,7 @@ def update_canonical_names():
     for prod in products:
         current_canonical = prod.get("canonical_name")
         new_canonical = compute_canonical_name(prod["title"])
-        # Vous pouvez décider de mettre à jour uniquement si le champ est vide ou différent
+        # Vous pouvez dÃ©cider de mettre Ã  jour uniquement si le champ est vide ou diffÃ©rent
         if current_canonical != new_canonical:
             update_sql = "UPDATE product SET canonical_name = %s WHERE product_id = %s"
             cursor.execute(update_sql, (new_canonical, prod["product_id"]))
