@@ -10,7 +10,7 @@
     gap: 1rem; /* Espace vertical entre les sections */
 }
 
-/* En-tête du produit (titre, etc.) */
+/* En-tÃªte du produit (titre, etc.) */
 .detail-product-header {
     text-align: center;
 }
@@ -34,12 +34,12 @@
 /* Bloc image */
 .detail-image img {
     max-width: 400px; /* Taille max de l'image */
-    width: 100%; /* Pour qu'elle s'adapte à la colonne */
+    width: 100%; /* Pour qu'elle s'adapte Ã  la colonne */
     border-radius: 6px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
-/* Bloc d'informations à côté de l'image */
+/* Bloc d'informations Ã  cÃ´tÃ© de l'image */
 .detail-info {
     flex: 1; /* Prend le reste de l'espace horizontal */
     display: flex;
@@ -48,7 +48,7 @@
     gap: 1rem; /* Espace vertical entre les infos */
 }
 
-    /* Pour de simples paragraphes éventuels dans .detail-info */
+    /* Pour de simples paragraphes Ã©ventuels dans .detail-info */
     .detail-info p {
         margin: 0.2rem 0;
         font-size: 1rem;
@@ -68,7 +68,7 @@
 
     .detail-chart canvas {
         width: 100%;
-        height: 250px; /* Ajustez selon la hauteur souhaitée */
+        height: 250px; /* Ajustez selon la hauteur souhaitÃ©e */
         display: block;
         margin: 0 auto;
     }
@@ -103,34 +103,34 @@
     margin-top: 0.5rem;
 }
 
-    /* Remise à zéro du margin dans ces blocs si on utilise <p> */
+    /* Remise Ã  zÃ©ro du margin dans ces blocs si on utilise <p> */
     .general-info-block p,
     .listing-info-block p,
     .extra-info-block p {
         margin: 0.3rem 0;
     }
 
-/* Styles pour les listes de définition (<dl>, <dt>, <dd>) */
+/* Styles pour les listes de dÃ©finition (<dl>, <dt>, <dd>) */
 .info-list {
     margin: 0;
     padding: 0;
 }
 
     .info-list .row {
-        display: flex; /* Place dt et dd sur la même ligne */
+        display: flex; /* Place dt et dd sur la mÃªme ligne */
         margin-bottom: 0.5rem;
     }
 
     .info-list dt {
-        width: 120px; /* Largeur fixe pour les labels (ajustez si nécessaire) */
+        width: 120px; /* Largeur fixe pour les labels (ajustez si nÃ©cessaire) */
         font-weight: 600;
-        color: #bbb; /* Couleur discrète pour le label */
+        color: #bbb; /* Couleur discrÃ¨te pour le label */
         margin-right: 0.5rem;
-        /* text-align: right;  <-- vous pouvez activer ceci si vous souhaitez aligner à droite */
+        /* text-align: right;  <-- vous pouvez activer ceci si vous souhaitez aligner Ã  droite */
     }
 
     .info-list dd {
-        margin: 0; /* Réinitialise la marge par défaut */
+        margin: 0; /* RÃ©initialise la marge par dÃ©faut */
         color: var(--text-color);
     }
 

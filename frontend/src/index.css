@@ -10,7 +10,7 @@ code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-/* Liens : même couleur de texte que le body, sauf au survol */
+/* Liens : mÃªme couleur de texte que le body, sauf au survol */
 a {
     color: var(--text-color);
     text-decoration: none;

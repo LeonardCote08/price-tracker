@@ -4,7 +4,7 @@
 .price-tracker-app {
     opacity: 0;
     animation: fadeInUp 0.4s ease forwards;
-    animation-delay: 1s; /* on peut différer un peu l'apparition */
+    animation-delay: 1s; /* on peut diffÃ©rer un peu l'apparition */
 }
 
 @keyframes fadeInUp {

@@ -4,7 +4,7 @@
     --text-color: #F5F5F5; /* Texte clair */
     --card-bg-color: #2D455C; /* Fond cartes */
     --accent-color: #1595EB; /* Couleur principale (PriceTracker) */
-    --price-color: var(--accent-color); /* On rend le prix identique à l'accent */
+    --price-color: var(--accent-color); /* On rend le prix identique Ã  l'accent */
 
     --header-gradient: linear-gradient(135deg, #243748 0%, #416589 100%);
 }

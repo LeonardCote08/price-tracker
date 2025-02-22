@@ -41,69 +41,38 @@ function ProduitCard({ produit }) {
 
                 <div className="product-info">
                     {/* Retrait du titre, on affiche seulement les badges (Signed, In Box, Ended) */}
-                    <div style={{ marginBottom: '0.5rem' }}>
+                    <div className="badges-container">
                         {produit.signed && (
-                            <span
-                                style={{
-                                    marginRight: '0.5rem',
-                                    backgroundColor: '#E74C3C',
-                                    color: '#fff',
-                                    padding: '0.2rem 0.4rem',
-                                    borderRadius: '4px',
-                                    fontSize: '0.8rem'
-                                }}
-                            >
-                                Signed
-                            </span>
+                            <span className="badge badge-signed">Signed</span>
                         )}
 
                         {produit.in_box === true && (
-                            <span
-                                style={{
-                                    marginRight: '0.5rem',
-                                    backgroundColor: '#2ECC71',
-                                    color: '#fff',
-                                    padding: '0.2rem 0.4rem',
-                                    borderRadius: '4px',
-                                    fontSize: '0.8rem'
-                                }}
-                            >
-                                In Box
-                            </span>
+                            <span className="badge badge-inbox">In Box</span>
                         )}
                         {produit.in_box === false && (
-                            <span
-                                style={{
-                                    marginRight: '0.5rem',
-                                    backgroundColor: '#E67E22',
-                                    color: '#fff',
-                                    padding: '0.2rem 0.4rem',
-                                    borderRadius: '4px',
-                                    fontSize: '0.8rem'
-                                }}
-                            >
-                                No Box
-                            </span>
+                            <span className="badge badge-nobox">No Box</span>
                         )}
 
                         {produit.ended && (
-                            <span
-                                style={{
-                                    backgroundColor: '#444',
-                                    color: '#fff',
-                                    padding: '0.1rem 0.3rem',
-                                    borderRadius: '3px',
-                                    fontSize: '0.8rem'
-                                }}
-                            >
-                                Ended
-                            </span>
+                            <span className="badge badge-ended">Ended</span>
                         )}
                     </div>
 
-                    <p style={{ color: '#bbb', margin: '0.3rem 0' }}>
-                        {conditionText} &nbsp;|&nbsp; {listingLabel}
-                    </p>
+
+                    <div className="condition-listing-line">
+                        <span className="condition-text">{conditionText}</span>
+                        <span className="separator"> • </span>
+                        <span className="listing-text">{listingLabel}</span>
+                    </div>
+
+                    {isAuction && (
+                        <div className="auction-info-line">
+                            <span>Bids: {produit.bids_count ?? 0}</span>
+                            <span className="separator"> | </span>
+                            <span>Time left: {produit.time_remaining || 'N/A'}</span>
+                        </div>
+                    )}
+
 
                     {isAuction && (
                         <p style={{ color: '#bbb', margin: '0.3rem 0' }}>
@@ -136,6 +105,7 @@ function ProduitCard({ produit }) {
                             </div>
                         )}
                     </div>
+
 
                     <p style={{ fontSize: '0.7rem', color: '#777', marginTop: '0.5rem' }}>
                         Updated: {produit.last_scraped_date || 'N/A'}

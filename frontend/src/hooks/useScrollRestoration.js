@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 
 export default function useScrollRestoration(shouldRestore = true) {
     const location = useLocation();
-    const key = location.pathname; // clé basée sur le chemin
+    const key = location.pathname; // clÃ© basÃ©e sur le chemin
 
     useLayoutEffect(() => {
         console.log(`[useScrollRestoration] Mount for key: ${key}, shouldRestore: ${shouldRestore}`);

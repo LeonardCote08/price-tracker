@@ -5,9 +5,10 @@
     max-width: 350px; 
     width: 100%;
     display: flex;
-    flex-direction: column; /* Empile l’image et le texte en colonne */
+    flex-direction: column; /* Empile lâ€™image et le texte en colonne */
     align-items: center; /* Centre horizontalement */
     text-align: center; /* Centre le texte */
+    position:relative;
 
     background-color: var(--card-bg-color);
     border-radius: 10px;
@@ -21,13 +22,50 @@
         box-shadow: 0 6px 15px rgba(0,0,0,0.35);
     }
 
+.badges-container {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    flex-direction: column; /* Alignement vertical */
+    gap: 0.3rem; /* Espace vertical entre chaque badge */
+    align-items: flex-end;
+}
+
+
+/* Style de base pour un badge */
+.badge {
+    color: #fff;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Variantes pour chaque badge */
+.badge-signed {
+    background-color: #E74C3C; /* rouge */
+}
+
+.badge-inbox {
+    background-color: #2ECC71; /* vert */
+}
+
+.badge-nobox {
+    background-color: #E67E22; /* orange */
+}
+
+.badge-ended {
+    background-color: #444; /* gris foncÃ© */
+}
+
 /* Image du produit */
 .product-image {
     width: 150px;
     height: 150px;
     object-fit: cover;
     border-radius: 4px;
-    margin-bottom: 0.5rem; /* plus d’espace en bas de l’image */
+    margin-bottom: 0.5rem; /* plus dâ€™espace en bas de lâ€™image */
 }
 
 /* Bloc d'infos (titre + prix) */
@@ -91,7 +129,7 @@
     font-family: 'Montserrat', sans-serif;
 }
 
-/* Breakdown en plus petit, même couleur de base */
+/* Breakdown en plus petit, mÃªme couleur de base */
 .price-breakdown {
     font-size: 0.85rem;
     color: var(--text-color);
@@ -117,7 +155,7 @@
 }
 
 
-/* Paragraphes éventuels */
+/* Paragraphes Ã©ventuels */
 .produit-card p {
     margin: 0.25em 0;
     font-size: 0.9rem;
@@ -125,7 +163,7 @@
 }
 
     .produit-card p.updated-date {
-        font-size: 0.6rem;
-        color: #bbb;
+        font-size: 0.65rem;
+        color: #999;
         margin-top: 0.5rem;
     }

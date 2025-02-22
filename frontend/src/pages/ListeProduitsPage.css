@@ -1,6 +1,6 @@
 /* ListeProduitsPage.css */
 
-/* Grille des produits (inchangée) */
+/* Grille des produits (inchangÃ©e) */
 .produits-grid {
     max-width: 1200px;
     margin: 0rem auto;
@@ -10,7 +10,7 @@
     gap: 2rem;
 }
 
-/* SUBHEADER : seulement la bannière */
+/* SUBHEADER : seulement la banniÃ¨re */
 .subheader {
     margin: 1rem auto;
     padding: 0.5rem 1rem;
@@ -24,10 +24,10 @@
 .banner-text {
     font-size: 1rem;
     color: #ddd;
-    margin: 0; /* pas de marge supplémentaire */
+    margin: 0; /* pas de marge supplÃ©mentaire */
 }
 
-/* Boutons de filtre dans un conteneur séparé, centré */
+/* Boutons de filtre dans un conteneur sÃ©parÃ©, centrÃ© */
 .button-group-centered {
     display: flex;
     justify-content: center;

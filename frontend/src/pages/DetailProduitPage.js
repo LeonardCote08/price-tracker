@@ -1,4 +1,4 @@
-﻿// frontend/src/pages/DetailProduitPage.js
+// frontend/src/pages/DetailProduitPage.js
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchProduit, fetchHistoriquePrix } from '../services/api';
