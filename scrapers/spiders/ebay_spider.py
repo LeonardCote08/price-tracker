@@ -107,24 +107,36 @@ class EbaySpider(scrapy.Spider):
         item = response.meta.get("item", EbayItem())
         item["item_url"] = response.url
 
+        # Log de l'URL de la page de détail
+        self.logger.debug("URL de détail utilisée: %s", response.url)
+
+        # Log d'un extrait de la réponse (pour voir le contenu brut)
+        self.logger.debug("Extrait de la réponse: %s", response.text[:500])
+
         # Détection d'une annonce terminée
         ended_message = response.xpath(
             '//div[@data-testid="d-statusmessage"]'
             '//div[@data-testid="d-top-panel-message"]'
             '//span[contains(@class,"ux-textspans--BOLD")]/text()'
         ).get()
+        self.logger.debug("Ended message extrait : %r", ended_message)
 
         if ended_message:
             ended_message_lower = ended_message.lower()
-            if ("this listing sold on" in ended_message_lower
-                or "bidding ended on" in ended_message_lower
-                or "this listing was ended by the seller" in ended_message_lower
-                or "item sold on" in ended_message_lower):
+            if any(phrase in ended_message_lower for phrase in [
+                "this listing sold on",
+                "bidding ended on",
+                "this listing was ended by the seller",
+                "item sold on",
+                "this listing has ended"  
+            ]):
                 item["ended"] = True
             else:
                 item["ended"] = False
         else:
             item["ended"] = False
+
+        self.logger.debug("Valeur finale pour 'ended': %s", item["ended"])
 
 
         # Extraction de l'ID (item_id)
@@ -192,13 +204,14 @@ class EbaySpider(scrapy.Spider):
         # 1) Ignorer s'il y a au moins deux références #xxx dans le titre
         if item["title"].count("#") > 1:
             self.logger.info(f"Ignoring multi-figure listing: {item['title']}")
-            return
-        
-        # Vérifier si le titre contient des mots-clés typiques d'un bundle
-        bundle_keywords = ["lot", "bundle", "set"]
-        if any(keyword in title_lower for keyword in bundle_keywords):
+            # Au lieu de "return", on met "pass"
+            pass
+
+        if any(keyword in title_lower for keyword in ["lot", "bundle", "set"]):
             self.logger.info(f"Ignoring bundle due to keyword in title: {item['title']}")
-            return
+            # Pareil, on remplace "return" par "pass"
+            pass
+
 
 
 

@@ -41,7 +41,8 @@ class MySQLPipeline:
                     bids_count = %s, 
                     time_remaining = %s,
                     buy_it_now_price = %s,
-                    ended = %s
+                    ended = %s,
+                    url = %s
                 WHERE product_id = %s
             """
             try:
@@ -56,6 +57,7 @@ class MySQLPipeline:
                     item.get("time_remaining"),
                     item.get("buy_it_now_price"),
                     item.get("ended", False),
+                    item.get("item_url", ""),  # actualise l'URL au cas où elle changerait
                     product_db_id
                 ))
                 self.conn.commit()
