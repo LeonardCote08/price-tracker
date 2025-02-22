@@ -1,4 +1,5 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿// frontend/src/pages/DetailProduitPage.js
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchProduit, fetchHistoriquePrix } from '../services/api';
 import HistoriquePrixChart from '../components/HistoriquePrixChart';
@@ -30,7 +31,7 @@ function DetailProduitPage() {
     if (error) return <p>Error: {error}</p>;
     if (!produit) return <p>Product not found</p>;
 
-    // Prix principal (peut représenter "Current Bid" ou "Fixed Price")
+    // Prix principal (ex. "Current Bid" ou "Fixed Price")
     const price = typeof produit.price === 'number' ? produit.price : 0;
 
     return (
@@ -47,98 +48,131 @@ function DetailProduitPage() {
                     <img src={produit.image_url} alt={produit.title} />
                 </div>
 
-                {/* 1) Bloc General Info */}
                 <div className="detail-info">
-
                     {/* --- General Info --- */}
                     <div className="general-info-block">
-                        <p>
-                            <strong>Price:</strong> ${price.toFixed(2)}
-                        </p>
-                        <p>
-                            <strong>Condition:</strong>{' '}
-                            {produit.normalized_condition === 'New' ? (
-                                <span style={{ color: 'limegreen', fontWeight: 'bold' }}>New</span>
-                            ) : (
-                                <span style={{ color: 'tomato', fontWeight: 'bold' }}>Used</span>
+                        <h4>General Info</h4>
+                        <dl className="info-list">
+                            {/* Prix */}
+                            <div className="row">
+                                <dt>Price</dt>
+                                <dd>${price.toFixed(2)}</dd>
+                            </div>
+
+                            {/* Condition */}
+                            <div className="row">
+                                <dt>Condition</dt>
+                                <dd>
+                                    {produit.normalized_condition === 'New' ? (
+                                        <span style={{ color: 'limegreen', fontWeight: 'bold' }}>
+                                            New
+                                        </span>
+                                    ) : (
+                                        <span style={{ color: 'tomato', fontWeight: 'bold' }}>
+                                            Used
+                                        </span>
+                                    )}
+                                </dd>
+                            </div>
+
+                            {/* Seller */}
+                            <div className="row">
+                                <dt>Seller</dt>
+                                <dd>{produit.seller_username || 'Unknown'}</dd>
+                            </div>
+
+                            {/* In Box */}
+                            <div className="row">
+                                <dt>In Box</dt>
+                                <dd>
+                                    {produit.in_box === true
+                                        ? 'Yes'
+                                        : produit.in_box === false
+                                            ? 'No'
+                                            : 'Unknown'
+                                    }
+                                </dd>
+                            </div>
+
+                            {/* Signed (affiché seulement si signed = true) */}
+                            {produit.signed && (
+                                <div className="row">
+                                    <dt>Signed</dt>
+                                    <dd>Yes</dd>
+                                </div>
                             )}
-                        </p>
-                        <p>
-                            <strong>Seller:</strong> {produit.seller_username || 'Unknown'}
-                        </p>
 
-                        {/* Si c’est important, vous pouvez afficher la catégorie ici aussi */}
-                        {/* <p><strong>Category:</strong> {produit.category || 'N/A'}</p> */}
-
-                        {/* In Box */}
-                        <p>
-                            <strong>In Box:</strong>{' '}
-                            {produit.in_box === true
-                                ? 'Yes'
-                                : produit.in_box === false
-                                    ? 'No'
-                                    : 'Unknown'
-                            }
-                        </p>
-
-                        {/* Signed : n’affichez que si signed = true, pour éviter la redondance */}
-                        {produit.signed && (
-                            <p>
-                                <strong>Signed:</strong> Yes
-                            </p>
-                        )}
-
-                        <p>
-                            <strong>Last update:</strong>{' '}
-                            {produit.last_scraped_date || 'N/A'}
-                        </p>
+                            {/* Last update */}
+                            <div className="row">
+                                <dt>Last update</dt>
+                                <dd>{produit.last_scraped_date || 'N/A'}</dd>
+                            </div>
+                        </dl>
                     </div>
 
-                    {/* 2) Bloc Listing Details */}
+                    {/* --- Listing Details --- */}
                     <div className="listing-info-block">
                         <h4>Listing Details</h4>
-                        <p>
-                            <strong>Type:</strong> {produit.listing_type || 'N/A'}
-                        </p>
+                        <dl className="info-list">
+                            {/* Type */}
+                            <div className="row">
+                                <dt>Type</dt>
+                                <dd>{produit.listing_type || 'N/A'}</dd>
+                            </div>
 
-                        {/* Auction-specific fields */}
-                        {(produit.listing_type === 'auction' || produit.listing_type === 'auction_with_bin') && (
-                            <>
-                                <p><strong>Bids:</strong> {produit.bids_count ?? 0}</p>
-                                <p><strong>Time left:</strong> {produit.time_remaining || 'N/A'}</p>
-                            </>
-                        )}
+                            {/* Auction-specific fields */}
+                            {(produit.listing_type === 'auction' || produit.listing_type === 'auction_with_bin') && (
+                                <>
+                                    <div className="row">
+                                        <dt>Bids</dt>
+                                        <dd>{produit.bids_count ?? 0}</dd>
+                                    </div>
+                                    <div className="row">
+                                        <dt>Time left</dt>
+                                        <dd>{produit.time_remaining || 'N/A'}</dd>
+                                    </div>
+                                </>
+                            )}
 
-                        {/* Buy It Now seulement si auction_with_bin */}
-                        {produit.listing_type === 'auction_with_bin' && (
-                            <p>
-                                <strong>Buy It Now:</strong>{' '}
-                                {produit.buy_it_now_price ? `$${produit.buy_it_now_price}` : 'N/A'}
-                            </p>
-                        )}
+                            {/* Buy It Now (si "auction_with_bin") */}
+                            {produit.listing_type === 'auction_with_bin' && (
+                                <div className="row">
+                                    <dt>Buy It Now</dt>
+                                    <dd>
+                                        {produit.buy_it_now_price
+                                            ? `$${produit.buy_it_now_price}`
+                                            : 'N/A'
+                                        }
+                                    </dd>
+                                </div>
+                            )}
 
-                        {/* Lien eBay */}
-                        <p>
-                            <strong>Original eBay listing:</strong>{' '}
-                            {produit.url ? (
-                                <a
-                                    className="ebay-link"
-                                    href={produit.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    View on eBay
-                                </a>
-                            ) : 'N/A'}
-                        </p>
+                            {/* Lien eBay */}
+                            <div className="row">
+                                <dt>Original eBay listing</dt>
+                                <dd>
+                                    {produit.url ? (
+                                        <a
+                                            className="ebay-link"
+                                            href={produit.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            View on eBay
+                                        </a>
+                                    ) : 'N/A'}
+                                </dd>
+                            </div>
+                        </dl>
                     </div>
-
                 </div>
             </div>
 
             {/* Graphique d'historique de prix */}
             <div className="detail-chart">
-                <h3 style={{ textAlign: 'center', margin: '0 0 1rem' }}>Price History</h3>
+                <h3 style={{ textAlign: 'center', margin: '0 0 1rem' }}>
+                    Price History
+                </h3>
                 <HistoriquePrixChart
                     dates={historique.dates}
                     prices={historique.prices}

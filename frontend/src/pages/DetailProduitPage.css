@@ -46,14 +46,14 @@
     gap: 1rem; /* Espace vertical entre les infos */
 }
 
-    /* Petits paragraphes d'infos */
+    /* Pour de simples paragraphes éventuels dans .detail-info */
     .detail-info p {
         margin: 0.2rem 0;
         font-size: 1rem;
         line-height: 1.4;
     }
 
-/* Titre "Price History" + le graphique */
+/* Graphique "Price History" */
 .detail-chart {
     margin-top: 1rem;
     background-color: var(--card-bg-color);
@@ -61,22 +61,20 @@
     border-radius: 8px;
     padding: 1rem;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
-    /* Hauteur fixe pour le chart (optionnel) */
-    min-height: 320px;
+    min-height: 320px; /* Hauteur fixe (optionnel) */
 }
 
-    /* On peut cibler le canvas du chart pour le dimensionner si besoin */
     .detail-chart canvas {
         width: 100%;
-        height: 250px; /* Ajustez selon la hauteur voulue */
+        height: 250px; /* Ajustez selon la hauteur souhaitée */
         display: block;
         margin: 0 auto;
     }
 
-/* Petit style pour le bouton de retour */
+/* Bouton de retour */
 .back-button {
     display: inline-block;
-    margin-bottom: 1rem; /* espace sous le bouton */
+    margin-bottom: 1rem;
     color: var(--accent-color);
     text-decoration: none;
     border: 1px solid var(--accent-color);
@@ -84,7 +82,7 @@
     padding: 0.3rem 0.6rem;
     font-size: 0.85rem;
     transition: background-color 0.2s ease;
-    margin-right: 1rem; /* si tu veux un petit espace à droite du bouton */
+    margin-right: 1rem;
 }
 
     .back-button:hover {
@@ -92,34 +90,61 @@
         color: #fff;
     }
 
-/* Encadrés pour listing info & extra info */
+/* Blocs d'information (General Info, Listing Details, Extra Info) */
+.general-info-block,
 .listing-info-block,
 .extra-info-block {
     background-color: var(--card-bg-color);
     padding: 1rem;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    margin-top: 0.5rem; /* un petit espace au-dessus */
+    margin-top: 0.5rem;
 }
 
+    /* Remise à zéro du margin dans ces blocs si on utilise <p> */
+    .general-info-block p,
     .listing-info-block p,
     .extra-info-block p {
         margin: 0.3rem 0;
     }
 
-/* Ajout d'une classe pour le lien "View on eBay" */
+/* Styles pour les listes de définition (<dl>, <dt>, <dd>) */
+.info-list {
+    margin: 0;
+    padding: 0;
+}
+
+    .info-list .row {
+        display: flex; /* Place dt et dd sur la même ligne */
+        margin-bottom: 0.5rem;
+    }
+
+    .info-list dt {
+        width: 120px; /* Largeur fixe pour les labels (ajustez si nécessaire) */
+        font-weight: 600;
+        color: #bbb; /* Couleur discrète pour le label */
+        margin-right: 0.5rem;
+        /* text-align: right;  <-- vous pouvez activer ceci si vous souhaitez aligner à droite */
+    }
+
+    .info-list dd {
+        margin: 0; /* Réinitialise la marge par défaut */
+        color: var(--text-color);
+    }
+
+/* Lien vers eBay */
 .ebay-link {
     display: inline-block;
-    background-color: var(--accent-color); /* Utilise la variable CSS existante */
-    color: #fff; /* Texte blanc */
+    background-color: var(--accent-color);
+    color: #fff;
     text-decoration: none;
-    font-weight: 600; /* Gras pour plus de visibilité */
-    padding: 0.4rem 0.6rem; /* Un peu de marge interne */
-    border-radius: 4px; /* Coins arrondis */
-    margin-left: 0.5rem; /* Petit espace à gauche (optionnel) */
+    font-weight: 600;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    margin-left: 0.5rem;
     transition: background-color 0.2s ease;
 }
 
     .ebay-link:hover {
-        background-color: #1d6a90; /* Une nuance plus sombre au survol */
+        background-color: #1d6a90;
     }
