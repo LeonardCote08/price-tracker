@@ -8,7 +8,9 @@ function ListeProduitsPage() {
     const [produits, setProduits] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [statusFilter, setStatusFilter] = useState("active"); // "active" ou "ended"
+
+    // "active" ou "ended"
+    const [statusFilter, setStatusFilter] = useState("active");
 
     const loadProducts = useCallback(() => {
         setLoading(true);
@@ -34,30 +36,28 @@ function ListeProduitsPage() {
 
     return (
         <div>
-            {/* Bannière centrée avec le message informatif */}
             <div className="subheader">
                 <p className="banner-text">
                     Currently tracking Funko Pop Doctor Doom #561 on eBay. More items to come soon!
                 </p>
             </div>
 
-            {/* Conteneur séparé pour les boutons, également centré */}
             <div className="button-group-centered">
+                {/* Remarquez la classe conditionnelle "selected" si le statut est "active" */}
                 <button
-                    className="filter-button"
+                    className={`filter-button ${statusFilter === 'active' ? 'selected' : ''}`}
                     onClick={() => setStatusFilter("active")}
                 >
                     Active Listings
                 </button>
                 <button
-                    className="filter-button"
+                    className={`filter-button ${statusFilter === 'ended' ? 'selected' : ''}`}
                     onClick={() => setStatusFilter("ended")}
                 >
                     Ended Listings
                 </button>
             </div>
 
-            {/* Grille de produits */}
             <div className="produits-grid">
                 {produits.map((p) => (
                     <ProduitCard key={p.product_id} produit={p} />

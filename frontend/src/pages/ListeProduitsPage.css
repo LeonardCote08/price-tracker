@@ -37,7 +37,7 @@
 
 /* Style des boutons */
 .filter-button {
-    background-color: var(--accent-color);
+    background-color: #1d6a90;
     color: #fff;
     border: none;
     padding: 0.5rem 1rem;
@@ -48,5 +48,12 @@
 }
 
     .filter-button:hover {
-        background-color: #1d6a90; /* nuance plus sombre au survol */
+        background-color: #2980B9; /* nuance plus sombre au survol */
+    }
+
+    /* Quand le bouton est "sélectionné" */
+    .filter-button.selected {
+        background-color: #2980B9; /* ou un autre effet, ex: plus foncé */
+        
+        /* ou box-shadow: 0 0 5px rgba(255,255,255,0.6); */
     }
