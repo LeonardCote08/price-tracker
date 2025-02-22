@@ -2,11 +2,10 @@
 :root {
     --bg-color: #192734; /* Fond global */
     --text-color: #F5F5F5; /* Texte clair */
-    --card-bg-color: #2A3C4E; /* Fond cartes, un peu plus clair que 2C3E50 */
-    --accent-color: #2980B9; /* On peut laisser tel quel */
-    --price-color: #2589CC;
+    --card-bg-color: #2A3C4E; /* Fond cartes */
+    --accent-color: #2980B9; /* Couleur principale (PriceTracker) */
+    --price-color: var(--accent-color); /* On rend le prix identique à l'accent */
 }
-
 
 body {
     background-color: var(--bg-color);

@@ -79,7 +79,7 @@
 .price-value {
     font-size: 1.2rem;
     font-weight: 700;
-    color: var(--price-color);
+    color: var(--price-color); 
     font-family: 'Montserrat', sans-serif;
 }
 
@@ -87,8 +87,8 @@
 .price-total {
     font-size: 1.4rem;
     font-weight: 700;
-    color: var(--price-color);
-    font-family: 'Montserrat', sans-serif; /* on applique Montserrat */
+    color: var(--price-color); 
+    font-family: 'Montserrat', sans-serif;
 }
 
 /* Breakdown en plus petit, même couleur de base */
