@@ -40,12 +40,12 @@ function ProduitCard({ produit }) {
                 />
 
                 <div className="product-info">
-                    <h3 className="product-title">
-                        {produit.title || 'Untitled product'}
+                    {/* Retrait du titre, on affiche seulement les badges (Signed, In Box, Ended) */}
+                    <div style={{ marginBottom: '0.5rem' }}>
                         {produit.signed && (
                             <span
                                 style={{
-                                    marginLeft: '0.5rem',
+                                    marginRight: '0.5rem',
                                     backgroundColor: '#E74C3C',
                                     color: '#fff',
                                     padding: '0.2rem 0.4rem',
@@ -56,19 +56,50 @@ function ProduitCard({ produit }) {
                                 Signed
                             </span>
                         )}
+
+                        {produit.in_box === true && (
+                            <span
+                                style={{
+                                    marginRight: '0.5rem',
+                                    backgroundColor: '#2ECC71',
+                                    color: '#fff',
+                                    padding: '0.2rem 0.4rem',
+                                    borderRadius: '4px',
+                                    fontSize: '0.8rem'
+                                }}
+                            >
+                                In Box
+                            </span>
+                        )}
+                        {produit.in_box === false && (
+                            <span
+                                style={{
+                                    marginRight: '0.5rem',
+                                    backgroundColor: '#E67E22',
+                                    color: '#fff',
+                                    padding: '0.2rem 0.4rem',
+                                    borderRadius: '4px',
+                                    fontSize: '0.8rem'
+                                }}
+                            >
+                                No Box
+                            </span>
+                        )}
+
                         {produit.ended && (
-                            <span style={{
-                                backgroundColor: '#444',
-                                color: '#fff',
-                                padding: '0.1rem 0.3rem',
-                                borderRadius: '3px',
-                                marginLeft: '0.5rem',
-                                fontSize: '0.8rem'
-                            }}>
+                            <span
+                                style={{
+                                    backgroundColor: '#444',
+                                    color: '#fff',
+                                    padding: '0.1rem 0.3rem',
+                                    borderRadius: '3px',
+                                    fontSize: '0.8rem'
+                                }}
+                            >
                                 Ended
                             </span>
                         )}
-                    </h3>
+                    </div>
 
                     <p style={{ color: '#bbb', margin: '0.3rem 0' }}>
                         {conditionText} &nbsp;|&nbsp; {listingLabel}
