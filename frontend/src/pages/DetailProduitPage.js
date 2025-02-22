@@ -6,6 +6,19 @@ import HistoriquePrixChart from '../components/HistoriquePrixChart';
 import useScrollRestoration from '../hooks/useScrollRestoration';
 import './DetailProduitPage.css';
 
+function formatListingType(listingType) {
+    switch (listingType) {
+        case 'fixed_price':
+            return 'Fixed Price';
+        case 'auction':
+            return 'Auction';
+        case 'auction_with_bin':
+            return 'Auction + BIN';
+        default:
+            return 'N/A';
+    }
+}
+
 function DetailProduitPage() {
     useScrollRestoration();
     const { id } = useParams();
@@ -55,8 +68,8 @@ function DetailProduitPage() {
                         <dl className="info-list">
                             {/* Prix */}
                             <div className="row">
-                                <dt>Price</dt>
-                                <dd>${price.toFixed(2)}</dd>
+                                <dt>Type</dt>
+                                <dd>{formatListingType(produit.listing_type)}</dd>
                             </div>
 
                             {/* Condition */}
