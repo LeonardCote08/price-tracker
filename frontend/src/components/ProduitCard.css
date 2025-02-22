@@ -138,6 +138,18 @@
 
 
 
+.price-trend {
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+}
+
+.trend-up {
+    color: #2ECC71; /* Vert pour hausse */
+}
+
+.trend-down {
+    color: #E74C3C; /* Rouge pour baisse */
+}
 
 
 /* Prix de base et frais de livraison */
