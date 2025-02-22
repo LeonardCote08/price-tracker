@@ -1,12 +1,12 @@
 /* frontend/src/styles/variables.css */
 :root {
-    --bg-color: #192734; /* Fond global */
+    --bg-color: #243748; /* Fond global */
     --text-color: #F5F5F5; /* Texte clair */
-    --card-bg-color: #2A3C4E; /* Fond cartes */
-    --accent-color: #2980B9; /* Couleur principale (PriceTracker) */
+    --card-bg-color: #2D455C; /* Fond cartes */
+    --accent-color: #1595EB; /* Couleur principale (PriceTracker) */
     --price-color: var(--accent-color); /* On rend le prix identique à l'accent */
 
-    --header-gradient: linear-gradient(135deg, #243748 0%, #4B749F 100%);
+    --header-gradient: linear-gradient(135deg, #243748 0%, #416589 100%);
 }
 
 body {

@@ -162,7 +162,7 @@ function DetailProduitPage() {
 
                             {/* Lien eBay */}
                             <div className="row">
-                                <dt>Original eBay listing</dt>
+                                <dt>eBay listing</dt>
                                 <dd>
                                     {produit.url ? (
                                         <a

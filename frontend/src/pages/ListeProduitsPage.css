@@ -35,28 +35,27 @@
     margin: 1rem 0; /* un peu d'espace au-dessus et en dessous */
 }
 
-/* Style des boutons */
+/* ListeProduitsPage.css */
+
 .filter-button {
-    background-color: #1d6a90;
+    background: var(--header-gradient); /* On applique le gradient */
     color: #fff;
     border: none;
     padding: 0.5rem 1rem;
     border-radius: 4px;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: filter 0.3s ease; /* Au lieu de background-color */
 }
 
     .filter-button:hover {
-        background-color: #2980B9; /* nuance plus sombre au survol */
+        filter: brightness(1.1);
     }
 
-    /* Quand le bouton est "sélectionné" */
     .filter-button.selected {
-        background-color: #2980B9; /* ou un autre effet, ex: plus foncé */
-        
-        /* ou box-shadow: 0 0 5px rgba(255,255,255,0.6); */
+        filter: brightness(1.1);
     }
+
 
 .general-info-block,
 .listing-info-block {
