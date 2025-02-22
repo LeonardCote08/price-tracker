@@ -5,7 +5,18 @@ import { fetchProduit, fetchHistoriquePrix } from '../services/api';
 import HistoriquePrixChart from '../components/HistoriquePrixChart';
 import useScrollRestoration from '../hooks/useScrollRestoration';
 import './DetailProduitPage.css';
-
+function formatListingType(listingType) {
+    switch (listingType) {
+        case 'fixed_price':
+            return 'Fixed Price';
+        case 'auction':
+            return 'Auction';
+        case 'auction_with_bin':
+            return 'Auction + BIN';
+        default:
+            return 'N/A';
+    }
+}
 
 function DetailProduitPage() {
     useScrollRestoration();
@@ -118,7 +129,8 @@ function DetailProduitPage() {
                             {/* Type */}
                             <div className="row">
                                 <dt>Type</dt>
-                                <dd>{produit.listing_type || 'N/A'}</dd>
+                                <dd>{formatListingType(produit.listing_type)}</dd>
+
                             </div>
 
                             {/* Auction-specific fields */}
