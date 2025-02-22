@@ -32,7 +32,7 @@ function DetailProduitPage() {
     if (error) return <p>Error: {error}</p>;
     if (!produit) return <p>Product not found</p>;
 
-    // Prix principal (ex. "Current Bid" ou "Fixed Price")
+    // Prix principal (ex. "Current Bid" ou "Fixed Price" )
     const price = typeof produit.price === 'number' ? produit.price : 0;
 
     return (
