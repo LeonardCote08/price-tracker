@@ -5,6 +5,7 @@ import { fetchProduit, fetchHistoriquePrix } from '../services/api';
 import HistoriquePrixChart from '../components/HistoriquePrixChart';
 import useScrollRestoration from '../hooks/useScrollRestoration';
 import './DetailProduitPage.css';
+
 function formatListingType(listingType) {
     switch (listingType) {
         case 'fixed_price':
@@ -22,7 +23,7 @@ function DetailProduitPage() {
     useScrollRestoration();
     const { id } = useParams();
     const [produit, setProduit] = useState(null);
-    const [historique, setHistorique] = useState({ dates: [], prices: [] });
+    const [historique, setHistorique] = useState({ dates: [], prices: [], stats: {} });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -130,7 +131,6 @@ function DetailProduitPage() {
                             <div className="row">
                                 <dt>Type</dt>
                                 <dd>{formatListingType(produit.listing_type)}</dd>
-
                             </div>
 
                             {/* Auction-specific fields */}
@@ -190,6 +190,13 @@ function DetailProduitPage() {
                     dates={historique.dates}
                     prices={historique.prices}
                 />
+                {historique.stats && (
+                    <div className="price-stats">
+                        <p>Average Price: ${historique.stats.avg_price.toFixed(2)}</p>
+                        <p>Min Price: ${historique.stats.min_price.toFixed(2)}</p>
+                        <p>Max Price: ${historique.stats.max_price.toFixed(2)}</p>
+                    </div>
+                )}
             </div>
         </div>
     );

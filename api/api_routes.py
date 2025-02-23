@@ -232,12 +232,9 @@ def get_price_trend(product_id):
         trend = "down"
     return jsonify({"trend": trend})
 
+# api/api_routes.py
 @api_bp.route('/produits/<int:product_id>/historique-prix', methods=['GET'])
 def get_historique_prix(product_id):
-    """
-    Retourne l'historique de prix d'un produit, c'est-à-dire
-    toutes les lignes de price_history associées à product_id.
-    """
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
@@ -250,8 +247,14 @@ def get_historique_prix(product_id):
     cursor.close()
     conn.close()
 
+    prices = [float(row[1]) for row in rows]
     data = {
         "dates": [row[0] for row in rows],
-        "prices": [float(row[1]) for row in rows]
+        "prices": prices,
+        "stats": {
+            "avg_price": sum(prices) / len(prices) if prices else 0,
+            "min_price": min(prices) if prices else 0,
+            "max_price": max(prices) if prices else 0,
+        }
     }
     return jsonify(data)
