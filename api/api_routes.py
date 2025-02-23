@@ -107,7 +107,6 @@ def get_produits():
 
     return jsonify(result)
 
-
 @api_bp.route('/produits/<int:product_id>', methods=['GET'])
 def get_produit(product_id):
     """
@@ -203,9 +202,11 @@ def get_produit(product_id):
     else:
         return jsonify({"error": "Produit non trouvé"}), 404
 
-
-@api_bp.route('/produits/<int:product_id>/historique-prix', methods=['GET'])
+@api_bp.route('/produits/<int:product_id>/price-trend', methods=['GET'])
 def get_price_trend(product_id):
+    """
+    Retourne la tendance de prix d'un produit en comparant les 3 derniers prix.
+    """
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
@@ -230,6 +231,8 @@ def get_price_trend(product_id):
     elif latest_price < second_latest_price:
         trend = "down"
     return jsonify({"trend": trend})
+
+@api_bp.route('/produits/<int:product_id>/historique-prix', methods=['GET'])
 def get_historique_prix(product_id):
     """
     Retourne l'historique de prix d'un produit, c'est-à-dire
