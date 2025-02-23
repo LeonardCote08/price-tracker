@@ -113,17 +113,14 @@ class EbaySpider(scrapy.Spider):
         ended_message = " ".join(response.xpath('//div[@data-testid="d-statusmessage"]//text()').getall()).strip()
         self.logger.debug("Ended message extrait : %r", ended_message)
 
-        if ended_message:
-            ended_message_lower = ended_message.lower()
-            if ("this listing sold on" in ended_message_lower
-                or "bidding ended on" in ended_message_lower
-                or "this listing was ended by the seller" in ended_message_lower
-                or "item sold on" in ended_message_lower):
-                item["ended"] = True
-            else:
-                item["ended"] = False
-        else:
-            item["ended"] = False
+        ended_indicators = [
+            "this listing sold on",
+            "bidding ended on",
+            "this listing was ended by the seller",
+            "item sold on",
+            "this listing has ended"
+        ]
+        item["ended"] = any(indicator in ended_message.lower() for indicator in ended_indicators)
 
         self.logger.debug("Valeur finale pour 'ended': %s", item["ended"])
 
@@ -256,19 +253,29 @@ class EbaySpider(scrapy.Spider):
         else:
             item["buy_it_now_price"] = None
 
-        # Extraction du prix, avec gestion spécifique pour les annonces terminées
-        if item.get("ended", False):
-            final_price = response.xpath('//span[contains(text(), "Sold for")]/following-sibling::span/text()').get()
-            if final_price:
-                item["price"] = float(re.search(r'[\d,.]+', final_price).group(0).replace(",", ""))
-            else:
-                item["price"] = 0.0  # Si aucun prix final trouvé, on met 0 par défaut
-        else:
-            price_str = response.xpath('.//span[contains(@class, "notranslate") and contains(@class, "ux-textspans")]/text()').get()
-            if price_str:
-                item["price"] = float(re.search(r'[\d,.]+', price_str).group(0).replace(",", ""))
+        # Extraction du prix en fonction de l'état et du type d'annonce
+        if item["ended"]:
+            # Annonce terminée : extraire le prix final
+            final_price_str = response.xpath('//span[contains(text(), "Sold for")]/following-sibling::span/text()').get()
+            if final_price_str:
+                match = re.search(r'[\d,.]+', final_price_str)
+                item["price"] = float(match.group(0).replace(",", "")) if match else 0.0
             else:
                 item["price"] = 0.0
+        else:
+            # Annonce active
+            if item["listing_type"] in ["auction", "auction_with_bin"]:
+                # Extraire le "Current Bid"
+                price_str = response.css('div[data-testid="x-price-primary"] span.ux-textspans::text').get()
+                if price_str:
+                    match = re.search(r'[\d,.]+', price_str)
+                    item["price"] = float(match.group(0).replace(",", "")) if match else 0.0
+            elif item["listing_type"] == "fixed_price":
+                # Extraire le prix fixe
+                price_str = response.css('div[data-testid="x-price"] span.ux-textspans::text').get()
+                if price_str:
+                    match = re.search(r'[\d,.]+', price_str)
+            item["price"] = float(match.group(0).replace(",", "")) if match else 0.0
 
         # Extraction de la catégorie via JSON-LD ou XPath
         try:
