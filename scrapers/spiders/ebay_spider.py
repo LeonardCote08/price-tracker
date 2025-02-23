@@ -277,40 +277,20 @@ class EbaySpider(scrapy.Spider):
         if item["ended"]:
             # Pour les annonces terminées, essayer d'extraire le prix final de vente
             try:
-                # Liste de sélecteurs pour trouver le prix final
-                price_selectors = [
-                    '//span[contains(text(), "Sold for")]/following-sibling::span/text()',  # Texte "Sold for" suivi d'un span
-                    '//div[@data-testid="x-sold-price"]//span/text()',                     # Conteneur spécifique pour prix vendu
-                    '//span[@class="ux-textspans ux-textspans--primary"]/text()',          # Classe commune pour les prix
-                    '//div[contains(@class, "ux-labels-values")]//span[contains(text(), "Sold for")]/following-sibling::span/text()',  # Structure alternative
-                    '//span[contains(text(), "Winning bid")]/following-sibling::span/text()',  # Pour les enchères gagnées
-                    '//div[@data-testid="x-final-price"]//span/text()'                    # Autre conteneur possible
-                ]
-        
-                final_price_str = None
-                for selector in price_selectors:
-                    final_price_str = response.xpath(selector).get()
-                    self.logger.debug(f"Tentative avec sélecteur {selector}: {final_price_str}")
-                    if final_price_str:
-                        break
-        
+                final_price_str = response.xpath('//span[contains(text(), "Sold for")]/following-sibling::span/text()').get()
                 if final_price_str:
-                    # Nettoyer et convertir le prix en float
-                    match = re.search(r'[\d,.]+', final_price_str.strip())
+                    match = re.search(r'[\d,.]+', final_price_str)
                     if match:
                         item["price"] = float(match.group(0).replace(",", ""))
-                        self.logger.debug(f"Prix final extrait: {item['price']}")
                     else:
                         item["price"] = None
-                        self.logger.warning(f"Format de prix invalide: {final_price_str}")
                 else:
                     item["price"] = None
-                    self.logger.warning(f"Aucun prix trouvé pour l'annonce terminée: {item['item_url']}")
             except Exception as e:
-                self.logger.error(f"Erreur lors de l'extraction du prix final pour l'annonce terminée: {e}")
+                self.logger.error(f"Error extracting final price for ended listing: {e}")
                 item["price"] = None
         else:
-            # Pour les annonces actives, extraire le prix actuel (logique inchangée)
+            # Pour les annonces actives, extraire le prix actuel
             try:
                 price_str = response.css('span.ux-textspans.ux-textspans--primary::text').get() or \
                             response.css('div[data-testid="x-bin-price"] span.ux-textspans::text').get()
@@ -325,11 +305,6 @@ class EbaySpider(scrapy.Spider):
             except Exception as e:
                 self.logger.error(f"Error extracting price: {e}")
                 item["price"] = None
-
-        # --- Gestion des valeurs par défaut pour les champs manquants ---
-        if item["price"] is None:
-            self.logger.warning(f"Prix non trouvé pour l'article: {item['item_url']}")
-            item["price"] = 0.0  # Valeur par défaut appliquée uniquement à la fin
 
         # --- Extraction de la catégorie via JSON‑LD ou XPath ---
         try:
