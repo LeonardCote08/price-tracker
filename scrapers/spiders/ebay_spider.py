@@ -5,25 +5,19 @@ from scrapers.items import EbayItem
 from urllib.parse import quote_plus
 import re
 import json
+from urllib.parse import quote_plus
 
 class EbaySpider(scrapy.Spider):
     name = "ebay_spider"
 
-    def __init__(self, keyword=None, *args, **kwargs):
+    def __init__(self, keyword=None, mode="active", *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Choisis un ZIP code US, par exemple 90210 (Beverly Hills)
-        zip_code = "90210"
-
-        if keyword:
-            # Ajout de _stpos=ZIPCODE dans l'URL
-            self.start_urls = [
-                f"https://www.ebay.com/sch/i.html?_nkw={quote_plus(keyword)}&_stpos={zip_code}"
-            ]
+        zip_code = "90210"  # Code postal par défaut
+        if mode == "ended":
+            self.start_urls = [f"https://www.ebay.com/sch/i.html?_nkw={quote_plus(keyword)}&_sasl=1&_stpos={zip_code}"]
         else:
-            # Mot-clé par défaut
-            self.start_urls = [
-                f"https://www.ebay.com/sch/i.html?_nkw=smartphone&_stpos={zip_code}"
-            ]
+            self.start_urls = [f"https://www.ebay.com/sch/i.html?_nkw={quote_plus(keyword)}&_stpos={zip_code}"]
+        self.keyword = keyword
 
     custom_settings = {
         "DOWNLOAD_DELAY": 2.0,
@@ -114,10 +108,8 @@ class EbaySpider(scrapy.Spider):
         self.logger.debug("Extrait de la réponse: %s", response.text[:500])
 
         # Détection d'une annonce terminée
-        # Détection d'une annonce terminée
         ended_message = " ".join(response.xpath('//div[@data-testid="d-statusmessage"]//text()').getall()).strip()
         self.logger.debug("Ended message extrait : %r", ended_message)
-
 
         if ended_message:
             ended_message_lower = ended_message.lower()
@@ -133,7 +125,6 @@ class EbaySpider(scrapy.Spider):
 
         self.logger.debug("Valeur finale pour 'ended': %s", item["ended"])
 
-
         # Extraction de l'ID (item_id)
         try:
             item_id = response.url.split("/itm/")[1].split("?")[0]
@@ -148,6 +139,7 @@ class EbaySpider(scrapy.Spider):
             title = re.sub(r"\s*\|\s*ebay\s*$", "", title, flags=re.IGNORECASE).strip()
             item["title"] = title
 
+        # Vérification des variations multiples
         multi_variation_button = response.xpath(
             '//button[contains(@class, "listbox-button__control") and '
             'contains(@class, "btn--form") and @value="Select"]'
@@ -158,13 +150,10 @@ class EbaySpider(scrapy.Spider):
 
         # Normalisation simplifiée à seulement "New" ou "Used"
         raw_condition = item.get("item_condition", "").strip().lower()
-
-        # Si le mot "new" apparaît quelque part (brand new, new (other), etc.)
         if "new" in raw_condition:
             item["normalized_condition"] = "New"
         else:
             item["normalized_condition"] = "Used"
-
 
         # Détection de la signature dans le titre
         if "signed" in item["title"].lower():
@@ -173,43 +162,27 @@ class EbaySpider(scrapy.Spider):
             item["signed"] = False
 
         # Détermination de la présence de la boîte
-        # Pour les items "new", on considère qu'ils sont toujours in-box
         if item["normalized_condition"] == "new":
             item["in_box"] = True
         else:
-            # Pour les items utilisés, on cherche dans le titre des indices sur la boîte
             title_lower = item["title"].lower()
-            # Mots indiquant que l'article est dans sa boîte
             in_box_keywords = ["in box", "with box", "nib", "mib"]
-            # Mots indiquant que l'article est hors boîte
             out_box_keywords = ["loose", "oob", "no box", "out of box", "ex-box"]
-    
             if any(keyword in title_lower for keyword in in_box_keywords) and not any(keyword in title_lower for keyword in out_box_keywords):
                 item["in_box"] = True
             elif any(keyword in title_lower for keyword in out_box_keywords) and not any(keyword in title_lower for keyword in in_box_keywords):
                 item["in_box"] = False
             else:
-                # Si aucune indication claire, on laisse inconnu (None)
-                item["in_box"] = True
+                item["in_box"] = True  # Par défaut, on assume "in box" si pas d'indication claire
 
-
-        # --- Filtrage des bundles ---
-        title_lower = item["title"].lower()
-        
-        # 1) Ignorer s'il y a au moins deux références #xxx dans le titre
+        # Filtrage des bundles
         if item["title"].count("#") > 1:
             self.logger.info(f"Ignoring multi-figure listing: {item['title']}")
             return
-        
-        # Vérifier si le titre contient des mots-clés typiques d'un bundle
         bundle_keywords = ["lot", "bundle", "set"]
-        if any(keyword in title_lower for keyword in bundle_keywords):
+        if any(keyword in item["title"].lower() for keyword in bundle_keywords):
             self.logger.info(f"Ignoring bundle due to keyword in title: {item['title']}")
             return
-
-
-
-
 
         # Mise à jour de l'image via meta si disponible
         try:
@@ -228,9 +201,7 @@ class EbaySpider(scrapy.Spider):
             self.logger.error(f"Error extracting seller username: {e}")
             item["seller_username"] = ""
 
-        # --- Nouveaux champs à ajouter ---
-
-        # 1. Extraction du type d'annonce (listing_type)
+        # Extraction du type d'annonce (listing_type)
         bid_button = response.xpath("//*[starts-with(@id, 'bidBtn_btn')]").get()
         bin_button = response.xpath("//*[starts-with(@id, 'binBtn_btn')]").get()
         countdown = response.xpath("//*[contains(@id, 'vi-cdown')]").get()
@@ -243,7 +214,7 @@ class EbaySpider(scrapy.Spider):
             item["listing_type"] = "fixed_price"
         self.logger.info(f"DEBUG: listing_type = {item.get('listing_type')}")
 
-        # 2. Extraction du nombre d'enchères (bids_count) – uniquement pour les auctions
+        # Extraction du nombre d'enchères (bids_count) – uniquement pour les auctions
         if item["listing_type"] in ["auction", "auction_with_bin"]:
             try:
                 bid_container = response.xpath('//div[@data-testid="x-bid-count"]')
@@ -255,7 +226,7 @@ class EbaySpider(scrapy.Spider):
         else:
             item["bids_count"] = None
 
-        # 3. Extraction du temps restant (time_remaining)
+        # Extraction du temps restant (time_remaining)
         try:
             raw_texts = response.css('.ux-timer__text::text').getall()
             if raw_texts:
@@ -269,7 +240,7 @@ class EbaySpider(scrapy.Spider):
             self.logger.error(f"Error extracting time_remaining: {e}")
             item["time_remaining"] = None
 
-        # 4. Extraction du prix Buy It Now (buy_it_now_price) pour les listings "auction_with_bin"
+        # Extraction du prix Buy It Now (buy_it_now_price) pour les listings "auction_with_bin"
         if item["listing_type"] == "auction_with_bin":
             bin_price_str = response.css('div[data-testid="x-bin-price"] span.ux-textspans::text').get()
             if bin_price_str:
@@ -283,8 +254,21 @@ class EbaySpider(scrapy.Spider):
         else:
             item["buy_it_now_price"] = None
 
+        # Extraction du prix, avec gestion spécifique pour les annonces terminées
+        if item.get("ended", False):
+            final_price = response.xpath('//span[contains(text(), "Sold for")]/following-sibling::span/text()').get()
+            if final_price:
+                item["price"] = float(re.search(r'[\d,.]+', final_price).group(0).replace(",", ""))
+            else:
+                item["price"] = 0.0  # Si aucun prix final trouvé, on met 0 par défaut
+        else:
+            price_str = response.xpath('.//span[contains(@class, "notranslate") and contains(@class, "ux-textspans")]/text()').get()
+            if price_str:
+                item["price"] = float(re.search(r'[\d,.]+', price_str).group(0).replace(",", ""))
+            else:
+                item["price"] = 0.0
 
-        # Extraction de la catégorie via JSON‑LD ou XPath (inchangé)
+        # Extraction de la catégorie via JSON-LD ou XPath
         try:
             ld_json = response.xpath('//script[@type="application/ld+json"]/text()').get()
             if ld_json:
