@@ -12,9 +12,11 @@ class EbaySpider(scrapy.Spider):
 
     def __init__(self, keyword=None, mode="active", *args, **kwargs):
         super().__init__(*args, **kwargs)
-        zip_code = "90210"  # Code postal par défaut
+        zip_code = "90210"  # Code postal par défaut (optionnel, peut être ajusté)
         if mode == "ended":
-            self.start_urls = [f"https://www.ebay.com/sch/i.html?_nkw={quote_plus(keyword)}&_sasl=1&_stpos={zip_code}"]
+            self.start_urls = [
+                f"https://www.ebay.com/sch/i.html?_nkw={quote_plus(keyword)}&_sacat=0&_from=R40&_trksid=p2334524.m570.l1313&rt=nc&_odkw={quote_plus('<Funko Pop Doctor Doom>')}&LH_Complete=1&LH_Sold=1&_stpos={zip_code}"
+            ]
         else:
             self.start_urls = [f"https://www.ebay.com/sch/i.html?_nkw={quote_plus(keyword)}&_stpos={zip_code}"]
         self.keyword = keyword
