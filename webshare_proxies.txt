@@ -1,11 +1,11 @@
 
-198.23.239.134:6540:ehpoitbv:h7zjywd7mr17
-207.244.217.165:6712:ehpoitbv:h7zjywd7mr17
-107.172.163.27:6543:ehpoitbv:h7zjywd7mr17
-64.137.42.112:5157:ehpoitbv:h7zjywd7mr17
-173.211.0.148:6641:ehpoitbv:h7zjywd7mr17
-161.123.152.115:6360:ehpoitbv:h7zjywd7mr17
-23.94.138.75:6349:ehpoitbv:h7zjywd7mr17
-154.36.110.199:6853:ehpoitbv:h7zjywd7mr17
-173.0.9.70:5653:ehpoitbv:h7zjywd7mr17
-173.0.9.209:5792:ehpoitbv:h7zjywd7mr17
+103.75.229.148:5896:plgklmao:jzbr6ip398z2
+104.253.155.128:5544:plgklmao:jzbr6ip398z2
+23.26.94.212:6194:plgklmao:jzbr6ip398z2
+38.225.23.201:5483:plgklmao:jzbr6ip398z2
+45.61.124.33:6362:plgklmao:jzbr6ip398z2
+104.239.80.1:5579:plgklmao:jzbr6ip398z2
+184.174.27.46:6269:plgklmao:jzbr6ip398z2
+23.26.61.17:5483:plgklmao:jzbr6ip398z2
+45.39.125.204:6612:plgklmao:jzbr6ip398z2
+45.41.177.20:5670:plgklmao:jzbr6ip398z2
