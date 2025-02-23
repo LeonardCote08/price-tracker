@@ -277,7 +277,8 @@ class EbaySpider(scrapy.Spider):
         if item["ended"]:
             # Pour les annonces terminées, essayer d'extraire le prix final de vente
             try:
-                final_price_str = response.xpath('//span[contains(text(), "Sold for")]/following-sibling::span/text()').get()
+                final_price_str = response.css('span.ux-textspans.ux-textspans--primary::text').get() or \
+                            response.css('div[data-testid="x-bin-price"] span.ux-textspans::text').get()
                 if final_price_str:
                     match = re.search(r'[\d,.]+', final_price_str)
                     if match:
