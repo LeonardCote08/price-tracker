@@ -20,4 +20,3 @@ class EbayItem(scrapy.Item):
     buy_it_now_price = scrapy.Field()
     in_box = scrapy.Field()           # Indique si la figurine est dans sa boîte
     ended = scrapy.Field()  # Indique si l’annonce est terminée
-
