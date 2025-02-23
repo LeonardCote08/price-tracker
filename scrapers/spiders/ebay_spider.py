@@ -172,19 +172,20 @@ class EbaySpider(scrapy.Spider):
         else:
             item["signed"] = False
 
-        # --- Détermination de la présence de la boîte ---
-        if item["normalized_condition"] == "new":
+        # Détermination de la présence de la boîte
+        if item["normalized_condition"] == "New":
             item["in_box"] = True
         else:
+            # Pour les articles "Used", cherchez des indices dans le titre
             title_lower = item["title"].lower()
             in_box_keywords = ["in box", "with box", "nib", "mib"]
             out_box_keywords = ["loose", "oob", "no box", "out of box", "ex-box"]
             if any(keyword in title_lower for keyword in in_box_keywords) and not any(keyword in title_lower for keyword in out_box_keywords):
                 item["in_box"] = True
-            elif any(keyword in title_lower for keyword in out_box_keywords) and not any(keyword in title_lower for keyword in in_box_keywords):
+            elif any(keyword in title_lower for keyword in out_box_keywords):
                 item["in_box"] = False
             else:
-                item["in_box"] = None  # Inconnu si aucune indication claire
+                item["in_box"] = None  # Inconnu si aucune indication
 
         # --- Filtrage des bundles ---
         title_lower = item["title"].lower()
