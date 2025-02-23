@@ -275,18 +275,33 @@ class EbaySpider(scrapy.Spider):
 
         # --- Extraction du prix pour les annonces actives ou terminées ---
         if item["ended"]:
-            # Pour les annonces terminées, essayer d'extraire le prix final de vente
+            # Pour les annonces terminées, extraire le prix final de vente depuis x-price-primary
             try:
-                final_price_str = response.css('span.ux-textspans.ux-textspans--primary::text').get() or \
-                            response.css('div[data-testid="x-bin-price"] span.ux-textspans::text').get()
+                # Extraire le prix principal depuis x-price-primary
+                final_price_str = response.css('div.x-price-primary span.ux-textspans::text').get()
                 if final_price_str:
+                    # Extraire la partie numérique avec une regex
                     match = re.search(r'[\d,.]+', final_price_str)
                     if match:
-                        item["price"] = float(match.group(0).replace(",", ""))
+                        price_value = match.group(0).replace(",", "")
+                        item["price"] = float(price_value)
                     else:
+                        self.logger.warning(f"Could not parse price from: {final_price_str}")
                         item["price"] = None
                 else:
-                    item["price"] = None
+                    # Si aucun prix dans x-price-primary, tenter avec x-price-approx (prix approximatif en USD)
+                    approx_price_str = response.css('div.x-price-approx span.ux-textspans--BOLD::text').get()
+                    if approx_price_str:
+                        match = re.search(r'[\d,.]+', approx_price_str)
+                        if match:
+                            price_value = match.group(0).replace(",", "")
+                            item["price"] = float(price_value)
+                        else:
+                            self.logger.warning(f"Could not parse approx price from: {approx_price_str}")
+                            item["price"] = None
+                    else:
+                        self.logger.warning(f"No price found for ended listing: {response.url}")
+                        item["price"] = None
             except Exception as e:
                 self.logger.error(f"Error extracting final price for ended listing: {e}")
                 item["price"] = None
