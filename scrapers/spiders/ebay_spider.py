@@ -254,14 +254,15 @@ class EbaySpider(scrapy.Spider):
             item["buy_it_now_price"] = None
 
         # Extraction du prix en fonction de l'état et du type d'annonce
+
+        item["price"] = 0.0  # Valeur par défaut
         if item["ended"]:
             # Annonce terminée : extraire le prix final
             final_price_str = response.xpath('//span[contains(text(), "Sold for")]/following-sibling::span/text()').get()
             if final_price_str:
                 match = re.search(r'[\d,.]+', final_price_str)
-                item["price"] = float(match.group(0).replace(",", "")) if match else 0.0
-            else:
-                item["price"] = 0.0
+                if match:
+                    item["price"] = float(match.group(0).replace(",", ""))
         else:
             # Annonce active
             if item["listing_type"] in ["auction", "auction_with_bin"]:
@@ -269,13 +270,15 @@ class EbaySpider(scrapy.Spider):
                 price_str = response.css('div[data-testid="x-price-primary"] span.ux-textspans::text').get()
                 if price_str:
                     match = re.search(r'[\d,.]+', price_str)
-                    item["price"] = float(match.group(0).replace(",", "")) if match else 0.0
+                    if match:
+                        item["price"] = float(match.group(0).replace(",", ""))
             elif item["listing_type"] == "fixed_price":
                 # Extraire le prix fixe
                 price_str = response.css('div[data-testid="x-price"] span.ux-textspans::text').get()
                 if price_str:
                     match = re.search(r'[\d,.]+', price_str)
-            item["price"] = float(match.group(0).replace(",", "")) if match else 0.0
+                    if match:
+                        item["price"] = float(match.group(0).replace(",", ""))
 
         # Extraction de la catégorie via JSON-LD ou XPath
         try:
