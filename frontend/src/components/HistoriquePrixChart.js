@@ -3,15 +3,15 @@ import React from 'react';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 
-const HistoriquePrixChart = ({ dates, prices }) => {
+const HistoriquePrixChart = ({ dates, prices, trend }) => {
     const data = {
         labels: dates,
         datasets: [
             {
                 label: 'Price ($)',
                 data: prices,
-                borderColor: 'rgba(21, 149, 235, 1)', // Correspond à --accent-color
-                backgroundColor: 'rgba(21, 149, 235, 0.2)',
+                borderColor: trend === 'up' ? '#2ECC71' : trend === 'down' ? '#E74C3C' : '#1595EB',
+                backgroundColor: trend === 'up' ? 'rgba(46, 204, 113, 0.2)' : trend === 'down' ? 'rgba(231, 76, 60, 0.2)' : 'rgba(21, 149, 235, 0.2)',
                 fill: true,
                 tension: 0.2,
                 pointRadius: 5,
