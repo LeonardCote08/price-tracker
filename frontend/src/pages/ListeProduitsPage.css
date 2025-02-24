@@ -12,20 +12,21 @@
 
 /* SUBHEADER : seulement la bannière */
 .subheader {
-    background: rgba(255, 255, 255, 0.03);
-    font-size: 0.85rem; /* plus petit */
-    color: #bbb; /* plus discret */
-    padding: 0.3rem 0.6rem; /* réduit */
+    display: block;
+    width: fit-content; /* pour que la largeur épouse le contenu */
+    white-space: nowrap; /* reste sur une seule ligne */
+    margin: 0.5rem auto; /* margin auto = centré */
+    background: rgba(255, 255, 255, 0.07);
+    color: #bbb;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.8rem;
     border-radius: 4px;
-    text-align: center;
-    margin: 0.5rem auto;
-    box-shadow: none; /* on enlève l'ombre */
+    border: 1px dashed #444;
+    text-align: center; /* centre le texte à l’intérieur du bloc */
 }
 
 
 .banner-text {
-    font-size: 1rem;
-    color: #ddd;
     margin: 0; /* pas de marge supplémentaire */
 }
 

@@ -3,6 +3,9 @@ import { fetchProduits } from '../services/api';
 import ProduitCard from '../components/ProduitCard';
 import './ListeProduitsPage.css';
 import useScrollRestoration from '../hooks/useScrollRestoration';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+
 
 function ListeProduitsPage() {
     const [produits, setProduits] = useState([]);
@@ -45,10 +48,17 @@ function ListeProduitsPage() {
 
     return (
         <div>
-            <div className="subheader">
-                <p className="banner-text">
-                    Currently tracking Funko Pop Doctor Doom #561 on eBay. More items to come soon!
-                </p>
+            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                <div className="subheader">
+                    <p className="banner-text">
+                        <span style={{ marginRight: '0.5rem' }}>
+                            <FontAwesomeIcon icon={faInfoCircle} />
+                        </span>
+                        Currently tracking Funko Pop Doctor Doom #561 on eBay. More items to come soon!
+                    </p>
+                </div>
+
+
             </div>
 
             <div className="button-group-centered">
