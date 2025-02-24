@@ -27,19 +27,34 @@ class MySQLPipeline:
             spider.logger.info(f"Drop item bundle: {title}")
             raise DropItem(f"Item bundle dropped: {title}")
 
-        # Suite du traitement...
-        # Vérifie si le produit existe déjà via item_id
-        select_sql = "SELECT product_id FROM product WHERE item_id = %s"
-        self.cursor.execute(select_sql, (item.get("item_id"),))
-        result = self.cursor.fetchone()
+        # 1) Récupérer epid si présent
+        epid = item.get("epid", None)
 
-        if result:
-            product_db_id = result[0]
+        # 2) Chercher un produit existant d’abord via epid
+        product_db_id = None
+        if epid:
+            select_by_epid_sql = "SELECT product_id FROM product WHERE epid = %s LIMIT 1"
+            self.cursor.execute(select_by_epid_sql, (epid,))
+            row_epid = self.cursor.fetchone()
+            if row_epid:
+                product_db_id = row_epid[0]
+
+        # 3) Si pas trouvé via epid, on essaye item_id (logique actuelle)
+        if not product_db_id:
+            select_sql = "SELECT product_id FROM product WHERE item_id = %s"
+            self.cursor.execute(select_sql, (item.get("item_id"),))
+            row_itemid = self.cursor.fetchone()
+            if row_itemid:
+                product_db_id = row_itemid[0]
+
+        # 4) UPDATE si product_db_id existe, sinon INSERT
+        if product_db_id:
             spider.logger.info(f"Produit existant trouvé avec l'id {product_db_id}")
 
             update_sql = """
                 UPDATE product
-                SET title = %s, 
+                SET epid = %s,
+                    title = %s, 
                     item_condition = %s,
                     normalized_condition = %s,
                     signed = %s,
@@ -49,11 +64,15 @@ class MySQLPipeline:
                     time_remaining = %s,
                     buy_it_now_price = %s,
                     ended = %s,
-                    url = %s
+                    url = %s,
+                    image_url = %s,
+                    seller_username = %s,
+                    category = %s
                 WHERE product_id = %s
             """
             try:
                 self.cursor.execute(update_sql, (
+                    epid,
                     item.get("title", ""),
                     item.get("item_condition", ""),
                     item.get("normalized_condition", ""),
@@ -65,6 +84,9 @@ class MySQLPipeline:
                     item.get("buy_it_now_price"),
                     item.get("ended", False),
                     item.get("item_url", ""),
+                    item.get("image_url", ""),
+                    item.get("seller_username", ""),
+                    item.get("category", ""),
                     product_db_id
                 ))
                 self.conn.commit()
@@ -73,13 +95,15 @@ class MySQLPipeline:
                 spider.logger.error(f"Erreur lors de la mise à jour du produit: {e}")
 
         else:
+            # INSERT
             insert_product_sql = """
                 INSERT INTO product 
-                (item_id, title, item_condition, normalized_condition, signed, in_box, url, image_url, seller_username, category, 
+                (epid, item_id, title, item_condition, normalized_condition, signed, in_box, url, image_url, seller_username, category,
                  listing_type, bids_count, time_remaining, buy_it_now_price, ended)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             product_values = (
+                epid,
                 item.get("item_id", ""),
                 item.get("title", ""),
                 item.get("item_condition", ""),
@@ -106,7 +130,7 @@ class MySQLPipeline:
                 spider.logger.error(f"Erreur lors de l'insertion du produit: {e}")
                 return item
 
-        # Mapping de la catégorie et mise à jour du champ category_id
+        # 5) Mapping de la catégorie et mise à jour du champ category_id
         scraped_category = item.get("category", "")
         mapped_category_id = map_category(scraped_category)
         if mapped_category_id:
@@ -120,13 +144,17 @@ class MySQLPipeline:
         else:
             spider.logger.info(f"Aucun mapping trouvé pour la catégorie: {scraped_category}")
 
-        # Insertion du relevé de prix dans la table price_history, incluant buy_it_now_price
+        # 6) Insertion du relevé de prix dans la table price_history
         insert_price_sql = """
             INSERT INTO price_history (product_id, price, buy_it_now_price, date_scraped)
             VALUES (%s, %s, %s, NOW())
         """
         try:
-            self.cursor.execute(insert_price_sql, (product_db_id, item.get("price", 0), item.get("buy_it_now_price")))
+            self.cursor.execute(insert_price_sql, (
+                product_db_id,
+                item.get("price", 0),
+                item.get("buy_it_now_price")
+            ))
             self.conn.commit()
             spider.logger.info(f"Historique de prix inséré pour le produit {product_db_id}")
         except Exception as e:

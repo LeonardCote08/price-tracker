@@ -1,21 +1,30 @@
 // frontend/src/components/ProduitCard.js
-import React, { useEffect, useState } from 'react'; // Ajoute useEffect et useState
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import './ProduitCard.css';
 
 function ProduitCard({ produit }) {
     const price = typeof produit.price === 'number' ? produit.price : 0;
     const buyItNow = typeof produit.buy_it_now_price === 'number' ? produit.buy_it_now_price : null;
-    const [trend, setTrend] = useState('N/A'); // État pour la tendance
+    const [trend, setTrend] = useState('N/A');
 
     const conditionText = produit.normalized_condition?.trim() || 'Not specified';
-    let listingLabel = '';
-    if (produit.listing_type === 'fixed_price') listingLabel = 'Fixed Price';
-    else if (produit.listing_type === 'auction') listingLabel = 'Auction';
-    else if (produit.listing_type === 'auction_with_bin') listingLabel = 'Auction + BIN';
-    const isAuction = (produit.listing_type === 'auction' || produit.listing_type === 'auction_with_bin');
 
-    // Récupérer la tendance via une nouvelle API
+    // Déterminer l'étiquette du type d'annonce
+    let listingLabel = '';
+    switch (produit.listing_type) {
+        case 'auction':
+            listingLabel = 'Auction';
+            break;
+        case 'auction_with_bin':
+            listingLabel = 'Auction + BIN';
+            break;
+        default:
+            listingLabel = 'Fixed Price';
+            break;
+    }
+
+    // Charger la tendance via l'API
     useEffect(() => {
         fetch(`/api/produits/${produit.product_id}/price-trend`)
             .then(response => response.json())
@@ -27,9 +36,16 @@ function ProduitCard({ produit }) {
             .catch(err => console.error('Erreur lors de la récupération de la tendance', err));
     }, [produit.product_id]);
 
+    // Classes CSS pour la tendance
+    let trendClass = '';
+    if (trend.includes('Rising')) trendClass = 'trend-up';
+    else if (trend.includes('Falling')) trendClass = 'trend-down';
+
     return (
         <Link to={`/produits/${produit.product_id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className="produit-card">
+
+                {/* Image et badges (Signed, In Box, etc.) */}
                 <img className="product-image" src={produit.image_url} alt={produit.title || 'No title'} />
                 <div className="badges-container">
                     {produit.signed && <span className="badge badge-signed">Signed</span>}
@@ -37,45 +53,60 @@ function ProduitCard({ produit }) {
                     {produit.in_box === false && <span className="badge badge-nobox">No Box</span>}
                     {produit.ended && <span className="badge badge-ended">Ended</span>}
                 </div>
+
+                {/* Bloc principal d'informations */}
                 <div className="product-info">
+                    {/* Condition + type d'annonce sur une seule ligne */}
                     <div className="condition-listing-line">
                         <span className="condition-text">{conditionText}</span>
                         <span className="separator"> • </span>
                         <span className="listing-text">{listingLabel}</span>
                     </div>
-                    {isAuction && (
-                        <div className="auction-info-line">
-                            <span>Bids: {produit.bids_count ?? 0}</span>
-                            <span className="separator"> • </span>
-                            <span>Time left: {produit.time_remaining || 'N/A'}</span>
-                        </div>
-                    )}
-                    <div className="price-section" style={{ marginTop: '0.5rem' }}>
-                        {isAuction && (
+
+                    {/* Bloc des prix & stats */}
+                    <div className="price-info">
+                        {/* Current Bid (auction) ou Price (fixed) */}
+                        {produit.listing_type === 'auction' || produit.listing_type === 'auction_with_bin' ? (
                             <div className="price-line">
                                 <span className="price-label">Current Bid:</span>
                                 <span className="price-value">${price.toFixed(2)}</span>
                             </div>
-                        )}
-                        {produit.listing_type === 'auction_with_bin' && (
-                            <div className="price-line">
-                                <span className="price-label">Buy It Now:</span>
-                                <span className="price-value">{buyItNow ? `$${buyItNow.toFixed(2)}` : 'N/A'}</span>
-                            </div>
-                        )}
-                        {produit.listing_type === 'fixed_price' && (
+                        ) : (
                             <div className="price-line">
                                 <span className="price-label">Price:</span>
                                 <span className="price-value">${price.toFixed(2)}</span>
                             </div>
                         )}
-                        <span className={`price-trend ${trend.includes('Rising') ? 'trend-up' : trend.includes('Falling') ? 'trend-down' : ''}`}>
+
+                        {/* Buy It Now si auction_with_bin */}
+                        {produit.listing_type === 'auction_with_bin' && (
+                            <div className="price-line">
+                                <span className="price-label">Buy It Now:</span>
+                                <span className="price-value">
+                                    {buyItNow ? `$${buyItNow.toFixed(2)}` : 'N/A'}
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Bids + Time left si enchère */}
+                        {(produit.listing_type === 'auction' || produit.listing_type === 'auction_with_bin') && (
+                            <div className="auction-info-line">
+                                <span>Bids: {produit.bids_count ?? 0}</span>
+                                <span className="separator"> • </span>
+                                <span>Time left: {produit.time_remaining || 'N/A'}</span>
+                            </div>
+                        )}
+
+                        {/* Tendance de prix */}
+                        <div className={`price-trend ${trendClass}`}>
                             {trend}
-                        </span>
+                        </div>
+
+                        {/* Date de mise à jour */}
+                        <p className="updated-date">
+                            Updated: {produit.last_scraped_date || 'N/A'}
+                        </p>
                     </div>
-                    <p style={{ fontSize: '0.7rem', color: '#777', marginTop: '0.5rem' }}>
-                        Updated: {produit.last_scraped_date || 'N/A'}
-                    </p>
                 </div>
             </div>
         </Link>

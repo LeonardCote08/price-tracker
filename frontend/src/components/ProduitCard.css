@@ -5,15 +5,20 @@
     max-width: 350px;
     width: 100%;
     display: flex;
-    flex-direction: column; /* Empile l’image et le texte en colonne */
-    align-items: center; /* Centre horizontalement */
-    text-align: center; /* Centre le texte */
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
     position: relative;
     background-color: var(--card-bg-color);
     border-radius: 10px;
     padding: 1rem;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    /* On fusionne ici la marge, la taille de police et la couleur 
+       qui étaient redéfinies plus bas */
+    margin: 0.25em 0;
+    font-size: 0.9rem;
+    color: var(--text-color);
 }
 
     .produit-card:hover {
@@ -21,18 +26,17 @@
         box-shadow: 0 8px 20px rgba(0,0,0,0.4);
     }
 
+/* Badges */
 .badges-container {
     position: absolute;
     top: 0.5rem;
     right: 0.5rem;
     display: flex;
-    flex-direction: column; /* Alignement vertical */
-    gap: 0.3rem; /* Espace vertical entre chaque badge */
+    flex-direction: column;
+    gap: 0.3rem;
     align-items: flex-end;
 }
 
-
-/* Style de base pour un badge */
 .badge {
     color: #fff;
     padding: 0.2rem 0.4rem;
@@ -41,78 +45,66 @@
     font-weight: 600;
 }
 
-/* Variantes pour chaque badge */
 .badge-signed {
-    background-color: #E74C3C; /* rouge */
+    background-color: #E74C3C;
 }
 
 .badge-inbox {
-    background-color: #2ECC71; /* vert */
+    background-color: #2ECC71;
 }
 
 .badge-nobox {
-    background-color: #E67E22; /* orange */
+    background-color: #E67E22;
 }
 
 .badge-ended {
-    background-color: #444; /* gris foncé */
+    background-color: #444;
 }
 
-/* Image du produit */
+/* Image */
 .product-image {
     width: 150px;
     height: 150px;
     object-fit: cover;
     border-radius: 4px;
-    margin-bottom: 0.5rem; /* plus d’espace en bas de l’image */
+    margin-bottom: 0.5rem;
 }
 
-/* Bloc d'infos (titre + prix) */
+/* Bloc principal */
 .product-info {
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
 
-    .product-info p {
-        margin: 0.2rem 0;
-        font-size: 0.9rem;
-        color: var(--text-color);
-    }
-
-
-/* Titre du produit */
-.product-title {
-    font-size: 1.1rem; /* au lieu de 1rem */
-    font-weight: 600; /* un peu plus gras */
-    margin: 0 0 0.4rem;
-    color: var(--text-color);
+/* Condition + type */
+.condition-listing-line {
+    font-size: 0.9rem;
+    margin-bottom: 0.2rem;
 }
 
-
-/* Bloc contenant le prix (total + breakdown) */
-.price-block {
+/* Price info bloc */
+.price-info {
+    margin-top: 0.6rem;
     display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 0.3rem; /* petit espacement vertical */
 }
 
-/* Une ligne de prix : label + valeur */
+/* Price lines */
 .price-line {
     display: flex;
     gap: 0.4rem;
     align-items: baseline;
-    margin: 0.25rem 0; /* un petit espace vertical */
+    margin: 0.25rem 0;
 }
 
-/* Petit label (Current Bid, Buy It Now, etc.) */
 .price-label {
     font-size: 0.85rem;
-    color: #bbb; /* un gris un peu plus discret */
+    color: #bbb;
     font-weight: 400;
 }
 
-/* Valeur du prix en plus grand */
 .price-value {
     font-size: 1.3rem;
     font-weight: 700;
@@ -120,61 +112,31 @@
     font-family: 'Montserrat', sans-serif;
 }
 
-/* Prix total (le plus important) */
-.price-total {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--price-color);
-    font-family: 'Montserrat', sans-serif;
-}
-
-/* Breakdown en plus petit, même couleur de base */
-.price-breakdown {
+/* Auction info */
+.auction-info-line {
     font-size: 0.85rem;
-    color: var(--text-color);
-    font-family: 'Montserrat', sans-serif;
+    color: #bbb;
 }
 
-
-
+/* Trend */
 .price-trend {
     font-size: 0.8rem;
-    margin-top: 0.3rem;
+    margin-top: 0.2rem;
+    text-align: center;
 }
 
 .trend-up {
-    color: #2ECC71; /* Vert pour hausse */
+    color: #2ECC71;
 }
 
 .trend-down {
-    color: #E74C3C; /* Rouge pour baisse */
+    color: #E74C3C;
 }
 
-
-/* Prix de base et frais de livraison */
-.price-base,
-.price-shipping {
-    font-weight: 500;
-    color: var(--text-color);
+/* Date de mise à jour */
+.updated-date {
+    font-size: 0.6rem;
+    color: #999;
+    margin-top: 0.4rem;
+    text-align: center;
 }
-
-.price-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* centre horizontalement */
-    margin-top: 0.5rem; /* un petit espace au-dessus */
-}
-
-
-/* Paragraphes éventuels */
-.produit-card p {
-    margin: 0.25em 0;
-    font-size: 0.9rem;
-    color: var(--text-color);
-}
-
-    .produit-card p.updated-date {
-        font-size: 0.65rem;
-        color: #999;
-        margin-top: 0.5rem;
-    }
