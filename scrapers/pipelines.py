@@ -136,14 +136,17 @@ class MySQLPipeline:
 
         # 6) Insertion du relevé de prix dans la table price_history
         insert_price_sql = """
-            INSERT INTO price_history (product_id, price, buy_it_now_price, date_scraped)
-            VALUES (%s, %s, %s, NOW())
+            INSERT INTO price_history 
+            (product_id, price, buy_it_now_price, bids_count, time_remaining, date_scraped)
+            VALUES (%s, %s, %s, %s, %s, NOW())
         """
         try:
             self.cursor.execute(insert_price_sql, (
                 product_db_id,
                 item.get("price", 0),
-                item.get("buy_it_now_price")
+                item.get("buy_it_now_price"),
+                item.get("bids_count"),
+                item.get("time_remaining")
             ))
             self.conn.commit()
             spider.logger.info(f"Historique de prix inséré pour le produit {product_db_id}")
