@@ -27,34 +27,13 @@ class MySQLPipeline:
             spider.logger.info(f"Drop item bundle: {title}")
             raise DropItem(f"Item bundle dropped: {title}")
 
-        # 1) Récupérer epid si présent
-        epid = item.get("epid", None)
-
-        # 2) Chercher un produit existant d’abord via epid
-        product_db_id = None
-        if epid:
-            select_by_epid_sql = "SELECT product_id FROM product WHERE epid = %s LIMIT 1"
-            self.cursor.execute(select_by_epid_sql, (epid,))
-            row_epid = self.cursor.fetchone()
-            if row_epid:
-                product_db_id = row_epid[0]
-
-        # 3) Si pas trouvé via epid, on essaye item_id (logique actuelle)
-        if not product_db_id:
-            select_sql = "SELECT product_id FROM product WHERE item_id = %s"
-            self.cursor.execute(select_sql, (item.get("item_id"),))
-            row_itemid = self.cursor.fetchone()
-            if row_itemid:
-                product_db_id = row_itemid[0]
-
         # 4) UPDATE si product_db_id existe, sinon INSERT
         if product_db_id:
             spider.logger.info(f"Produit existant trouvé avec l'id {product_db_id}")
 
             update_sql = """
                 UPDATE product
-                SET epid = %s,
-                    title = %s, 
+                SET title = %s, 
                     item_condition = %s,
                     normalized_condition = %s,
                     signed = %s,
@@ -72,7 +51,6 @@ class MySQLPipeline:
             """
             try:
                 self.cursor.execute(update_sql, (
-                    epid,
                     item.get("title", ""),
                     item.get("item_condition", ""),
                     item.get("normalized_condition", ""),
@@ -98,12 +76,11 @@ class MySQLPipeline:
             # INSERT
             insert_product_sql = """
                 INSERT INTO product 
-                (epid, item_id, title, item_condition, normalized_condition, signed, in_box, url, image_url, seller_username, category,
+                (item_id, title, item_condition, normalized_condition, signed, in_box, url, image_url, seller_username, category,
                  listing_type, bids_count, time_remaining, buy_it_now_price, ended)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             product_values = (
-                epid,
                 item.get("item_id", ""),
                 item.get("title", ""),
                 item.get("item_condition", ""),

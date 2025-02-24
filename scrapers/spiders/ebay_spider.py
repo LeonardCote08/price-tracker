@@ -5,7 +5,6 @@ from scrapers.items import EbayItem
 from urllib.parse import quote_plus
 import re
 import json
-from urllib.parse import urlparse, parse_qs
 
 class EbaySpider(scrapy.Spider):
     name = "ebay_spider"
@@ -310,10 +309,6 @@ class EbaySpider(scrapy.Spider):
             self.logger.error(f"Erreur lors de l'extraction de la catégorie: {e}")
             item["category"] = ""
         
-        parsed_url = urlparse(response.url)
-        qs = parse_qs(parsed_url.query)
-        epid_val = qs.get("epid", [None])[0]  # On récupère la première valeur du paramètre epid
-        if epid_val:
-            item["epid"] = epid_val.strip()
+       
 
         yield item
