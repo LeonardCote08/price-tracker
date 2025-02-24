@@ -192,9 +192,18 @@ function DetailProduitPage() {
                 />
                 {historique.stats && (
                     <div className="price-stats">
-                        <p>Average Price: ${historique.stats.avg_price.toFixed(2)}</p>
-                        <p>Min Price: ${historique.stats.min_price.toFixed(2)}</p>
-                        <p>Max Price: ${historique.stats.max_price.toFixed(2)}</p>
+                        <p>Average Price: ${historique.stats.avg_price?.toFixed(2) || 'N/A'}</p>
+                        <p>Min Price: ${historique.stats.min_price?.toFixed(2) || 'N/A'}</p>
+                        <p>Max Price: ${historique.stats.max_price?.toFixed(2) || 'N/A'}</p>
+                        {historique.stats.variation !== undefined && (
+                            <p>Variation: {historique.stats.variation.toFixed(2)}%</p>
+                        )}
+                        {historique.stats.seven_day_avg !== undefined && (
+                            <p>7-Day Avg: ${historique.stats.seven_day_avg.toFixed(2)}</p>
+                        )}
+                        {historique.trend && (
+                            <p>Trend: {historique.trend}</p>
+                        )}
                     </div>
                 )}
             </div>

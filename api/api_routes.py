@@ -234,6 +234,7 @@ def get_price_trend(product_id):
 
 # api/api_routes.py
 @api_bp.route('/produits/<int:product_id>/historique-prix', methods=['GET'])
+@api_bp.route('/produits/<int:product_id>/historique-prix', methods=['GET'])
 def get_historique_prix(product_id):
     conn = get_connection()
     cursor = conn.cursor()
@@ -248,13 +249,34 @@ def get_historique_prix(product_id):
     conn.close()
 
     prices = [float(row[1]) for row in rows]
+    dates = [row[0] for row in rows]
+    if not prices:
+        return jsonify({"dates": [], "prices": [], "stats": {}, "trend": "N/A"})
+
+    # Statistiques avancées
+    avg_price = sum(prices) / len(prices)
+    min_price = min(prices)
+    max_price = max(prices)
+    variation = ((prices[-1] - prices[0]) / prices[0] * 100) if prices[0] != 0 else 0
+    seven_day_avg = sum(prices[-7:]) / min(len(prices), 7) if prices else 0
+    trend = "stable"
+    if len(prices) > 1:
+        change = prices[-1] - prices[-2]
+        if change > 0.5:  # Seuil arbitraire
+            trend = "up"
+        elif change < -0.5:
+            trend = "down"
+
     data = {
-        "dates": [row[0] for row in rows],
+        "dates": dates,
         "prices": prices,
         "stats": {
-            "avg_price": sum(prices) / len(prices) if prices else 0,
-            "min_price": min(prices) if prices else 0,
-            "max_price": max(prices) if prices else 0,
-        }
+            "avg_price": avg_price,
+            "min_price": min_price,
+            "max_price": max_price,
+            "variation": variation,
+            "seven_day_avg": seven_day_avg
+        },
+        "trend": trend
     }
     return jsonify(data)
