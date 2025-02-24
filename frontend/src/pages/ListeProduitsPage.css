@@ -12,14 +12,16 @@
 
 /* SUBHEADER : seulement la bannière */
 .subheader {
-    margin: 1rem auto;
-    padding: 0.5rem 1rem;
-    max-width: 600px;
-    background: rgba(255, 255, 255, 0.07);
+    background: rgba(255, 255, 255, 0.03);
+    font-size: 0.85rem; /* plus petit */
+    color: #bbb; /* plus discret */
+    padding: 0.3rem 0.6rem; /* réduit */
     border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    text-align: center; /* centre le texte du message */
+    text-align: center;
+    margin: 0.5rem auto;
+    box-shadow: none; /* on enlève l'ombre */
 }
+
 
 .banner-text {
     font-size: 1rem;
@@ -38,23 +40,26 @@
 /* ListeProduitsPage.css */
 
 .filter-button {
-    background: var(--header-gradient); /* On applique le gradient */
-    color: #fff;
-    border: none;
+    font-family: 'Poppins', sans-serif;
+    background: none;
+    border: 2px solid #1595EB;
+    color: #1595EB;
     padding: 0.5rem 1rem;
     border-radius: 4px;
-    font-size: 0.9rem;
     cursor: pointer;
-    transition: filter 0.3s ease; /* Au lieu de background-color */
 }
 
     .filter-button:hover {
-        filter: brightness(1.1);
+        background-color: #1595EB;
+        color: #fff;
     }
 
+    /* Quand le bouton est "selected", on inverse les couleurs */
     .filter-button.selected {
-        filter: brightness(1.1);
+        background-color: #1595EB;
+        color: #fff;
     }
+
 
 
 .general-info-block,

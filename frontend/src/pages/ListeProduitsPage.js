@@ -9,8 +9,10 @@ function ListeProduitsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // "active" ou "ended"
+    // Filtres existants (statusFilter) et nouveaux (filterSigned, filterInBox)
     const [statusFilter, setStatusFilter] = useState("active");
+    const [filterSigned, setFilterSigned] = useState(false);
+    const [filterInBox, setFilterInBox] = useState(false);
 
     const loadProducts = useCallback(() => {
         setLoading(true);
@@ -34,6 +36,13 @@ function ListeProduitsPage() {
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
 
+    // Ici, on applique les filtres (signed, in_box)
+    const filteredProduits = produits.filter(p => {
+        if (filterSigned && !p.signed) return false;
+        if (filterInBox && p.in_box !== true) return false;
+        return true;
+    });
+
     return (
         <div>
             <div className="subheader">
@@ -43,7 +52,7 @@ function ListeProduitsPage() {
             </div>
 
             <div className="button-group-centered">
-                {/* Remarquez la classe conditionnelle "selected" si le statut est "active" */}
+                {/* Boutons de filtre pour "active" / "ended" */}
                 <button
                     className={`filter-button ${statusFilter === 'active' ? 'selected' : ''}`}
                     onClick={() => setStatusFilter("active")}
@@ -56,10 +65,24 @@ function ListeProduitsPage() {
                 >
                     Ended Listings
                 </button>
+
+                {/* Nouveaux boutons de filtre Signed et InBox */}
+                <button
+                    className={`filter-button ${filterSigned ? 'selected' : ''}`}
+                    onClick={() => setFilterSigned(!filterSigned)}
+                >
+                    Signed Only
+                </button>
+                <button
+                    className={`filter-button ${filterInBox ? 'selected' : ''}`}
+                    onClick={() => setFilterInBox(!filterInBox)}
+                >
+                    In Box Only
+                </button>
             </div>
 
             <div className="produits-grid">
-                {produits.map((p) => (
+                {filteredProduits.map((p) => (
                     <ProduitCard key={p.product_id} produit={p} />
                 ))}
             </div>
