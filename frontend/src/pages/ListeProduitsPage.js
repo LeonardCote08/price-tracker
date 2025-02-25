@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
+// frontend/src/pages/ListeProduitsPage.js
+import React, { useEffect, useState } from 'react';
 import { fetchProduits } from '../services/api';
 import ProduitCard from '../components/ProduitCard';
 import './ListeProduitsPage.css';
@@ -6,20 +7,24 @@ import useScrollRestoration from '../hooks/useScrollRestoration';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 
-
 function ListeProduitsPage() {
+    // Liste de produits récupérés depuis l'API
     const [produits, setProduits] = useState([]);
+    // Dictionnaire qui associe product_id -> "up"/"down"/"stable"
+    const [trendById, setTrendById] = useState({});
+    // Filtre courant : "all", "up", "down", "stable"
+    const [trendFilter, setTrendFilter] = useState('all');
+
+    // États de chargement / erreur
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Filtres existants (statusFilter) et nouveaux (filterSigned, filterInBox)
-    const [statusFilter, setStatusFilter] = useState("active");
-    const [filterSigned, setFilterSigned] = useState(false);
-    const [filterInBox, setFilterInBox] = useState(false);
+    useScrollRestoration();
 
-    const loadProducts = useCallback(() => {
+    // 1) Charger tous les produits (sans filtre "active"/"ended")
+    useEffect(() => {
         setLoading(true);
-        fetchProduits(statusFilter)
+        fetchProduits()
             .then(data => {
                 setProduits(data);
                 setLoading(false);
@@ -28,22 +33,36 @@ function ListeProduitsPage() {
                 setError(err.message);
                 setLoading(false);
             });
-    }, [statusFilter]);
+    }, []);
 
+    // 2) Pour chaque produit, récupérer la tendance via /api/produits/:id/price-trend
     useEffect(() => {
-        loadProducts();
-    }, [loadProducts]);
-
-    useScrollRestoration(!loading);
+        produits.forEach(prod => {
+            fetch(`/api/produits/${prod.product_id}/price-trend`)
+                .then(r => r.json())
+                .then(data => {
+                    // data.trend = "up"/"down"/"stable"
+                    setTrendById(prev => ({
+                        ...prev,
+                        [prod.product_id]: data.trend
+                    }));
+                })
+                .catch(err => console.error('Erreur trend', err));
+        });
+    }, [produits]);
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
 
-    // Ici, on applique les filtres (signed, in_box)
-    const filteredProduits = produits.filter(p => {
-        if (filterSigned && !p.signed) return false;
-        if (filterInBox && p.in_box !== true) return false;
-        return true;
+    // 3) Appliquer le filtre localement en fonction de la tendance
+    const filteredProduits = produits.filter(prod => {
+        const productTrend = trendById[prod.product_id];
+        if (!productTrend) {
+            // Pas encore chargée => on l'affiche seulement si on est en "all"
+            return trendFilter === 'all';
+        }
+        if (trendFilter === 'all') return true;
+        return productTrend === trendFilter;
     });
 
     return (
@@ -57,42 +76,38 @@ function ListeProduitsPage() {
                         Currently tracking Funko Pop Doctor Doom #561 on eBay. More items to come soon!
                     </p>
                 </div>
-
-
             </div>
 
+            {/* Boutons de filtre : All, Price Rising, Price Falling, Price Stable */}
             <div className="button-group-centered">
-                {/* Boutons de filtre pour "active" / "ended" */}
                 <button
-                    className={`filter-button ${statusFilter === 'active' ? 'selected' : ''}`}
-                    onClick={() => setStatusFilter("active")}
+                    className={`filter-button ${trendFilter === 'all' ? 'selected' : ''}`}
+                    onClick={() => setTrendFilter('all')}
                 >
-                    Active Listings
+                    All
                 </button>
                 <button
-                    className={`filter-button ${statusFilter === 'ended' ? 'selected' : ''}`}
-                    onClick={() => setStatusFilter("ended")}
+                    className={`filter-button ${trendFilter === 'up' ? 'selected' : ''}`}
+                    onClick={() => setTrendFilter('up')}
                 >
-                    Ended Listings
-                </button>
-
-                {/* Nouveaux boutons de filtre Signed et InBox */}
-                <button
-                    className={`filter-button ${filterSigned ? 'selected' : ''}`}
-                    onClick={() => setFilterSigned(!filterSigned)}
-                >
-                    Signed Only
+                    Price Rising
                 </button>
                 <button
-                    className={`filter-button ${filterInBox ? 'selected' : ''}`}
-                    onClick={() => setFilterInBox(!filterInBox)}
+                    className={`filter-button ${trendFilter === 'down' ? 'selected' : ''}`}
+                    onClick={() => setTrendFilter('down')}
                 >
-                    In Box Only
+                    Price Falling
+                </button>
+                <button
+                    className={`filter-button ${trendFilter === 'stable' ? 'selected' : ''}`}
+                    onClick={() => setTrendFilter('stable')}
+                >
+                    Price Stable
                 </button>
             </div>
 
             <div className="produits-grid">
-                {filteredProduits.map((p) => (
+                {filteredProduits.map(p => (
                     <ProduitCard key={p.product_id} produit={p} />
                 ))}
             </div>
