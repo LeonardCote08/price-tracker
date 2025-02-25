@@ -37,7 +37,7 @@ def generate_fake_history(product_id, final_date_str, num_days=14):
     
     # Définir un prix de départ pour 13 jours avant (en ajoutant une variation aléatoire de ±5$)
     variation = random.uniform(-5, 5)
-    starting_price = final_price + variation
+    starting_price = float(final_price) + variation
     # S'assurer que le prix reste dans la plage [20, 60]
     starting_price = max(20, min(60, starting_price))
     print(f"Prix simulé de départ (il y a {num_days-1} jours) : {starting_price}$")
