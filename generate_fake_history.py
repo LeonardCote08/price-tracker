@@ -50,7 +50,7 @@ def generate_fake_history(product_id, final_date_str, num_days=14):
         # Calculer la fraction de progression (0 pour le jour de départ, 1 pour le jour final)
         frac = (num_days - 1 - i) / (num_days - 1)
         # Prix de base par interpolation linéaire
-        base_price = starting_price + (final_price - starting_price) * frac
+        base_price = starting_price + (float(final_price) - starting_price) * frac
         # Ajouter un bruit aléatoire de ±0.50$
         noise = random.uniform(-0.5, 0.5)
         fake_price = base_price + noise
