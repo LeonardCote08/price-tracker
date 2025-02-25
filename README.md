@@ -2,6 +2,8 @@
 
 A portfolio project that scrapes eBay listings, stores product and price data in a MySQL database, and provides a React-based interface to visualize price history and listing details. Currently, it tracks *Funko Pop Doctor Doom #561* as a demonstration, but it can be extended to monitor any eBay product.
 
+This project demonstrates my expertise in Python web scraping, database management, REST API development, and front-end integration with React. It serves as a portfolio piece to showcase my ability to build robust, scalable, and user-friendly solutions for real-world business challenges.
+
 ## Features
 
 - **Web Scraping**: Uses Scrapy to crawl eBay listings, capturing data like price, condition, seller, and more.
@@ -9,6 +11,10 @@ A portfolio project that scrapes eBay listings, stores product and price data in
 - **Data Visualization**: A React front end displays listings in a grid view and offers a detailed page with a price history chart.
 - **Filtering**: Filter listings by active/ended status, "signed" items, or "in box" status.
 - **Automated Updates**: Includes a script (`refresh_products.py`) to periodically check listing status (e.g., ended auctions).
+
+## Why This Project?
+
+This project is designed to help businesses, resellers, and collectors effortlessly monitor and analyze eBay price trends. By providing an easy-to-use interface and detailed price history tracking, users can make informed decisions, identify market trends, and optimize their buying or selling strategies. It offers valuable insights for eBay users who need to stay competitive in a dynamic marketplace.
 
 ## Technology Stack
 
@@ -173,3 +179,9 @@ The API will be available at `http://127.0.0.1:5000/api/...`.
 ## License
 
 This project is licensed under the [MIT License](LICENSE). Feel free to modify and distribute it, provided the license is included.
+
+## Contact
+
+If you are interested in hiring me or discussing a project, feel free to reach out via my email address: [leonard.cote08@gmail.com](mailto:leonard.cote08@gmail.com)
+
+
