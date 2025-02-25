@@ -8,21 +8,10 @@ function ProduitCard({ produit }) {
     const buyItNow = typeof produit.buy_it_now_price === 'number' ? produit.buy_it_now_price : null;
     const [trend, setTrend] = useState('N/A');
 
+    // Auparavant, on affichait {conditionText} et {listingLabel} dans le composant.
+    // Maintenant, on ne s’en sert plus pour l’affichage dans la vignette :
     const conditionText = produit.normalized_condition?.trim() || 'Not specified';
-
-    // Déterminer l'étiquette du type d'annonce
-    let listingLabel = '';
-    switch (produit.listing_type) {
-        case 'auction':
-            listingLabel = 'Auction';
-            break;
-        case 'auction_with_bin':
-            listingLabel = 'Auction + BIN';
-            break;
-        default:
-            listingLabel = 'Fixed Price';
-            break;
-    }
+    // const listingLabel = (produit.listing_type === 'fixed_price') ? 'Fixed Price' : '';
 
     // Charger la tendance via l'API
     useEffect(() => {
@@ -45,57 +34,40 @@ function ProduitCard({ produit }) {
         <Link to={`/produits/${produit.product_id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className="produit-card">
 
-                {/* Image et badges (Signed, In Box, etc.) */}
+                {/* Image et badges (Signed, In Box, Condition, etc.) */}
                 <img className="product-image" src={produit.image_url} alt={produit.title || 'No title'} />
                 <div className="badges-container">
+                    {/* Badge condition */}
+                    {produit.normalized_condition === 'New' && (
+                        <span className="badge badge-condition-new">New</span>
+                    )}
+                    {produit.normalized_condition === 'Used' && (
+                        <span className="badge badge-condition-used">Used</span>
+                    )}
+
+                    {/* Badge Signed */}
                     {produit.signed && <span className="badge badge-signed">Signed</span>}
+
+                    {/* Badge In Box / No Box */}
                     {produit.in_box === true && <span className="badge badge-inbox">In Box</span>}
                     {produit.in_box === false && <span className="badge badge-nobox">No Box</span>}
+
+                    {/* Badge Ended */}
                     {produit.ended && <span className="badge badge-ended">Ended</span>}
                 </div>
 
                 {/* Bloc principal d'informations */}
                 <div className="product-info">
-                    {/* Condition + type d'annonce sur une seule ligne */}
-                    <div className="condition-listing-line">
-                        <span className="condition-text">{conditionText}</span>
-                        <span className="separator"> • </span>
-                        <span className="listing-text">{listingLabel}</span>
-                    </div>
+                    {/* On retire complètement la ligne "condition + listing type" */}
+                    {/* (ancien code supprimé) */}
 
                     {/* Bloc des prix & stats */}
                     <div className="price-info">
-                        {/* Current Bid (auction) ou Price (fixed) */}
-                        {produit.listing_type === 'auction' || produit.listing_type === 'auction_with_bin' ? (
-                            <div className="price-line">
-                                <span className="price-label">Current Bid:</span>
-                                <span className="price-value">${price.toFixed(2)}</span>
-                            </div>
-                        ) : (
-                            <div className="price-line">
-                                <span className="price-label">Price:</span>
-                                <span className="price-value">${price.toFixed(2)}</span>
-                            </div>
-                        )}
-
-                        {/* Buy It Now si auction_with_bin */}
-                        {produit.listing_type === 'auction_with_bin' && (
-                            <div className="price-line">
-                                <span className="price-label">Buy It Now:</span>
-                                <span className="price-value">
-                                    {buyItNow ? `$${buyItNow.toFixed(2)}` : 'N/A'}
-                                </span>
-                            </div>
-                        )}
-
-                        {/* Bids + Time left si enchère */}
-                        {(produit.listing_type === 'auction' || produit.listing_type === 'auction_with_bin') && (
-                            <div className="auction-info-line">
-                                <span>Bids: {produit.bids_count ?? 0}</span>
-                                <span className="separator"> • </span>
-                                <span>Time left: {produit.time_remaining || 'N/A'}</span>
-                            </div>
-                        )}
+                        {/* Comme on n’a que du fixed_price, on affiche juste Price */}
+                        <div className="price-line">
+                            <span className="price-label">Price:</span>
+                            <span className="price-value">${price.toFixed(2)}</span>
+                        </div>
 
                         {/* Tendance de prix */}
                         <div className={`price-trend ${trendClass}`}>

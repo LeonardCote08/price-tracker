@@ -14,8 +14,6 @@
     padding: 1rem;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    /* On fusionne ici la marge, la taille de police et la couleur 
-       qui étaient redéfinies plus bas */
     margin: 0.25em 0;
     font-size: 0.9rem;
     color: var(--text-color);
@@ -43,6 +41,15 @@
     border-radius: 4px;
     font-size: 0.75rem;
     font-weight: 600;
+}
+
+/* Condition = New / Used */
+.badge-condition-new {
+    background-color: #27ae60; /* un vert un peu plus foncé */
+}
+
+.badge-condition-used {
+    background-color: #e67e22; /* orange */
 }
 
 .badge-signed {
