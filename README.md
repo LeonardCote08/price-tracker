@@ -136,19 +136,20 @@ For the full schema, refer to the SQL creation script provided in the query.
 ## Usage
 
 ### 1. Scrape eBay Listings
-Run the Scrapy spider with a keyword:
+
+Run the Scrapy spider from the project root with a keyword to populate the database with listings. Depending on your filtering needs, you can adjust the command parameters. For example, the following command includes additional filtering options:
+
 ```bash
-cd scrapers
-scrapy crawl ebay_spider -a keyword="Funko Pop Doctor Doom #561"
+scrapy crawl ebay_spider -a keyword="Funko Pop Doctor Doom #561 -17 -990 -916 -591 -Venomized"
 ```
-This populates the database with listings. Automate with cron for periodic updates (e.g., twice daily).
+**Note:** The extra parameters (`-17 -990 -916 -591 -Venomized`) are used for advanced filtering during scraping. Remove or modify them if they don't suit your needs.
 
 ### 2. Refresh Product Status
 Check if listings have ended:
 ```bash
 python refresh_products.py
 ```
-Run this periodically to keep the `ended` field up-to-date.
+This task is automated using cron jobs, which run the scraping and refresh tasks at scheduled intervals (e.g., scraping at 8:00 and 20:00 UTC, and refreshing every 12 hours).
 
 ### 3. Start the Flask API
 ```bash
