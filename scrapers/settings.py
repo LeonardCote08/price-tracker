@@ -47,6 +47,6 @@ AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 
 LOG_LEVEL = "DEBUG"
 
-ITEM_PIPELINES = {
-    'scrapers.pipelines.MySQLPipeline': 300,
-}
+#ITEM_PIPELINES = {
+ #   'scrapers.pipelines.MySQLPipeline': 300,
+#}
