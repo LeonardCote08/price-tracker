@@ -134,6 +134,25 @@ class MySQLPipeline:
         else:
             spider.logger.info(f"Aucun mapping trouvé pour la catégorie: {scraped_category}")
 
+        # Vérifie si le prix n'est pas identique à la dernière entrée
+        select_last_price_sql = """
+            SELECT price 
+            FROM price_history 
+            WHERE product_id = %s 
+            ORDER BY date_scraped DESC 
+            LIMIT 1
+        """
+        self.cursor.execute(select_last_price_sql, (product_db_id,))
+        last_price_row = self.cursor.fetchone()
+
+        if last_price_row is not None:
+            last_price_in_db = last_price_row[0]  # c'est un DECIMAL depuis la DB
+            current_price = item.get("price", 0)  # c'est un float (ou int) dans le code
+            if float(last_price_in_db) == float(current_price):
+                spider.logger.info(f"Le prix {current_price} est identique au dernier prix en base pour le produit {product_db_id}. On skip l'INSERT.")
+                return item
+
+
         # 6) Insertion du relevé de prix dans la table price_history
         insert_price_sql = """
             INSERT INTO price_history 
