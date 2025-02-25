@@ -2,13 +2,15 @@
 import random
 from datetime import datetime, timedelta
 from core.db_connection import get_connection
+from decimal import Decimal
+
 
 def generate_dummy_prices(base_price, days):
     """Génère une liste de prix avec une variation aléatoire de ±2% autour du prix de base."""
     prices = []
     for _ in range(days):
         variation = random.uniform(-0.02, 0.02)
-        price = base_price * (1 + variation)
+        price = base_price * (Decimal(1) + Decimal(str(variation)))
         prices.append(round(price, 2))
     return prices
 
