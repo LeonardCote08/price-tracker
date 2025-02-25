@@ -135,22 +135,33 @@ class MySQLPipeline:
             spider.logger.info(f"Aucun mapping trouvé pour la catégorie: {scraped_category}")
 
         # Vérifie si le prix n'est pas identique à la dernière entrée
+                # Vérifie si le prix n'est pas identique ET si c'est le même jour
         select_last_price_sql = """
-            SELECT price 
-            FROM price_history 
-            WHERE product_id = %s 
-            ORDER BY date_scraped DESC 
+            SELECT price, DATE(date_scraped)
+            FROM price_history
+            WHERE product_id = %s
+            ORDER BY date_scraped DESC
             LIMIT 1
         """
         self.cursor.execute(select_last_price_sql, (product_db_id,))
-        last_price_row = self.cursor.fetchone()
+        last_row = self.cursor.fetchone()
 
-        if last_price_row is not None:
-            last_price_in_db = last_price_row[0]  # c'est un DECIMAL depuis la DB
-            current_price = item.get("price", 0)  # c'est un float (ou int) dans le code
+        if last_row is not None:
+            last_price_in_db, last_date_in_db = last_row
+            current_price = item.get("price", 0)
+
+            # (A) Vérification du prix
             if float(last_price_in_db) == float(current_price):
-                spider.logger.info(f"Le prix {current_price} est identique au dernier prix en base pour le produit {product_db_id}. On skip l'INSERT.")
-                return item
+                # (B) Vérification de la date
+                from datetime import date
+                today_str = str(date.today())  # ex: '2025-03-10'
+                if str(last_date_in_db) == today_str:
+                    spider.logger.info(
+                        f"[SKIP] Prix identique ({current_price}) et déjà inséré aujourd'hui "
+                        f"pour le produit {product_db_id}."
+                    )
+                    return item
+
 
 
         # 6) Insertion du relevé de prix dans la table price_history
