@@ -23,9 +23,8 @@ def generate_smoother_prices(base_price: float, days: int):
     for i in range(days):
         if i == 0:
             # Premier jour : on part de trend_start, légère fluctuation
-            linear_price = trend_start
             variation_percent = random.uniform(-0.003, 0.003)
-            final_price = linear_price * (1 + variation_percent)
+            final_price = trend_start * (1 + variation_percent)
             prices.append(Decimal(str(round(final_price, 2))))
         else:
             # Prix linéaire théorique ce jour
@@ -54,26 +53,25 @@ def fill_dummy_price_history():
     # Paramètres
     end_date = datetime(2025, 2, 24)  # Date de fin fictive
     total_days = 90                   # Nombre de jours d'historique
-    base_price = 35.0                 # Prix de base (fixe) pour tous
+    base_price = 35.0                 # Prix de base (exemple)
 
     for prod in products:
         product_id = prod['product_id']
 
-        # 1) On supprime toutes les anciennes entrées pour repartir de zéro
+        # 1) On supprime toutes les anciennes entrées (évite d’empiler)
         cursor.execute("DELETE FROM price_history WHERE product_id = %s", (product_id,))
         conn.commit()
 
         # 2) Génère la liste de prix sur 'total_days'
         dummy_prices = generate_smoother_prices(base_price, total_days)
 
-        # 3) Insère jour par jour (du plus ancien au plus récent)
+        # 3) Insère un seul point par jour
         for i in range(total_days):
             day_offset = (total_days - 1) - i
             current_date = end_date - timedelta(days=day_offset)
 
-            # Insertion : un point par jour
-            price_value = dummy_prices[i]
             date_str = current_date.strftime("%Y-%m-%d %H:%M:%S")
+            price_value = dummy_prices[i]
 
             cursor.execute("""
                 INSERT INTO price_history
@@ -82,7 +80,7 @@ def fill_dummy_price_history():
             """, (
                 product_id,
                 price_value,
-                price_value,  # buy_it_now_price = même valeur en mode "fixed_price"
+                price_value,  # buy_it_now_price = idem pour fixed_price
                 None,         # pas d'enchères
                 None,         # pas de time_remaining
                 date_str
