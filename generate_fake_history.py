@@ -6,37 +6,44 @@ from core.db_connection import get_connection
 
 def generate_smoother_prices(base_price_decimal, days):
     """
-    Génère une tendance légèrement haussière (ex. +4 $ sur la période)
-    avec une fluctuation quotidienne de +/- 0,5 % max.
-    Par ailleurs, ~30% des jours conservent le prix de la veille 
-    (pas de changement ce jour-là).
+    Génère une courbe de prix douce :
+      - Tendance linéaire de (base_price - 1$) à (base_price + 2$) sur 'days' jours.
+      - Variation journalière +/- 0.3% max autour de la tendance.
+      - 60% de chances de conserver le prix de la veille (pas de changement).
     """
     base_price_float = float(base_price_decimal)
     
-    # On veut aller d'environ (base_price - 2$) à (base_price + 2$) sur 'days' jours
-    trend_start = base_price_float - 2.0
+    # On part d'environ base_price - 1 jusqu'à base_price + 2
+    trend_start = base_price_float - 1.0
     trend_end   = base_price_float + 2.0
-    daily_increase = (trend_end - trend_start) / (days - 1)
-
+    if days > 1:
+        daily_increase = (trend_end - trend_start) / (days - 1)
+    else:
+        daily_increase = 0
+    
     prices = []
     for i in range(days):
         if i == 0:
-            # Premier jour : prix linéaire + variation
+            # Premier jour : on part de trend_start
             linear_price = trend_start
-            variation_percent = random.uniform(-0.005, 0.005)
+            # Petite variation
+            variation_percent = random.uniform(-0.003, 0.003)
             final_price = linear_price * (1 + variation_percent)
             final_price_dec = Decimal(str(round(final_price, 2)))
             prices.append(final_price_dec)
         else:
-            # Calcul linéaire pur
+            # Calcul linéaire pur pour ce jour
             linear_price = trend_start + (daily_increase * i)
-            variation_percent = random.uniform(-0.005, 0.005)
-            final_price = linear_price * (1 + variation_percent)
-            final_price_dec = Decimal(str(round(final_price, 2)))
-            
-            # 30% de chance de garder le même prix que la veille
-            if random.random() < 0.30:
+            # Déterminer si on met à jour ou pas
+            # Ex: 60% de chance de garder le prix d’hier
+            if random.random() < 0.60:
+                # On garde le même prix que la veille
                 final_price_dec = prices[-1]
+            else:
+                # On calcule la nouvelle valeur (tendance + petite variation)
+                variation_percent = random.uniform(-0.003, 0.003)
+                final_price = linear_price * (1 + variation_percent)
+                final_price_dec = Decimal(str(round(final_price, 2)))
             
             prices.append(final_price_dec)
 
@@ -46,20 +53,20 @@ def fill_dummy_price_history():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # Récupère tous les produits 'fixed_price'
+    # Récupère tous les produits en 'fixed_price'
     cursor.execute("SELECT product_id FROM product WHERE listing_type = 'fixed_price'")
     products = cursor.fetchall()
 
-    # Définir la date de fin (ex. 24 février 2025) et la période (90 jours)
+    # Paramètres : 90 jours, date de fin 24 février 2025
     end_date = datetime(2025, 2, 24)
     total_days = 90
 
     for product in products:
         product_id = product['product_id']
         
-        # Récupérer le dernier prix réel de la table price_history
+        # Récupérer le dernier prix réel (ou un prix existant) pour ce produit
         cursor.execute("""
-            SELECT price 
+            SELECT price
             FROM price_history
             WHERE product_id = %s
             ORDER BY date_scraped DESC
@@ -71,20 +78,18 @@ def fill_dummy_price_history():
             print(f"[SKIP] Aucune donnée existante pour product_id={product_id}, on ne génère rien.")
             continue
 
-        base_price_decimal = row['price']  # Décimal existant
+        base_price_decimal = row['price']  # type Decimal
 
-        # Générer les 90 jours de prix
+        # Générer les prix factices
         dummy_prices = generate_smoother_prices(base_price_decimal, total_days)
 
-        # On insère du plus ancien au plus récent
-        # => day 0 = end_date - 89 jours, day 89 = end_date
+        # Insérer du plus ancien (J-89) au plus récent (J0 = end_date)
         for i in range(total_days):
             day_offset = (total_days - 1) - i
             current_date = end_date - timedelta(days=day_offset)
 
-            # Price = dummy_prices[i]
-            # buy_it_now_price = identique pour un fixed_price
             price_value = dummy_prices[i]
+            # buy_it_now_price = identique (cas "fixed_price")
             
             cursor.execute("""
                 INSERT INTO price_history
@@ -94,8 +99,8 @@ def fill_dummy_price_history():
                 product_id,
                 price_value,
                 price_value,
-                None,  # bids_count non pertinent
-                None,  # time_remaining non pertinent
+                None,  # pas d'enchères
+                None,  # pas de time_remaining
                 current_date.strftime("%Y-%m-%d %H:%M:%S")
             ))
         conn.commit()
