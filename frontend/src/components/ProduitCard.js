@@ -65,7 +65,6 @@ function ProduitCard({ produit }) {
                     <div className="price-info">
                         {/* Comme on n’a que du fixed_price, on affiche juste Price */}
                         <div className="price-line">
-                            <span className="price-label">Price:</span>
                             <span className="price-value">${price.toFixed(2)}</span>
                         </div>
 

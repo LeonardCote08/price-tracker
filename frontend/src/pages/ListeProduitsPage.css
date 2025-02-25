@@ -3,12 +3,13 @@
 /* Grille des produits (inchangée) */
 .produits-grid {
     max-width: 1200px;
-    margin: 0rem auto;
+    margin: 0 auto;
     padding: 1.5rem;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 3rem;
+    gap: 3.5rem;
 }
+
 
 /* SUBHEADER : seulement la bannière */
 .subheader {
@@ -38,7 +39,6 @@
     margin: 1rem 0; /* un peu d'espace au-dessus et en dessous */
 }
 
-/* ListeProduitsPage.css */
 
 .filter-button {
     font-family: 'Poppins', sans-serif;

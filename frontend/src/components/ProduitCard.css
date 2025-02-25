@@ -45,23 +45,23 @@
 
 /* Condition = New / Used */
 .badge-condition-new {
-    background-color: #27ae60; /* un vert un peu plus foncé */
+    background-color: #52b69a; /* un vert un peu plus foncé */
 }
 
 .badge-condition-used {
-    background-color: #e67e22; /* orange */
+    background-color: #D85C5A;
 }
 
 .badge-signed {
-    background-color: #E74C3C;
+    background-color: #D0B058;
 }
 
 .badge-inbox {
-    background-color: #2ECC71;
+    background-color: #38a3a5;
 }
 
 .badge-nobox {
-    background-color: #E67E22;
+    background-color: #C2664A;
 }
 
 .badge-ended {
@@ -101,6 +101,7 @@
 /* Price lines */
 .price-line {
     display: flex;
+    justify-content: center;
     gap: 0.4rem;
     align-items: baseline;
     margin: 0.25rem 0;
@@ -117,6 +118,7 @@
     font-weight: 700;
     color: var(--price-color);
     font-family: 'Montserrat', sans-serif;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
 }
 
 /* Auction info */
@@ -133,11 +135,11 @@
 }
 
 .trend-up {
-    color: #2ECC71;
+    color: #3FCCA4;
 }
 
 .trend-down {
-    color: #E74C3C;
+    color: #D84C4A;
 }
 
 /* Date de mise à jour */

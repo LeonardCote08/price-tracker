@@ -10,6 +10,10 @@ code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
+html {
+    scrollbar-gutter: stable;
+}
+
 /* Liens : même couleur de texte que le body, sauf au survol */
 a {
     color: var(--text-color);
@@ -19,3 +23,5 @@ a {
     a:hover {
         color: var(--accent-color);
     }
+
+
