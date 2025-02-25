@@ -115,7 +115,7 @@ def fill_dummy_price_history():
                 date_str
             ))
         conn.commit()
-        print(f"[OK] Produit {product_id}: 12 points ({'UP' if is_upward else 'DOWN'}).")
+        print(f"[OK] Produit {product_id}: 12 points ({scenario_label}).")
 
     cursor.close()
     conn.close()
