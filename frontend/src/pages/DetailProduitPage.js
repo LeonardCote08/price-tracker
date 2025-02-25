@@ -232,8 +232,6 @@ function DetailProduitPage() {
                                 <span className="stat-value">{historique.trend}</span>
                             </div>
                         )}
-                    </div>
-                )}
 
                     </div>
                 )}
