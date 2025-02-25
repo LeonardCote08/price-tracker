@@ -148,7 +148,6 @@ def get_produit(product_id):
         FROM product p
         LEFT JOIN category c ON p.category_id = c.category_id
         WHERE p.product_id = %s
-        ORDER BY (p.product_id <> 1) DESC, p.product_id ASC;
     """, (product_id,))
     row = cursor.fetchone()
     cursor.close()
