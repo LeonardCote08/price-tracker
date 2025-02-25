@@ -1,7 +1,6 @@
 from scrapy.exceptions import DropItem
-from core.category_mapping import map_category
+from core.category_mapping import map_category, extract_leaf_category
 from core.db_connection import get_connection
-from datetime import datetime
 
 class MySQLPipeline:
     def open_spider(self, spider):
@@ -28,13 +27,9 @@ class MySQLPipeline:
             spider.logger.info(f"Drop item bundle: {title}")
             raise DropItem(f"Item bundle dropped: {title}")
 
-        # Récupère ou définit la date custom (si non définie, fallback = date/heure actuelle)
-        scraped_date_str = item.get("custom_date_scraped")
-        if not scraped_date_str:
-            # fallback : la date/heure courante
-            scraped_date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Récupération du product_id (ou insertion)
+
+        # Juste avant le if product_db_id:
         product_db_id = None
         select_sql = "SELECT product_id FROM product WHERE item_id = %s"
         self.cursor.execute(select_sql, (item.get("item_id"),))
@@ -42,18 +37,20 @@ class MySQLPipeline:
         if row_itemid:
             product_db_id = row_itemid[0]
 
-        # 1) Mise à jour ou insertion du produit
+
+        # 4) UPDATE si product_db_id existe, sinon INSERT
         if product_db_id:
             spider.logger.info(f"Produit existant trouvé avec l'id {product_db_id}")
+
             update_sql = """
                 UPDATE product
-                SET title = %s,
+                SET title = %s, 
                     item_condition = %s,
                     normalized_condition = %s,
                     signed = %s,
                     in_box = %s,
-                    listing_type = %s,
-                    bids_count = %s,
+                    listing_type = %s, 
+                    bids_count = %s, 
                     time_remaining = %s,
                     buy_it_now_price = %s,
                     ended = %s,
@@ -85,13 +82,15 @@ class MySQLPipeline:
                 spider.logger.info(f"Produit {product_db_id} mis à jour.")
             except Exception as e:
                 spider.logger.error(f"Erreur lors de la mise à jour du produit: {e}")
+
         else:
+            # INSERT
             insert_product_sql = """
-                INSERT INTO product
-                (item_id, title, item_condition, normalized_condition, signed, in_box,
-                 url, image_url, seller_username, category, listing_type, bids_count,
-                 time_remaining, buy_it_now_price, ended)
+                INSERT INTO product 
+                (item_id, title, item_condition, normalized_condition, signed, in_box, url, image_url,
+                 seller_username, category, listing_type, bids_count, time_remaining, buy_it_now_price, ended)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+
             """
             product_values = (
                 item.get("item_id", ""),
@@ -110,6 +109,8 @@ class MySQLPipeline:
                 item.get("buy_it_now_price"),
                 item.get("ended", False)
             )
+
+
             try:
                 self.cursor.execute(insert_product_sql, product_values)
                 self.conn.commit()
@@ -119,7 +120,7 @@ class MySQLPipeline:
                 spider.logger.error(f"Erreur lors de l'insertion du produit: {e}")
                 return item
 
-        # 2) Mapping de la catégorie
+        # 5) Mapping de la catégorie et mise à jour du champ category_id
         scraped_category = item.get("category", "")
         mapped_category_id = map_category(scraped_category)
         if mapped_category_id:
@@ -133,50 +134,11 @@ class MySQLPipeline:
         else:
             spider.logger.info(f"Aucun mapping trouvé pour la catégorie: {scraped_category}")
 
-        # 3) Vérifie si le prix est identique et déjà inséré pour la même date
-        select_last_price_sql = """
-            SELECT price, DATE(date_scraped)
-            FROM price_history
-            WHERE product_id = %s
-            ORDER BY date_scraped DESC
-            LIMIT 1
-        """
-        self.cursor.execute(select_last_price_sql, (product_db_id,))
-        last_row = self.cursor.fetchone()
-
-        if last_row is not None:
-            last_price_in_db, last_date_in_db = last_row
-            current_price = item.get("price", 0)
-
-            # (A) Vérification du prix
-            if float(last_price_in_db) == float(current_price):
-                # (B) Vérification de la date custom
-                day_to_insert = scraped_date_str.split(' ')[0]  # ex: "2024-12-14"
-
-                check_same_day_sql = """
-                    SELECT price
-                    FROM price_history
-                    WHERE product_id = %s
-                      AND DATE(date_scraped) = %s
-                    ORDER BY date_scraped DESC
-                    LIMIT 1
-                """
-                self.cursor.execute(check_same_day_sql, (product_db_id, day_to_insert))
-                row_same_day = self.cursor.fetchone()
-
-                if row_same_day:
-                    last_price_in_db = row_same_day[0]
-                    if float(last_price_in_db) == float(current_price):
-                        spider.logger.info(
-                            f"[SKIP] Même prix ({current_price}) pour la même date {day_to_insert}."
-                        )
-                        return item
-
-        # 4) Insertion du relevé de prix dans la table price_history
+        # 6) Insertion du relevé de prix dans la table price_history
         insert_price_sql = """
-            INSERT INTO price_history
+            INSERT INTO price_history 
             (product_id, price, buy_it_now_price, bids_count, time_remaining, date_scraped)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, NOW())
         """
         try:
             self.cursor.execute(insert_price_sql, (
@@ -184,8 +146,7 @@ class MySQLPipeline:
                 item.get("price", 0),
                 item.get("buy_it_now_price"),
                 item.get("bids_count"),
-                item.get("time_remaining"),
-                scraped_date_str
+                item.get("time_remaining")
             ))
             self.conn.commit()
             spider.logger.info(f"Historique de prix inséré pour le produit {product_db_id}")

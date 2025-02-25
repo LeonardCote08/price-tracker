@@ -34,8 +34,7 @@ def generate_smoother_prices(base_price_decimal, days):
         else:
             # Calcul linéaire pur pour ce jour
             linear_price = trend_start + (daily_increase * i)
-            # Déterminer si on met à jour ou pas
-            # Ex: 60% de chance de garder le prix d’hier
+            # Déterminer si on met à jour ou pas (60% de chance de garder le même prix)
             if random.random() < 0.60:
                 # On garde le même prix que la veille
                 final_price_dec = prices[-1]
@@ -89,8 +88,30 @@ def fill_dummy_price_history():
             current_date = end_date - timedelta(days=day_offset)
 
             price_value = dummy_prices[i]
-            # buy_it_now_price = identique (cas "fixed_price")
-            
+
+            # On vérifie d'abord si, pour cette date (au format jour) et ce prix, 
+            # il n'y a pas déjà un enregistrement.
+            date_str = current_date.strftime("%Y-%m-%d")  # Jour (YYYY-MM-DD)
+            full_datetime_str = current_date.strftime("%Y-%m-%d %H:%M:%S")
+
+            cursor.execute("""
+                SELECT price
+                FROM price_history
+                WHERE product_id = %s
+                  AND DATE(date_scraped) = %s
+                ORDER BY date_scraped DESC
+                LIMIT 1
+            """, (product_id, date_str))
+            existing_row = cursor.fetchone()
+
+            if existing_row:
+                last_price_that_day = existing_row['price']
+                # Si le prix du jour est identique, on skip
+                if float(last_price_that_day) == float(price_value):
+                    # On évite d'insérer un doublon "même jour / même prix"
+                    continue
+
+            # Sinon, on insère
             cursor.execute("""
                 INSERT INTO price_history
                 (product_id, price, buy_it_now_price, bids_count, time_remaining, date_scraped)
@@ -98,13 +119,13 @@ def fill_dummy_price_history():
             """, (
                 product_id,
                 price_value,
-                price_value,
-                None,  # pas d'enchères
-                None,  # pas de time_remaining
-                current_date.strftime("%Y-%m-%d %H:%M:%S")
+                price_value,  # buy_it_now_price = identique en fixed_price
+                None,         # pas d'enchères
+                None,         # pas de time_remaining
+                full_datetime_str
             ))
         conn.commit()
-        print(f"[OK] Produit {product_id}: {total_days} jours factices insérés.")
+        print(f"[OK] Produit {product_id}: {total_days} jours factices insérés (avec skip si doublon).")
 
     cursor.close()
     conn.close()
