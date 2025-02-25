@@ -1,85 +1,91 @@
 #!/usr/bin/env python3
+import os
 import random
 from datetime import datetime, timedelta
-from core.db_connection import get_connection
+import mysql.connector
+from dotenv import load_dotenv
 
-def generate_fake_history(product_id, final_date_str, num_days=14):
-    """
-    Génère des données factices pour la table price_history pour un produit fixed_price,
-    sur une période de num_days (la dernière journée correspond aux vraies données).
-    
-    :param product_id: L'identifiant du produit dans la table product.
-    :param final_date_str: La date finale (ex. "2025-02-24") correspondant aux vraies données.
-    :param num_days: Nombre total de jours à simuler (ici, 14 jours).
-    """
-    # Conversion de la date finale
-    final_date = datetime.strptime(final_date_str, "%Y-%m-%d")
-    
-    # Connexion à la base de données
-    conn = get_connection()
-    cursor = conn.cursor()
-    
-    # Récupérer le prix réel enregistré le jour final
-    query = """
-    SELECT price FROM price_history
-    WHERE product_id = %s AND DATE(date_scraped) = %s
-    ORDER BY date_scraped DESC LIMIT 1
-    """
-    cursor.execute(query, (product_id, final_date_str))
-    row = cursor.fetchone()
-    if row is None:
-        print("Aucune donnée réelle trouvée pour la date finale.")
-        cursor.close()
-        conn.close()
-        return
-    final_price = row[0]
-    print(f"Prix réel du {final_date_str} : {final_price}$")
-    
-    # Définir un prix de départ pour 13 jours avant (en ajoutant une variation aléatoire de ±5$)
-    variation = random.uniform(-5, 5)
-    starting_price = float(final_price) + variation
-    # S'assurer que le prix reste dans la plage [20, 60]
-    starting_price = max(20, min(60, starting_price))
-    print(f"Prix simulé de départ (il y a {num_days-1} jours) : {starting_price}$")
-    
-    fake_data = []
-    # On génère les données pour les jours précédents (du jour -13 au jour -1)
-    for i in range(num_days - 1, 0, -1):
-        # Calculer la date pour ce jour
-        date_i = final_date - timedelta(days=i)
-        # Calculer la fraction de progression (0 pour le jour de départ, 1 pour le jour final)
-        frac = (num_days - 1 - i) / (num_days - 1)
-        # Prix de base par interpolation linéaire
-        base_price = starting_price + (float(final_price) - starting_price) * frac
-        # Ajouter un bruit aléatoire de ±0.50$
-        noise = random.uniform(-0.5, 0.5)
-        fake_price = base_price + noise
-        # S'assurer que le prix reste dans la plage [20, 60]
-        fake_price = max(20, min(60, fake_price))
-        
-        # Pour un produit fixed_price, on met :
-        # - buy_it_now_price = NULL (None en Python)
-        # - bids_count = 0
-        # - time_remaining = NULL (None)
-        fake_data.append((product_id, fake_price, None, 0, None, date_i.strftime("%Y-%m-%d %H:%M:%S")))
-    
-    # Insérer les données factices dans la table price_history
-    insert_query = """
-    INSERT INTO price_history (product_id, price, buy_it_now_price, bids_count, time_remaining, date_scraped)
-    VALUES (%s, %s, %s, %s, %s, %s)
-    """
-    for record in fake_data:
-        cursor.execute(insert_query, record)
-    
+load_dotenv()
+
+# Paramètres de connexion à la base de données
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = int(os.getenv("DB_PORT", 3306))
+DB_USER = os.getenv("DB_USER", "root")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+DB_NAME = os.getenv("DB_NAME", "price_tracker_us")
+
+# Connexion à la base de données
+conn = mysql.connector.connect(
+    host=DB_HOST,
+    port=DB_PORT,
+    user=DB_USER,
+    password=DB_PASSWORD,
+    database=DB_NAME,
+    charset='utf8mb4'
+)
+cursor = conn.cursor()
+
+# On sélectionne les produits en fixed_price
+cursor.execute("SELECT product_id FROM product WHERE listing_type = 'fixed_price'")
+products = cursor.fetchall()
+
+# Paramètres de simulation
+num_days = 90  # 90 scrapes, soit 3 mois
+# Date finale (les données réelles) = 24 février 2025
+end_date = datetime(2025, 2, 24)
+start_date = end_date - timedelta(days=num_days - 1)
+
+# Pour chaque produit, générer 90 enregistrements factices
+for (product_id,) in products:
+    # Récupérer le dernier prix réel pour ce produit
+    cursor.execute("""
+        SELECT price 
+        FROM price_history 
+        WHERE product_id = %s 
+        ORDER BY date_scraped DESC 
+        LIMIT 1
+    """, (product_id,))
+    result = cursor.fetchone()
+    if result:
+        final_price = float(result[0])
+    else:
+        continue  # Si aucun prix n'est trouvé, passer au produit suivant
+
+    # Générer un prix de départ fictif.
+    # Par exemple, on peut supposer une variation globale entre -5% et +5%
+    overall_variation = random.uniform(-5, 5)  # en pourcentage
+    starting_price = final_price / (1 + overall_variation / 100)
+
+    # Pour chaque jour de la période, interpoler linéairement et ajouter un bruit aléatoire (±1%)
+    for i in range(num_days):
+        current_date = start_date + timedelta(days=i)
+        # Interpolation linéaire
+        base_price = starting_price + (final_price - starting_price) * (i / (num_days - 1))
+        # Ajout d'un bruit aléatoire de ±1%
+        noise = random.uniform(-0.01, 0.01)
+        fake_price = round(base_price * (1 + noise), 2)
+        # Pour un produit fixed_price, on peut considérer que buy_it_now_price = price
+        buy_it_now_price = fake_price
+        # Pour fixed_price, pas de bids_count et de time_remaining
+        bids_count = None
+        time_remaining = None
+
+        # Générer une date_scraped avec une heure aléatoire dans la journée
+        random_time = timedelta(
+            hours=random.randint(0, 23),
+            minutes=random.randint(0, 59),
+            seconds=random.randint(0, 59)
+        )
+        date_scraped = current_date + random_time
+
+        # Insérer la donnée factice dans la table price_history
+        insert_query = """
+            INSERT INTO price_history (product_id, price, buy_it_now_price, bids_count, time_remaining, date_scraped)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(insert_query, (product_id, fake_price, buy_it_now_price, bids_count, time_remaining, date_scraped))
     conn.commit()
-    cursor.close()
-    conn.close()
-    print(f"Données factices insérées pour le produit {product_id} sur {num_days} jours.")
+    print(f"Fake price history inserted for product {product_id}")
 
-if __name__ == "__main__":
-    # Remplacez par l'ID de votre produit Funko Pop Doctor Doom #561 dans la table product
-    product_id = 1  # par exemple
-    # Date finale correspondant aux vraies données (24 février 2025)
-    final_date_str = "2025-02-24"
-    # Génère 14 jours de données (13 jours factices + le jour réel)
-    generate_fake_history(product_id, final_date_str, num_days=14)
+cursor.close()
+conn.close()
