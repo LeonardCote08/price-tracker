@@ -14,9 +14,8 @@ def generate_smoother_prices(base_price_decimal, days):
     base_price_float = float(base_price_decimal)
     
     # On part d'environ base_price - 1 jusqu'à base_price + 2
-    trend_start = base_price_float - 0.5
-    trend_end   = base_price_float + 1.0
-
+    trend_start = base_price_float - 1.0
+    trend_end   = base_price_float + 2.0
     if days > 1:
         daily_increase = (trend_end - trend_start) / (days - 1)
     else:
@@ -28,8 +27,7 @@ def generate_smoother_prices(base_price_decimal, days):
             # Premier jour : on part de trend_start
             linear_price = trend_start
             # Petite variation
-            variation_percent = random.uniform(-0.001, 0.001)
-
+            variation_percent = random.uniform(-0.003, 0.003)
             final_price = linear_price * (1 + variation_percent)
             final_price_dec = Decimal(str(round(final_price, 2)))
             prices.append(final_price_dec)
@@ -38,7 +36,7 @@ def generate_smoother_prices(base_price_decimal, days):
             linear_price = trend_start + (daily_increase * i)
             # Déterminer si on met à jour ou pas
             # Ex: 60% de chance de garder le prix d’hier
-            if random.random() < 0.80:
+            if random.random() < 0.60:
                 # On garde le même prix que la veille
                 final_price_dec = prices[-1]
             else:
