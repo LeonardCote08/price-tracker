@@ -191,19 +191,50 @@ function DetailProduitPage() {
                     prices={historique.prices}
                 />
                 {historique.stats && (
-                    <div className="price-stats">
-                        <p>Average Price: ${historique.stats.avg_price?.toFixed(2) || 'N/A'}</p>
-                        <p>Min Price: ${historique.stats.min_price?.toFixed(2) || 'N/A'}</p>
-                        <p>Max Price: ${historique.stats.max_price?.toFixed(2) || 'N/A'}</p>
+                    <div className="stats-grid">
+                        <div className="stat-item">
+                            <span className="stat-label">Average Price</span>
+                            <span className="stat-value">
+                                ${historique.stats.avg_price?.toFixed(2) || 'N/A'}
+                            </span>
+                        </div>
+                        <div className="stat-item">
+                            <span className="stat-label">Min Price</span>
+                            <span className="stat-value">
+                                ${historique.stats.min_price?.toFixed(2) || 'N/A'}
+                            </span>
+                        </div>
+                        <div className="stat-item">
+                            <span className="stat-label">Max Price</span>
+                            <span className="stat-value">
+                                ${historique.stats.max_price?.toFixed(2) || 'N/A'}
+                            </span>
+                        </div>
                         {historique.stats.variation !== undefined && (
-                            <p>Variation: {historique.stats.variation.toFixed(2)}%</p>
+                            <div className="stat-item">
+                                <span className="stat-label">Variation</span>
+                                <span className="stat-value">
+                                    {historique.stats.variation.toFixed(2)}%
+                                </span>
+                            </div>
                         )}
                         {historique.stats.seven_day_avg !== undefined && (
-                            <p>7-Day Avg: ${historique.stats.seven_day_avg.toFixed(2)}</p>
+                            <div className="stat-item">
+                                <span className="stat-label">7-Day Avg</span>
+                                <span className="stat-value">
+                                    ${historique.stats.seven_day_avg.toFixed(2)}
+                                </span>
+                            </div>
                         )}
                         {historique.trend && (
-                            <p>Trend: {historique.trend}</p>
+                            <div className="stat-item">
+                                <span className="stat-label">Trend</span>
+                                <span className="stat-value">{historique.trend}</span>
+                            </div>
                         )}
+                    </div>
+                )}
+
                     </div>
                 )}
             </div>

@@ -161,3 +161,33 @@
         margin: 0.3rem 0;
         font-size: 0.9rem;
     }
+
+/* Grille pour les stats */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.stat-item {
+    background-color: var(--card-bg-color);
+    padding: 0.8rem;
+    border-radius: 6px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.stat-label {
+    display: block;
+    font-weight: 600;
+    color: #bbb;
+    margin-bottom: 0.3rem;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+}
+
