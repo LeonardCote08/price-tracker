@@ -1,91 +1,71 @@
 #!/usr/bin/env python3
-import os
 import random
 from datetime import datetime, timedelta
-import mysql.connector
-from dotenv import load_dotenv
+from core.db_connection import get_connection
 
-load_dotenv()
+def generate_dummy_prices(base_price, days):
+    """Génère une liste de prix avec une variation aléatoire de ±2% autour du prix de base."""
+    prices = []
+    for _ in range(days):
+        variation = random.uniform(-0.02, 0.02)
+        price = base_price * (1 + variation)
+        prices.append(round(price, 2))
+    return prices
 
-# Paramètres de connexion à la base de données
-DB_HOST = os.getenv("DB_HOST", "localhost")
-DB_PORT = int(os.getenv("DB_PORT", 3306))
-DB_USER = os.getenv("DB_USER", "root")
-DB_PASSWORD = os.getenv("DB_PASSWORD", "")
-DB_NAME = os.getenv("DB_NAME", "price_tracker_us")
+def fill_dummy_price_history():
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    
+    # Sélectionne tous les produits fixed_price
+    cursor.execute("SELECT product_id FROM product WHERE listing_type = 'fixed_price'")
+    products = cursor.fetchall()
+    
+    # Définir la date de fin (24 février 2025) et la période de simulation : 90 jours (incluant le jour réel)
+    end_date = datetime(2025, 2, 24)
+    total_days = 90  # 1 point par jour
+    
+    for product in products:
+        product_id = product['product_id']
+        
+        # Récupérer le dernier prix réel de la table price_history pour ce produit
+        cursor.execute("""
+            SELECT price FROM price_history 
+            WHERE product_id = %s 
+            ORDER BY date_scraped DESC 
+            LIMIT 1
+        """, (product_id,))
+        row = cursor.fetchone()
+        if not row:
+            print(f"Aucune donnée existante pour product_id {product_id}, saut.")
+            continue
+        base_price = row['price']
+        
+        # On considère que la donnée réelle correspond au jour J (24/02/2025).
+        # On va générer 89 enregistrements pour les 89 jours précédents.
+        dummy_days = total_days - 1  # 89 jours
+        dummy_prices = generate_dummy_prices(base_price, dummy_days)
+        
+        for i in range(dummy_days):
+            # Calculer la date pour chaque enregistrement (du plus ancien au plus récent)
+            scrape_date = end_date - timedelta(days=(dummy_days - i))
+            cursor.execute("""
+                INSERT INTO price_history 
+                (product_id, price, buy_it_now_price, bids_count, time_remaining, date_scraped)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (
+                product_id,
+                dummy_prices[i],
+                dummy_prices[i],  # Pour fixed_price, on fixe buy_it_now_price identique
+                None,             # bids_count : non applicable pour fixed_price
+                None,             # time_remaining : non applicable
+                scrape_date.strftime("%Y-%m-%d %H:%M:%S")
+            ))
+        conn.commit()
+        print(f"Produit {product_id}: {dummy_days} enregistrements factices insérés.")
+    
+    cursor.close()
+    conn.close()
+    print("Remplissage de price_history terminé.")
 
-# Connexion à la base de données
-conn = mysql.connector.connect(
-    host=DB_HOST,
-    port=DB_PORT,
-    user=DB_USER,
-    password=DB_PASSWORD,
-    database=DB_NAME,
-    charset='utf8mb4'
-)
-cursor = conn.cursor()
-
-# On sélectionne les produits en fixed_price
-cursor.execute("SELECT product_id FROM product WHERE listing_type = 'fixed_price'")
-products = cursor.fetchall()
-
-# Paramètres de simulation
-num_days = 90  # 90 scrapes, soit 3 mois
-# Date finale (les données réelles) = 24 février 2025
-end_date = datetime(2025, 2, 24)
-start_date = end_date - timedelta(days=num_days - 1)
-
-# Pour chaque produit, générer 90 enregistrements factices
-for (product_id,) in products:
-    # Récupérer le dernier prix réel pour ce produit
-    cursor.execute("""
-        SELECT price 
-        FROM price_history 
-        WHERE product_id = %s 
-        ORDER BY date_scraped DESC 
-        LIMIT 1
-    """, (product_id,))
-    result = cursor.fetchone()
-    if result:
-        final_price = float(result[0])
-    else:
-        continue  # Si aucun prix n'est trouvé, passer au produit suivant
-
-    # Générer un prix de départ fictif.
-    # Par exemple, on peut supposer une variation globale entre -5% et +5%
-    overall_variation = random.uniform(-5, 5)  # en pourcentage
-    starting_price = final_price / (1 + overall_variation / 100)
-
-    # Pour chaque jour de la période, interpoler linéairement et ajouter un bruit aléatoire (±1%)
-    for i in range(num_days):
-        current_date = start_date + timedelta(days=i)
-        # Interpolation linéaire
-        base_price = starting_price + (final_price - starting_price) * (i / (num_days - 1))
-        # Ajout d'un bruit aléatoire de ±1%
-        noise = random.uniform(-0.01, 0.01)
-        fake_price = round(base_price * (1 + noise), 2)
-        # Pour un produit fixed_price, on peut considérer que buy_it_now_price = price
-        buy_it_now_price = fake_price
-        # Pour fixed_price, pas de bids_count et de time_remaining
-        bids_count = None
-        time_remaining = None
-
-        # Générer une date_scraped avec une heure aléatoire dans la journée
-        random_time = timedelta(
-            hours=random.randint(0, 23),
-            minutes=random.randint(0, 59),
-            seconds=random.randint(0, 59)
-        )
-        date_scraped = current_date + random_time
-
-        # Insérer la donnée factice dans la table price_history
-        insert_query = """
-            INSERT INTO price_history (product_id, price, buy_it_now_price, bids_count, time_remaining, date_scraped)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """
-        cursor.execute(insert_query, (product_id, fake_price, buy_it_now_price, bids_count, time_remaining, date_scraped))
-    conn.commit()
-    print(f"Fake price history inserted for product {product_id}")
-
-cursor.close()
-conn.close()
+if __name__ == "__main__":
+    fill_dummy_price_history()
