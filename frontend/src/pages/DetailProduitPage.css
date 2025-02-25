@@ -98,9 +98,12 @@
     background-color: var(--card-bg-color);
     padding: 1rem;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    margin-top: 0.5rem;
+    /* On reprend le style du graphique */
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--accent-color);
+    margin-top: 1rem; /* Ajusté pour plus de cohérence */
 }
+
 
     /* Remise à zéro du margin dans ces blocs si on utilise <p> */
     .general-info-block p,
@@ -190,4 +193,16 @@
     font-weight: 700;
     color: #fff;
 }
+
+.stat-item {
+    background-color: var(--card-bg-color);
+    padding: 1rem; /* Augmenté par rapport à 0.8rem */
+    border-radius: 8px; /* Coin plus arrondi */
+    text-align: center;
+    /* Ombrage plus prononcé (plus grand, plus diffus) */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    /* Bordure visible : ajustez la couleur selon vos préférences */
+    border: 1px solid var(--accent-color);
+}
+
 
