@@ -302,5 +302,37 @@ class EbaySpider(scrapy.Spider):
         except Exception as e:
             self.logger.error(f"Erreur lors de l'extraction de la catégorie: {e}")
             item["category"] = ""
+
+
+        # Build a summary string with key info based on listing type
+        if item["listing_type"] == "auction":
+            summary = "Product: %s | Auction | Price: $%.2f | Bids: %s | Time remaining: %s" % (
+                item.get("title", "N/A"),
+                item.get("price", 0),
+                item.get("bids_count", 0),
+                item.get("time_remaining", "N/A")
+            )
+        elif item["listing_type"] == "auction_with_bin":
+            summary = "Product: %s | Auction with BIN | Price: $%.2f | BIN: %s | Bids: %s | Time remaining: %s" % (
+                item.get("title", "N/A"),
+                item.get("price", 0),
+                item.get("buy_it_now_price", "N/A"),
+                item.get("bids_count", 0),
+                item.get("time_remaining", "N/A")
+            )
+        elif item["listing_type"] == "fixed_price":
+            summary = "Product: %s | Fixed Price | Price: $%.2f" % (
+                item.get("title", "N/A"),
+                item.get("price", 0)
+            )
+        else:
+            summary = "Product: %s | Listing type: %s | Price: $%.2f" % (
+                item.get("title", "N/A"),
+                item.get("listing_type", "N/A"),
+                item.get("price", 0)
+            )
+
+        self.logger.info(summary)
+
     
         yield item
