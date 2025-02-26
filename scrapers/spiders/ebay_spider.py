@@ -304,21 +304,34 @@ class EbaySpider(scrapy.Spider):
             item["category"] = ""
 
 
-        # Build a summary string with key info based on listing type
+        # Tronquer le titre pour ne pas dépasser 50 caractères
         display_title = item.get("title", "N/A")
         if len(display_title) > 50:
             display_title = display_title[:50] + "..."
 
-        # Créer un résumé adapté selon le type d'annonce
+        # Construire le résumé en fonction du listing_type
         if item["listing_type"] == "auction":
-            summary = "Product: %s\nType: Auction\nPrice: $%.2f\nBids: %s\nTime remaining: %s" % (
+            summary = (
+                "Product: %s\n"
+                "Type: Auction\n"
+                "Price: $%.2f\n"
+                "Bids: %s\n"
+                "Time remaining: %s"
+            ) % (
                 display_title,
                 item.get("price", 0),
                 item.get("bids_count", 0),
                 item.get("time_remaining", "N/A")
             )
         elif item["listing_type"] == "auction_with_bin":
-            summary = "Product: %s\nType: Auction + BIN\nPrice: $%.2f\nBIN Price: %s\nBids: %s\nTime remaining: %s" % (
+            summary = (
+                "Product: %s\n"
+                "Type: Auction + BIN\n"
+                "Price: $%.2f\n"
+                "BIN Price: %s\n"
+                "Bids: %s\n"
+                "Time remaining: %s"
+            ) % (
                 display_title,
                 item.get("price", 0),
                 item.get("buy_it_now_price", "N/A"),
@@ -326,19 +339,27 @@ class EbaySpider(scrapy.Spider):
                 item.get("time_remaining", "N/A")
             )
         elif item["listing_type"] == "fixed_price":
-            summary = "Product: %s\nType: Fixed Price\nPrice: $%.2f" % (
+            summary = (
+                "Product: %s\n"
+                "Type: Fixed Price\n"
+                "Price: $%.2f"
+            ) % (
                 display_title,
                 item.get("price", 0)
             )
         else:
-            summary = "Product: %s\nType: %s\nPrice: $%.2f" % (
+            summary = (
+                "Product: %s\n"
+                "Type: %s\n"
+                "Price: $%.2f"
+            ) % (
                 display_title,
                 item.get("listing_type", "N/A"),
                 item.get("price", 0)
             )
 
-        # Afficher le résumé avec des sauts de ligne pour séparer les produits
-        self.logger.info("\n%s\n", summary)
+        # Afficher le résumé avec des séparateurs clairs
+        self.logger.info("\n=== Product Summary ===\n%s\n=======================\n", summary)
 
 
     
