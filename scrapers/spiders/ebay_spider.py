@@ -22,7 +22,6 @@ class EbaySpider(scrapy.Spider):
 
     def __init__(self, keyword=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Initialisation des compteurs et du temps de démarrage
         self.product_count = 0
         self.page_count = 0
         self.start_time = datetime.datetime.now()
@@ -31,10 +30,10 @@ class EbaySpider(scrapy.Spider):
         self.prices = []
 
         # En-tête de démarrage et configuration de la démo
-        print(f"{BOLD}{YELLOW}==========================================")
-        print("   Starting eBay scraper for 'Funko Pop Doctor Doom #561'")
-        print("==========================================")
-        print(f"{RESET}\n")
+        print(f"{BOLD}{YELLOW}==========================================", flush=True)
+        print("   Starting eBay scraper for 'Funko Pop Doctor Doom #561'", flush=True)
+        print("==========================================", flush=True)
+        print(f"{RESET}\n", flush=True)
         
         config = {
             "Download Delay": 1.5,
@@ -45,15 +44,12 @@ class EbaySpider(scrapy.Spider):
             "Target Concurrency": 2.0,
             "Demo Mode": True
         }
-        print(f"{BOLD}Configuration:{RESET}")
+        print(f"{BOLD}Configuration:{RESET}", flush=True)
         for key, value in config.items():
-            print(f" - {key}: {value}")
-        print("")
-        
-        # Note sur l'utilisation des proxys et User-Agents
-        print(f"{BOLD}{CYAN}Proxy Rotation: Enabled | User-Agent Rotation: Enabled{RESET}\n")
+            print(f" - {key}: {value}", flush=True)
+        print("", flush=True)
+        print(f"{BOLD}{CYAN}Proxy Rotation: Enabled | User-Agent Rotation: Enabled{RESET}\n", flush=True)
 
-        # Choix du ZIP code (90210 pour Beverly Hills)
         zip_code = "90210"
         self.keyword = keyword or "Funko Pop Doctor Doom #561"
         self.start_urls = [
@@ -73,11 +69,10 @@ class EbaySpider(scrapy.Spider):
     def parse(self, response):
         self.page_count += 1
         page_start = time.time()
-        print(f"\n{BOLD}=== Retrieving product listings from eBay (Page {self.page_count}) ==={RESET}\n")
+        print(f"\n{BOLD}=== Retrieving product listings from eBay (Page {self.page_count}) ==={RESET}", flush=True)
         
         results = response.xpath('//li[contains(@class, "s-item")]')
         found_this_page = 0
-
         for product in results:
             found_this_page += 1
             item = EbayItem()
@@ -114,7 +109,6 @@ class EbaySpider(scrapy.Spider):
             item["image_url"] = image_url if image_url else ""
 
             if item["item_url"]:
-                # Ajout forcé du paramètre de position (_stpos=90210)
                 forced_url = item["item_url"] + ("&" if "?" in item["item_url"] else "?") + "_stpos=90210"
                 yield scrapy.Request(
                     forced_url,
@@ -126,31 +120,26 @@ class EbaySpider(scrapy.Spider):
                 yield item
 
         page_elapsed = time.time() - page_start
-        print(f"{GREEN}[INFO] Page {self.page_count} processed in {page_elapsed:.2f} seconds{RESET}")
-        print(f"{GREEN}[INFO] Found {found_this_page} products on this page{RESET}\n")
+        print(f"{GREEN}[INFO] Page {self.page_count} processed in {page_elapsed:.2f} seconds{RESET}", flush=True)
+        print(f"{GREEN}[INFO] Found {found_this_page} products on this page{RESET}\n", flush=True)
 
-        # Pagination
         next_page_url = response.xpath("//a[@aria-label='Suivant' or @aria-label='Next']/@href").get()
         if next_page_url:
             yield scrapy.Request(url=next_page_url, callback=self.parse)
 
     def parse_item(self, response):
-        print(f"\n{BOLD}=== Processing product detail page ==={RESET}")
+        print(f"\n{BOLD}=== Processing product detail page ==={RESET}", flush=True)
         item = response.meta.get("item", EbayItem())
-
-        # Extraction de l'item_id initial
         original_url = item.get("item_url", "")
         original_item_id = None
         if original_url:
             try:
                 original_item_id = original_url.split("/itm/")[1].split("?")[0]
             except Exception as e:
-                print(f"{RED}[WARNING] Failed to extract initial item_id from URL {original_url}: {e}{RESET}")
+                print(f"{RED}[WARNING] Failed to extract initial item_id from URL {original_url}: {e}{RESET}", flush=True)
 
-        # Mise à jour de l'URL (version finale)
         item["item_url"] = response.url
 
-        # Détection d'une annonce terminée
         ended_message = " ".join(response.xpath('//div[@data-testid="d-statusmessage"]//text()').getall()).strip()
         if ended_message:
             ended_message_lower = ended_message.lower()
@@ -163,47 +152,38 @@ class EbaySpider(scrapy.Spider):
         else:
             item["ended"] = False
 
-        # Extraction de l'item_id final
         try:
             final_item_id = response.url.split("/itm/")[1].split("?")[0]
             item["item_id"] = final_item_id
         except Exception as e:
-            print(f"{RED}[WARNING] Failed to extract item_id from URL: {response.url} ({e}){RESET}")
+            print(f"{RED}[WARNING] Failed to extract item_id from URL: {response.url} ({e}){RESET}", flush=True)
             item["item_id"] = ""
 
-        # Vérification d'une redirection
         if original_item_id and final_item_id and original_item_id != final_item_id:
-            print(f"{CYAN}[NOTE] Redirection detected (original: {original_item_id}, final: {final_item_id}). Marking as ended.{RESET}")
+            print(f"{CYAN}[NOTE] Redirection detected (original: {original_item_id}, final: {final_item_id}). Marking as ended.{RESET}", flush=True)
             item["ended"] = True
 
-        # Titre de secours si absent
         if not item.get("title"):
             fallback_title = (response.xpath('//meta[@property="og:title"]/@content').get() or
                               response.xpath('//title/text()').get() or "")
             fallback_title = re.sub(r"\s*\|\s*ebay\s*$", "", fallback_title, flags=re.IGNORECASE).strip()
             item["title"] = fallback_title
 
-        # Filtrer les pages d'erreur
         if item["title"].strip().lower() == "error page":
-            print(f"{RED}[INFO] Skipping product due to error page: {response.url}{RESET}")
+            print(f"{RED}[INFO] Skipping product due to error page: {response.url}{RESET}", flush=True)
             return
 
-        # Ignorer les listings à variations multiples
         multi_variation_button = response.xpath(
             '//button[contains(@class, "listbox-button__control") and contains(@class, "btn--form") and @value="Select"]'
         )
         if multi_variation_button:
-            print(f"{RED}[INFO] Skipping multi-variation listing: {item['title']} - URL: {response.url}{RESET}")
+            print(f"{RED}[INFO] Skipping multi-variation listing: {item['title']} - URL: {response.url}{RESET}", flush=True)
             return
 
-        # Normalisation de l'état : "New" ou "Used"
         raw_condition = item.get("item_condition", "").strip().lower()
         item["normalized_condition"] = "New" if "new" in raw_condition else "Used"
-
-        # Vérifier si le produit est signé
         item["signed"] = "signed" in item["title"].lower()
 
-        # Déterminer si le produit est dans sa boîte
         if item["normalized_condition"] == "New":
             item["in_box"] = True
         else:
@@ -217,33 +197,29 @@ class EbaySpider(scrapy.Spider):
             else:
                 item["in_box"] = True
 
-        # Filtrer les bundles et listings multi-figure
         title_lower = item["title"].lower()
         if item["title"].count("#") > 1:
-            print(f"{RED}[INFO] Skipping multi-figure listing: {item['title']} - URL: {response.url}{RESET}")
+            print(f"{RED}[INFO] Skipping multi-figure listing: {item['title']} - URL: {response.url}{RESET}", flush=True)
             return
         if any(kw in title_lower for kw in ["lot", "bundle", "set"]):
-            print(f"{RED}[INFO] Skipping bundle listing: {item['title']} - URL: {response.url}{RESET}")
+            print(f"{RED}[INFO] Skipping bundle listing: {item['title']} - URL: {response.url}{RESET}", flush=True)
             return
 
-        # Mise à jour de l'image via meta (si disponible)
         try:
             meta_img = response.xpath('//meta[@property="og:image"]/@content').get()
             if meta_img:
                 item["image_url"] = meta_img.strip()
         except Exception as e:
-            print(f"{RED}[ERROR] Error extracting image URL: {e}{RESET}")
+            print(f"{RED}[ERROR] Error extracting image URL: {e}{RESET}", flush=True)
 
-        # Extraction du nom du vendeur
         try:
             seller_name = (response.xpath('//span[@class="mbg-nw"]/text()').get() or
                            response.xpath('//div[contains(@class,"info__about-seller")]/a/span/text()').get())
             item["seller_username"] = seller_name.strip() if seller_name else ""
         except Exception as e:
-            print(f"{RED}[ERROR] Error extracting seller username: {e}{RESET}")
+            print(f"{RED}[ERROR] Error extracting seller username: {e}{RESET}", flush=True)
             item["seller_username"] = ""
 
-        # Détermination du type d'annonce
         bid_button = response.xpath("//*[starts-with(@id, 'bidBtn_btn')]").get()
         bin_button = response.xpath("//*[starts-with(@id, 'binBtn_btn')]").get()
         countdown = response.xpath("//*[contains(@id, 'vi-cdown')]").get()
@@ -252,19 +228,17 @@ class EbaySpider(scrapy.Spider):
         else:
             item["listing_type"] = "Fixed Price"
 
-        # Extraction du nombre d'enchères
         if item["listing_type"] in ["Auction", "Auction + BIN"]:
             try:
                 bid_container = response.xpath('//div[@data-testid="x-bid-count"]')
                 bids_text = bid_container.xpath('.//span/text()').re_first(r'(\d+)')
                 item["bids_count"] = int(bids_text) if bids_text else 0
             except Exception as e:
-                print(f"{RED}[ERROR] Error extracting bids_count: {e}{RESET}")
+                print(f"{RED}[ERROR] Error extracting bids_count: {e}{RESET}", flush=True)
                 item["bids_count"] = 0
         else:
             item["bids_count"] = None
 
-        # Extraction du temps restant
         try:
             raw_texts = response.css('.ux-timer__text::text').getall()
             if raw_texts:
@@ -273,10 +247,9 @@ class EbaySpider(scrapy.Spider):
             else:
                 item["time_remaining"] = None
         except Exception as e:
-            print(f"{RED}[ERROR] Error extracting time_remaining: {e}{RESET}")
+            print(f"{RED}[ERROR] Error extracting time_remaining: {e}{RESET}", flush=True)
             item["time_remaining"] = None
 
-        # Pour les enchères avec BIN, extraire le prix BIN
         if item["listing_type"] == "Auction + BIN":
             bin_price_str = response.css('div[data-testid="x-bin-price"] span.ux-textspans::text').get()
             if bin_price_str:
@@ -287,7 +260,6 @@ class EbaySpider(scrapy.Spider):
         else:
             item["buy_it_now_price"] = None
 
-        # Extraction de la catégorie
         try:
             ld_json = response.xpath('//script[@type="application/ld+json"]/text()').get()
             if ld_json:
@@ -299,17 +271,17 @@ class EbaySpider(scrapy.Spider):
                             break
                 if data.get("@type") == "BreadcrumbList":
                     elements = data.get("itemListElement", [])
-                    categories = [element.get("name", "").strip() for element in elements if element.get("name", "").strip().lower() != "ebay"]
+                    categories = [element.get("name", "").strip() for element in elements 
+                                  if element.get("name", "").strip().lower() != "ebay"]
                     item["category"] = " > ".join(categories)
                 else:
                     item["category"] = ""
             else:
                 item["category"] = ""
         except Exception as e:
-            print(f"{RED}[ERROR] Error extracting category: {e}{RESET}")
+            print(f"{RED}[ERROR] Error extracting category: {e}{RESET}", flush=True)
             item["category"] = ""
 
-        # Incrémenter les compteurs et collecter les stats
         self.product_count += 1
         if item["normalized_condition"] == "New":
             self.new_count += 1
@@ -318,13 +290,11 @@ class EbaySpider(scrapy.Spider):
         if item.get("price", 0) > 0:
             self.prices.append(item["price"])
 
-        # Arrêt de la démo après 30 produits
         if self.product_count > 30:
-            print(f"\n{BOLD}{YELLOW}=== Demo limit reached: 30 products processed. Stopping the scraper. ==={RESET}\n")
+            print(f"\n{BOLD}{YELLOW}=== Demo limit reached: 30 products processed. Stopping the scraper. ==={RESET}\n", flush=True)
             self.crawler.engine.close_spider(self, reason="Demo limit reached")
             return
 
-        # Construction du résumé synthétique pour la démo
         display_title = item.get("title", "N/A")
         if len(display_title) > 50:
             display_title = display_title[:50] + "..."
@@ -350,9 +320,9 @@ class EbaySpider(scrapy.Spider):
             )
         summary += f"  URL       : {truncated_url}\n"
 
-        print(f"\n{GREEN}=== Product Summary ==={RESET}")
-        print(summary)
-        print(f"{GREEN}=======================\n{RESET}")
+        print(f"\n{GREEN}=== Product Summary ==={RESET}", flush=True)
+        print(summary, flush=True)
+        print(f"{GREEN}=======================\n{RESET}", flush=True)
     
         yield item
 
@@ -360,20 +330,20 @@ class EbaySpider(scrapy.Spider):
         end_time = datetime.datetime.now()
         elapsed = (end_time - self.start_time).total_seconds()
         rate = self.product_count / (elapsed / 60) if elapsed > 0 else 0
-        print(f"\n{BOLD}{YELLOW}==========================================")
-        print("            Scraping Completed")
-        print("==========================================")
-        print(f"[INFO] Reason for closure : {reason}")
-        print(f"[INFO] Total products processed : {self.product_count}")
-        print(f"[INFO] Total pages crawled      : {self.page_count}")
-        print(f"[INFO] Execution time           : {elapsed:.2f} seconds")
-        print(f"[INFO] Processing rate          : {rate:.2f} products/min")
+        print(f"\n{BOLD}{YELLOW}==========================================", flush=True)
+        print("            Scraping Completed", flush=True)
+        print("==========================================", flush=True)
+        print(f"[INFO] Reason for closure : {reason}", flush=True)
+        print(f"[INFO] Total products processed : {self.product_count}", flush=True)
+        print(f"[INFO] Total pages crawled      : {self.page_count}", flush=True)
+        print(f"[INFO] Execution time           : {elapsed:.2f} seconds", flush=True)
+        print(f"[INFO] Processing rate          : {rate:.2f} products/min", flush=True)
         if self.prices:
             minimum = min(self.prices)
             maximum = max(self.prices)
             avg = statistics.mean(self.prices)
-            print(f"[INFO] Price stats              : min=${minimum:.2f}, max=${maximum:.2f}, avg=${avg:.2f}")
+            print(f"[INFO] Price stats              : min=${minimum:.2f}, max=${maximum:.2f}, avg=${avg:.2f}", flush=True)
         else:
-            print("[INFO] No price stats available (no valid prices found)")
-        print(f"[INFO] Condition summary        : New={self.new_count}, Used={self.used_count}")
-        print(f"=========================================={RESET}\n")
+            print("[INFO] No price stats available (no valid prices found)", flush=True)
+        print(f"[INFO] Condition summary        : New={self.new_count}, Used={self.used_count}", flush=True)
+        print(f"=========================================={RESET}\n", flush=True)

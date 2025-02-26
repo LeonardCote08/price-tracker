@@ -12,10 +12,9 @@ ANSI_RESET = "\033[0m"
 class RandomDelayMiddleware:
     def process_request(self, request, spider):
         delay = random.uniform(2, 5)
-        msg = (f"{ANSI_GREEN}[ANTI-BLOCKING] Pause of {delay:.2f} seconds before request {request.url}{ANSI_RESET}")
-        # Affichage en mode démo via logger et print
+        msg = (f"{ANSI_GREEN}[ANTI-BLOCKING] Pause of {delay:.2f} seconds before "
+               f"request {request.url}{ANSI_RESET}")
         logger.info(msg)
-        # Si nous sommes en mode démo, afficher également avec print()
         if spider.settings.getbool("DEMO_MODE"):
-            print(msg)
+            print(msg, flush=True)
         time.sleep(delay)

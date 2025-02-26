@@ -32,11 +32,10 @@ class RandomUserAgentMiddleware:
         if self.crawler.settings.getbool("DEMO_MODE"):
             message = f"{ANSI_BLUE}[UA ROTATION] Using User-Agent: {ua}{ANSI_RESET}"
             logger.info(message)
-            print(message)
+            print(message, flush=True)
         else:
             logger.debug(f"[RandomUserAgent] Using User-Agent: {ua}")
         request.headers["User-Agent"] = ua
-
 
 class ProxyMiddleware:
     def __init__(self, proxies=None):
@@ -65,18 +64,17 @@ class ProxyMiddleware:
                     except Exception as e:
                         err_msg = f"{ANSI_RED}[ProxyMiddleware] Error reading line: {line} ({e}){ANSI_RESET}"
                         logger.warning(err_msg)
-                        print(err_msg)
+                        print(err_msg, flush=True)
         else:
             err_msg = f"{ANSI_RED}[ProxyMiddleware] File {proxies_file} not found. No proxies loaded.{ANSI_RESET}"
             logger.warning(err_msg)
-            print(err_msg)
-
+            print(err_msg, flush=True)
         return cls(proxies=proxies_list)
 
     def process_request(self, request, spider):
         if not self.proxies:
             logger.debug("No proxies available")
-            print("No proxies available")
+            print("No proxies available", flush=True)
             return
 
         # Choix aléatoire d'un proxy dans la liste
@@ -88,6 +86,6 @@ class ProxyMiddleware:
             masked_proxy = re.sub(r'(http://)([^:]+):([^@]+)@', r'\1\2:****@', proxy)
             message = f"{ANSI_YELLOW}[PROXY ROTATION] Using proxy: {masked_proxy}{ANSI_RESET}"
             logger.info(message)
-            print(message)
+            print(message, flush=True)
         else:
             logger.debug(f"[ProxyMiddleware] Using proxy: {proxy}")
