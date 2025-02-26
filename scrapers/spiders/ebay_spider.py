@@ -154,6 +154,11 @@ class EbaySpider(scrapy.Spider):
             title = re.sub(r"\s*\|\s*ebay\s*$", "", title, flags=re.IGNORECASE).strip()
             item["title"] = title
 
+        # Si le titre indique une page d'erreur, ignorez ce produit pour la démo
+        if item["title"].strip().lower() == "error page":
+            self.logger.info("Note: Received an error page. Skipping this product.")
+            return
+
         multi_variation_button = response.xpath(
             '//button[contains(@class, "listbox-button__control") and '
             'contains(@class, "btn--form") and @value="Select"]'
