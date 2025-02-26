@@ -5,12 +5,19 @@ from scrapers.items import EbayItem
 from urllib.parse import quote_plus
 import re
 import json
+import datetime
 
 class EbaySpider(scrapy.Spider):
     name = "ebay_spider"
 
     def __init__(self, keyword=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Initialize product counter
+        self.product_count = 0
+        # Track start time
+        self.start_time = datetime.datetime.now()
+        # Log start message
+        self.logger.info("Starting eBay scraper for 'Funko Pop Doctor Doom #561'...")
         # Choisis un ZIP code US, par exemple 90210 (Beverly Hills)
         zip_code = "90210"
 
