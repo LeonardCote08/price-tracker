@@ -16,7 +16,7 @@
     display: block;
     width: fit-content; /* pour que la largeur épouse le contenu */
     white-space: nowrap; /* reste sur une seule ligne */
-    margin: 0.5rem auto; /* margin auto = centré */
+    margin: 0.5rem auto 2rem; /* margin auto = centré */
     background: rgba(255, 255, 255, 0.07);
     color: #bbb;
     padding: 0.2rem 0.6rem;

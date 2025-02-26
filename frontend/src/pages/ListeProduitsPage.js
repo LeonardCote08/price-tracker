@@ -19,7 +19,8 @@ function ListeProduitsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useScrollRestoration();
+    useScrollRestoration("ListeProduits");
+
 
     // 1) Charger tous les produits (sans filtre "active"/"ended")
     useEffect(() => {
@@ -67,7 +68,7 @@ function ListeProduitsPage() {
 
     return (
         <div>
-            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+            <div style={{ textAlign: 'center', marginTop: '0rem' }}>
                 <div className="subheader">
                     <p className="banner-text">
                         <span style={{ marginRight: '0.5rem' }}>

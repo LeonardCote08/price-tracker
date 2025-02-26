@@ -20,7 +20,8 @@ function formatListingType(listingType) {
 }
 
 function DetailProduitPage() {
-    useScrollRestoration();
+    useScrollRestoration("DetailProduit");
+
     const { id } = useParams();
     const [produit, setProduit] = useState(null);
     const [historique, setHistorique] = useState({ dates: [], prices: [], stats: {} });
