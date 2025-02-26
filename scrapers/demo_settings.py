@@ -1,5 +1,3 @@
-# scrapers/demo_settings.py
-
 from scrapers.settings import *
 
 DEMO_MODE = True
@@ -11,8 +9,6 @@ SPIDER_MIDDLEWARES = {
     'scrapy.spidermiddlewares.httperror.HttpErrorMiddleware': None,
     'core.custom_http_error_middleware.CustomHttpErrorMiddleware': 50,
 }
-
-
 
 LOGGING = {
     'version': 1,
@@ -29,18 +25,34 @@ LOGGING = {
         },
     },
     'loggers': {
-        # Limiter les logs internes de Scrapy (afficher uniquement warnings et erreurs)
+        # Masquer la majorité des messages internes de Scrapy et Twisted
         'scrapy': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'twisted': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        # Pour les modules techniques de votre projet, on ne montre que les avertissements
+        'core.middlewares': {
             'handlers': ['console'],
             'level': 'WARNING',
             'propagate': False,
         },
-        # Vos modules "core" et votre spider afficheront leurs messages en INFO
-        'core': {
+        'core.random_delay_middleware': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'WARNING',
             'propagate': False,
         },
+        'core.custom_http_error_middleware': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        # Vos messages explicatifs dans le spider s'afficheront (niveau INFO)
         'scrapers.spiders.ebay_spider': {
             'handlers': ['console'],
             'level': 'INFO',

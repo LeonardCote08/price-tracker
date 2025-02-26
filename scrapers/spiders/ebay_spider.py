@@ -237,7 +237,7 @@ class EbaySpider(scrapy.Spider):
                 item["listing_type"] = "auction"
         else:
             item["listing_type"] = "fixed_price"
-        self.logger.info(f"DEBUG: listing_type = {item.get('listing_type')}")
+        self.logger.debug(f"Listing type: {item.get('listing_type')}")
 
         # Extraction du nombre d'enchères (bids_count) – uniquement pour les auctions
         if item["listing_type"] in ["auction", "auction_with_bin"]:
