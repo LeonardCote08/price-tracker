@@ -9,7 +9,7 @@ import datetime
 import time
 import statistics
 
-# ANSI codes for color (optional)
+# Codes ANSI pour la coloration (optionnel)
 RESET = "\033[0m"
 BOLD = "\033[1m"
 YELLOW = "\033[93m"
@@ -18,7 +18,7 @@ RED = "\033[91m"
 CYAN = "\033[96m"
 
 def shorten_url(url, max_length=60):
-    """Return the shortened URL if it exceeds max_length characters."""
+    """Retourne l'URL tronquée si elle dépasse max_length caractères."""
     return url if len(url) <= max_length else url[:max_length] + "..."
 
 class EbaySpider(scrapy.Spider):
@@ -26,23 +26,22 @@ class EbaySpider(scrapy.Spider):
 
     def __init__(self, keyword=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Initialize counters and start time
+        # Initialisation des compteurs et du temps de démarrage
         self.product_count = 0
         self.page_count = 0
         self.start_time = datetime.datetime.now()
         self.new_count = 0
         self.used_count = 0
         self.prices = []
-        # Flag to avoid multiple messages when demo limit is reached
+        # Flag pour éviter les messages multiples lors du dépassement de la limite
         self.demo_limit_reached = False
 
-        # Startup header and demo configuration
+        # En-tête de démarrage et configuration de la démo
         print(f"{BOLD}{YELLOW}==========================================", flush=True)
         print("   Starting eBay scraper for 'Funko Pop Doctor Doom #561'", flush=True)
         print("==========================================", flush=True)
         print(f"{RESET}\n", flush=True)
-
-        # Configuration section
+        
         config = {
             "Download Delay": 1.5,
             "Randomize Download Delay": True,
@@ -52,14 +51,13 @@ class EbaySpider(scrapy.Spider):
             "Target Concurrency": 2.0,
             "Demo Mode": True
         }
-        print(f"{BOLD}{YELLOW}===== CONFIGURATION ====={RESET}", flush=True)
-        print(f"Download Delay: {config['Download Delay']}s | AutoThrottle: ON ({config['AutoThrottle Start Delay']}s -> {config['AutoThrottle Max Delay']}s)", flush=True)
-        print(f"Proxy Rotation: Enabled | User-Agent Rotation: Enabled", flush=True)
-        print(f"Demo Mode: {config['Demo Mode']}\n", flush=True)
-        print(f"{BOLD}{CYAN}-> User-Agent and Proxy Rotation activated.{RESET}\n", flush=True)
-        print(f"{BOLD}{CYAN}-> Anti-blocking delays activated.{RESET}\n", flush=True)
+        print(f"{BOLD}Configuration:{RESET}", flush=True)
+        for key, value in config.items():
+            print(f" - {key}: {value}", flush=True)
+        print("", flush=True)
+        print(f"{BOLD}{CYAN}Proxy Rotation: Enabled | User-Agent Rotation: Enabled{RESET}\n", flush=True)
 
-        # ZIP code selection (90210 for Beverly Hills)
+        # Choix du ZIP code (90210 pour Beverly Hills)
         zip_code = "90210"
         self.keyword = keyword or "Funko Pop Doctor Doom #561"
         self.start_urls = [
@@ -87,7 +85,7 @@ class EbaySpider(scrapy.Spider):
             found_this_page += 1
             item = EbayItem()
 
-            # Extract and clean title
+            # Extraction et nettoyage du titre
             title_parts = product.xpath(".//h3[contains(@class,'s-item__title')]//text()").getall()
             title_parts = [t.strip() for t in title_parts if t.strip()]
             if title_parts:
@@ -100,11 +98,7 @@ class EbaySpider(scrapy.Spider):
             title_text = re.sub(r"\s*\|\s*ebay\s*$", "", title_text, flags=re.IGNORECASE).strip()
             item["title"] = title_text
 
-            # New: Skip items with title "eBay Home"
-            if item["title"].lower() == "ebay home":
-                continue
-
-            # Extract price
+            # Extraction du prix
             price_str = product.xpath('.//span[contains(@class, "s-item__price")]//text()').get()
             if price_str:
                 match = re.search(r'[\d,.]+', price_str)
@@ -112,11 +106,11 @@ class EbaySpider(scrapy.Spider):
             else:
                 item["price"] = 0.0
 
-            # Extract condition
+            # Extraction de l'état (condition)
             condition = product.xpath('.//span[@class="SECONDARY_INFO"]/text()').get()
             item["item_condition"] = condition.strip() if condition else ""
 
-            # Extract URLs (detail and image)
+            # Extraction des URLs (détail et image)
             detail_url = product.xpath('.//a[@class="s-item__link"]/@href').get()
             item["item_url"] = detail_url if detail_url else ""
             image_url = product.xpath('.//img[contains(@class, "s-item__image-img")]/@src').get()
@@ -142,13 +136,11 @@ class EbaySpider(scrapy.Spider):
             yield scrapy.Request(url=next_page_url, callback=self.parse)
 
     def parse_item(self, response):
+        # Si le flag demo_limit_reached est déjà activé, ne pas traiter davantage
         if self.demo_limit_reached:
             return
 
-        # Increment product counter and print progress indicator
-        self.product_count += 1
-        print(f"\n{BOLD}Processing product {self.product_count}/30...{RESET}", flush=True)
-
+        print(f"\n{BOLD}=== Processing product detail page ==={RESET}", flush=True)
         item = response.meta.get("item", EbayItem())
         original_url = item.get("item_url", "")
         original_item_id = None
@@ -188,11 +180,6 @@ class EbaySpider(scrapy.Spider):
             fallback_title = re.sub(r"\s*\|\s*ebay\s*$", "", fallback_title, flags=re.IGNORECASE).strip()
             item["title"] = fallback_title
 
-        # New: Skip item if title is "eBay Home" after fallback
-        if item["title"].lower() == "ebay home":
-            print(f"{RED}[INFO] Skipping product due to title 'eBay Home': {shorten_url(response.url)}{RESET}", flush=True)
-            return
-
         if item["title"].strip().lower() == "error page":
             print(f"{RED}[INFO] Skipping product due to error page: {shorten_url(response.url)}{RESET}", flush=True)
             return
@@ -201,7 +188,7 @@ class EbaySpider(scrapy.Spider):
             '//button[contains(@class, "listbox-button__control") and contains(@class, "btn--form") and @value="Select"]'
         )
         if multi_variation_button:
-            print(f"{RED}[INFO] Skipping multi-variation listing (item ignored){RESET}", flush=True)
+            print(f"{RED}[INFO] Skipping multi-variation listing: {item['title']} - URL: {shorten_url(response.url)}{RESET}", flush=True)
             return
 
         raw_condition = item.get("item_condition", "").strip().lower()
@@ -223,10 +210,10 @@ class EbaySpider(scrapy.Spider):
 
         title_lower = item["title"].lower()
         if item["title"].count("#") > 1:
-            print(f"{RED}[INFO] Skipping multi-figure listing (item ignored){RESET}", flush=True)
+            print(f"{RED}[INFO] Skipping multi-figure listing: {item['title']} - URL: {shorten_url(response.url)}{RESET}", flush=True)
             return
         if any(kw in title_lower for kw in ["lot", "bundle", "set"]):
-            print(f"{RED}[INFO] Skipping bundle listing (item ignored){RESET}", flush=True)
+            print(f"{RED}[INFO] Skipping bundle listing: {item['title']} - URL: {shorten_url(response.url)}{RESET}", flush=True)
             return
 
         try:
@@ -306,7 +293,8 @@ class EbaySpider(scrapy.Spider):
             print(f"{RED}[ERROR] Error extracting category: {e}{RESET}", flush=True)
             item["category"] = ""
 
-        # Update condition counters and price stats
+        # Incrémenter les compteurs et collecter les stats
+        self.product_count += 1
         if item["normalized_condition"] == "New":
             self.new_count += 1
         else:
@@ -314,30 +302,46 @@ class EbaySpider(scrapy.Spider):
         if item.get("price", 0) > 0:
             self.prices.append(item["price"])
 
-        # Check demo limit and close spider if reached (display message only once)
+        # Vérifier si la limite de démo est atteinte et agir si c'est le cas (afficher le message une seule fois)
         if self.product_count > 30 and not self.demo_limit_reached:
             print(f"\n{BOLD}{YELLOW}=== Demo limit reached: 30 products processed. Stopping the scraper. ==={RESET}\n", flush=True)
             self.demo_limit_reached = True
             self.crawler.engine.close_spider(self, reason="Demo limit reached")
             return
 
-        # Prepare a condensed, tabular product summary in one line
         display_title = item.get("title", "N/A")
         if len(display_title) > 50:
             display_title = display_title[:50] + "..."
         truncated_url = shorten_url(response.url, max_length=80)
-        summary = f"[{self.product_count}/30] Title: {display_title:<50} | Price: ${item.get('price', 0):>7.2f} | Condition: {item.get('normalized_condition', 'N/A'):<8} | Type: {item.get('listing_type', 'N/A'):<12} | In Box: {'Yes' if item.get('in_box', False) else 'No'}"
+        summary = (
+            f"{BOLD}Product {self.product_count}/30:{RESET}\n"
+            f"  {'Title':<10}: {display_title:<50}\n"
+            f"  {'Type':<10}: {item.get('listing_type', 'N/A'):<12}\n"
+            f"  {'Price':<10}: ${item.get('price', 0):>7.2f}\n"
+            f"  {'Condition':<10}: {item.get('normalized_condition', 'N/A'):<8}\n"
+            f"  {'In Box':<10}: {'Yes' if item.get('in_box', False) else 'No'}\n"
+
+        )
         if item["listing_type"] == "Auction":
-            summary += f" | Bids: {item.get('bids_count', 0):>3} | Time Left: {item.get('time_remaining', 'N/A')}"
+            summary += (
+                f"  {'Bids':<10}: {item.get('bids_count', 0):>3}\n"
+                f"  {'Time Left':<10}: {item.get('time_remaining', 'N/A')}\n"
+
+            )
         elif item["listing_type"] == "Auction + BIN":
+            # Formater BIN Price en vérifiant s'il s'agit d'un nombre (affiché avec 2 décimales) ou d'une chaîne
             bin_price = item.get('buy_it_now_price', 'N/A')
             if isinstance(bin_price, float):
                 bin_price_str = f"${bin_price:>7.2f}"
             else:
                 bin_price_str = f"{bin_price:>7}"
-            summary += f" | BIN Price: {bin_price_str} | Bids: {item.get('bids_count', 0):>3} | Time Left: {item.get('time_remaining', 'N/A')}"
-        summary += f" | URL: {truncated_url}"
-        
+            summary += (
+                f"  {'BIN Price':<10}: {bin_price_str}\n"
+                f"  {'Bids':<10}: {item.get('bids_count', 0):>3}\n"
+                f"  {'Time Left':<10}: {item.get('time_remaining', 'N/A')}\n"
+            )
+        summary += f"  URL       : {truncated_url}\n"
+
         print(f"\n{GREEN}=== Product Summary ==={RESET}", flush=True)
         print(summary, flush=True)
         print(f"{GREEN}=======================\n{RESET}", flush=True)
