@@ -19,7 +19,8 @@ function ListeProduitsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useScrollRestoration();
+    useScrollRestoration('liste');
+
 
     // 1) Charger tous les produits (sans filtre "active"/"ended")
     useEffect(() => {

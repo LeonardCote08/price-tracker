@@ -20,12 +20,17 @@ function formatListingType(listingType) {
 }
 
 function DetailProduitPage() {
-    useScrollRestoration();
+    
+
     const { id } = useParams();
+
+    useScrollRestoration(`detail-${id}`);
+
     const [produit, setProduit] = useState(null);
     const [historique, setHistorique] = useState({ dates: [], prices: [], stats: {} });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
 
     useEffect(() => {
         Promise.all([fetchProduit(id), fetchHistoriquePrix(id)])
