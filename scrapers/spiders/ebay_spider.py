@@ -307,23 +307,28 @@ class EbaySpider(scrapy.Spider):
 
 
          # Tronquer le titre à 50 caractères maximum
+        # Construction du résumé synthétique pour la démo
         display_title = item.get("title", "N/A")
         if len(display_title) > 50:
             display_title = display_title[:50] + "..."
 
-        # Construire le résumé en fonction du type d'annonce
+        # Optionnel : ajouter l'URL tronquée si vous jugez pertinent (par exemple, pour vérification)
+        truncated_url = response.url if len(response.url) <= 80 else response.url[:80] + "..."
+
         if item["listing_type"] == "auction":
             summary = (
                 "Product: %s\n"
                 "Type: Auction\n"
                 "Price: $%.2f\n"
                 "Bids: %s\n"
-                "Time remaining: %s"
+                "Time remaining: %s\n"
+                "Detail URL: %s"
             ) % (
                 display_title,
                 item.get("price", 0),
                 item.get("bids_count", 0),
-                item.get("time_remaining", "N/A")
+                item.get("time_remaining", "N/A"),
+                truncated_url
             )
         elif item["listing_type"] == "auction_with_bin":
             summary = (
@@ -332,36 +337,42 @@ class EbaySpider(scrapy.Spider):
                 "Price: $%.2f\n"
                 "BIN Price: %s\n"
                 "Bids: %s\n"
-                "Time remaining: %s"
+                "Time remaining: %s\n"
+                "Detail URL: %s"
             ) % (
                 display_title,
                 item.get("price", 0),
                 item.get("buy_it_now_price", "N/A"),
                 item.get("bids_count", 0),
-                item.get("time_remaining", "N/A")
+                item.get("time_remaining", "N/A"),
+                truncated_url
             )
         elif item["listing_type"] == "fixed_price":
             summary = (
                 "Product: %s\n"
                 "Type: Fixed Price\n"
-                "Price: $%.2f"
+                "Price: $%.2f\n"
+                "Detail URL: %s"
             ) % (
                 display_title,
-                item.get("price", 0)
+                item.get("price", 0),
+                truncated_url
             )
         else:
             summary = (
                 "Product: %s\n"
                 "Type: %s\n"
-                "Price: $%.2f"
+                "Price: $%.2f\n"
+                "Detail URL: %s"
             ) % (
                 display_title,
                 item.get("listing_type", "N/A"),
-                item.get("price", 0)
+                item.get("price", 0),
+                truncated_url
             )
 
-        # Afficher le résumé avec des séparateurs clairs
         self.logger.info("\n=== Product Summary ===\n%s\n=======================\n", summary)
+
 
 
     
