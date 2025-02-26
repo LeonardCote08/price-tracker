@@ -17,10 +17,6 @@ GREEN = "\033[92m"
 RED = "\033[91m"
 CYAN = "\033[96m"
 
-def shorten_url(url, max_length=60):
-    """Retourne l'URL tronquée si elle dépasse max_length caractères."""
-    return url if len(url) <= max_length else url[:max_length] + "..."
-
 class EbaySpider(scrapy.Spider):
     name = "ebay_spider"
 
@@ -140,7 +136,8 @@ class EbaySpider(scrapy.Spider):
             try:
                 original_item_id = original_url.split("/itm/")[1].split("?")[0]
             except Exception as e:
-                print(f"{RED}[WARNING] Failed to extract initial item_id from URL {shorten_url(original_url)}: {e}{RESET}", flush=True)
+                print(f"{RED}[WARNING] Failed to extract initial item_id from URL {original_url}: {e}{RESET}", flush=True)
+
         item["item_url"] = response.url
 
         ended_message = " ".join(response.xpath('//div[@data-testid="d-statusmessage"]//text()').getall()).strip()
@@ -159,7 +156,7 @@ class EbaySpider(scrapy.Spider):
             final_item_id = response.url.split("/itm/")[1].split("?")[0]
             item["item_id"] = final_item_id
         except Exception as e:
-            print(f"{RED}[WARNING] Failed to extract item_id from URL: {shorten_url(response.url)} ({e}){RESET}", flush=True)
+            print(f"{RED}[WARNING] Failed to extract item_id from URL: {response.url} ({e}){RESET}", flush=True)
             item["item_id"] = ""
 
         if original_item_id and final_item_id and original_item_id != final_item_id:
@@ -173,14 +170,14 @@ class EbaySpider(scrapy.Spider):
             item["title"] = fallback_title
 
         if item["title"].strip().lower() == "error page":
-            print(f"{RED}[INFO] Skipping product due to error page: {shorten_url(response.url)}{RESET}", flush=True)
+            print(f"{RED}[INFO] Skipping product due to error page: {response.url}{RESET}", flush=True)
             return
 
         multi_variation_button = response.xpath(
             '//button[contains(@class, "listbox-button__control") and contains(@class, "btn--form") and @value="Select"]'
         )
         if multi_variation_button:
-            print(f"{RED}[INFO] Skipping multi-variation listing: {item['title']} - URL: {shorten_url(response.url)}{RESET}", flush=True)
+            print(f"{RED}[INFO] Skipping multi-variation listing: {item['title']} - URL: {response.url}{RESET}", flush=True)
             return
 
         raw_condition = item.get("item_condition", "").strip().lower()
@@ -202,10 +199,10 @@ class EbaySpider(scrapy.Spider):
 
         title_lower = item["title"].lower()
         if item["title"].count("#") > 1:
-            print(f"{RED}[INFO] Skipping multi-figure listing: {item['title']} - URL: {shorten_url(response.url)}{RESET}", flush=True)
+            print(f"{RED}[INFO] Skipping multi-figure listing: {item['title']} - URL: {response.url}{RESET}", flush=True)
             return
         if any(kw in title_lower for kw in ["lot", "bundle", "set"]):
-            print(f"{RED}[INFO] Skipping bundle listing: {item['title']} - URL: {shorten_url(response.url)}{RESET}", flush=True)
+            print(f"{RED}[INFO] Skipping bundle listing: {item['title']} - URL: {response.url}{RESET}", flush=True)
             return
 
         try:
@@ -301,7 +298,7 @@ class EbaySpider(scrapy.Spider):
         display_title = item.get("title", "N/A")
         if len(display_title) > 50:
             display_title = display_title[:50] + "..."
-        truncated_url = shorten_url(response.url, max_length=80)
+        truncated_url = response.url if len(response.url) <= 80 else response.url[:80] + "..."
         summary = (
             f"{BOLD}Product {self.product_count}/30:{RESET}\n"
             f"  Title     : {display_title}\n"
