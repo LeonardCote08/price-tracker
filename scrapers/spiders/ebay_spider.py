@@ -56,7 +56,7 @@ class EbaySpider(scrapy.Spider):
             print(f" - {key}: {value}", flush=True)
         print("", flush=True)
         print(f"{BOLD}{CYAN}-> User-Agent and Proxy Rotation activated.{RESET}\n", flush=True)
-        print(f"{BOLD}{CYAN}-> Anti-blocking delays activated.{RESET}\n", flush=True)
+        print(f"{BOLD}{CYAN} Anti-blocking delays activated.{RESET}\n", flush=True)
 
 
         # ZIP code selection (90210 for Beverly Hills)
