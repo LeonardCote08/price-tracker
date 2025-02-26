@@ -18,7 +18,6 @@ class RandomDelayMiddleware:
         delay = random.uniform(2, 5)
         short_url = shorten_url(request.url)
         msg = (f"{ANSI_GREEN}[ANTI-BLOCKING] Pause of {delay:.2f} seconds before request {short_url}{ANSI_RESET}")
-        logger.info(msg)
         if spider.settings.getbool("DEMO_MODE"):
             print(msg, flush=True)
         time.sleep(delay)
