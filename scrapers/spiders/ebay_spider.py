@@ -33,7 +33,7 @@ class EbaySpider(scrapy.Spider):
             ]
 
     custom_settings = {
-        "DOWNLOAD_DELAY": 3.0,
+        "DOWNLOAD_DELAY": 1.5,
         "RANDOMIZE_DOWNLOAD_DELAY": True,
         "AUTOTHROTTLE_ENABLED": True,
         "AUTOTHROTTLE_START_DELAY": 1.0,
@@ -320,7 +320,7 @@ class EbaySpider(scrapy.Spider):
 
         # Base summary fields
         summary = (
-            f"Product {self.product_count}/50 :\n"  # Placeholder total of 50 for demo
+            f"Product {self.product_count}/30 :\n"  # Placeholder total of 30 for demo
             f"- Title: {display_title}\n"
             f"- Type: {item.get('listing_type', 'N/A')}\n"
             f"- Price: ${item.get('price', 0):.2f}\n"
