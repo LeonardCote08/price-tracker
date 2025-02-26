@@ -118,7 +118,9 @@ class EbaySpider(scrapy.Spider):
         # Mettre à jour l'URL avec celle de la réponse finale (après redirection)
         item["item_url"] = response.url
         if self.settings.getbool("DEMO_MODE"):
-            self.logger.info("Detail URL used: %s", response.url)
+            truncated_url = response.url if len(response.url) <= 80 else response.url[:80] + "..."
+            self.logger.info("Detail URL used: %s", truncated_url)
+
         else:
             self.logger.debug("Detail URL used: %s", response.url)
 

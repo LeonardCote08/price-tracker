@@ -1,6 +1,7 @@
 import os
 import random
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,8 @@ class ProxyMiddleware:
         proxy = random.choice(self.proxies)
         request.meta['proxy'] = proxy
         if spider.settings.getbool("DEMO_MODE"):
-            logger.info(f"[ProxyMiddleware] Using proxy: {proxy}")
+            masked_proxy = re.sub(r'(http://)([^:]+):([^@]+)@', r'\1\2:****@', proxy)
+            logger.info(f"[ProxyMiddleware] Using proxy: {masked_proxy}")
         else:
             logger.debug(f"[ProxyMiddleware] Using proxy: {proxy}")
 
