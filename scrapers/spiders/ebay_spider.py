@@ -26,12 +26,15 @@ class EbaySpider(scrapy.Spider):
 
     def __init__(self, keyword=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Initialisation des compteurs et du temps de démarrage
         self.product_count = 0
         self.page_count = 0
         self.start_time = datetime.datetime.now()
         self.new_count = 0
         self.used_count = 0
         self.prices = []
+        # Flag pour éviter les messages multiples lors du dépassement de la limite
+        self.demo_limit_reached = False
 
         # En-tête de démarrage et configuration de la démo
         print(f"{BOLD}{YELLOW}==========================================", flush=True)
@@ -54,6 +57,7 @@ class EbaySpider(scrapy.Spider):
         print("", flush=True)
         print(f"{BOLD}{CYAN}Proxy Rotation: Enabled | User-Agent Rotation: Enabled{RESET}\n", flush=True)
 
+        # Choix du ZIP code (90210 pour Beverly Hills)
         zip_code = "90210"
         self.keyword = keyword or "Funko Pop Doctor Doom #561"
         self.start_urls = [
@@ -132,6 +136,10 @@ class EbaySpider(scrapy.Spider):
             yield scrapy.Request(url=next_page_url, callback=self.parse)
 
     def parse_item(self, response):
+        # Si le flag demo_limit_reached est déjà activé, ne pas traiter davantage
+        if self.demo_limit_reached:
+            return
+
         print(f"\n{BOLD}=== Processing product detail page ==={RESET}", flush=True)
         item = response.meta.get("item", EbayItem())
         original_url = item.get("item_url", "")
@@ -285,6 +293,7 @@ class EbaySpider(scrapy.Spider):
             print(f"{RED}[ERROR] Error extracting category: {e}{RESET}", flush=True)
             item["category"] = ""
 
+        # Incrémenter les compteurs et collecter les stats
         self.product_count += 1
         if item["normalized_condition"] == "New":
             self.new_count += 1
@@ -293,8 +302,10 @@ class EbaySpider(scrapy.Spider):
         if item.get("price", 0) > 0:
             self.prices.append(item["price"])
 
-        if self.product_count > 30:
+        # Vérifier si la limite de démo est atteinte et agir si c'est le cas (afficher le message une seule fois)
+        if self.product_count > 30 and not self.demo_limit_reached:
             print(f"\n{BOLD}{YELLOW}=== Demo limit reached: 30 products processed. Stopping the scraper. ==={RESET}\n", flush=True)
+            self.demo_limit_reached = True
             self.crawler.engine.close_spider(self, reason="Demo limit reached")
             return
 
@@ -304,22 +315,30 @@ class EbaySpider(scrapy.Spider):
         truncated_url = shorten_url(response.url, max_length=80)
         summary = (
             f"{BOLD}Product {self.product_count}/30:{RESET}\n"
-            f"  Title     : {display_title}\n"
-            f"  Type      : {item.get('listing_type', 'N/A')}\n"
-            f"  Price     : ${item.get('price', 0):.2f}\n"
-            f"  Condition : {item.get('normalized_condition', 'N/A')}\n"
-            f"  In Box    : {'Yes' if item.get('in_box', False) else 'No'}\n"
+            f"  {'Title':<10}: {display_title:<50}\n"
+            f"  {'Type':<10}: {item.get('listing_type', 'N/A'):<12}\n"
+            f"  {'Price':<10}: ${item.get('price', 0):>7.2f}\n"
+            f"  {'Condition':<10}: {item.get('normalized_condition', 'N/A'):<8}\n"
+            f"  {'In Box':<10}: {'Yes' if item.get('in_box', False) else 'No'}\n"
+
         )
         if item["listing_type"] == "Auction":
             summary += (
-                f"  Bids      : {item.get('bids_count', 0)}\n"
-                f"  Time Left : {item.get('time_remaining', 'N/A')}\n"
+                f"  {'Bids':<10}: {item.get('bids_count', 0):>3}\n"
+                f"  {'Time Left':<10}: {item.get('time_remaining', 'N/A')}\n"
+
             )
         elif item["listing_type"] == "Auction + BIN":
+            # Formater BIN Price en vérifiant s'il s'agit d'un nombre (affiché avec 2 décimales) ou d'une chaîne
+            bin_price = item.get('buy_it_now_price', 'N/A')
+            if isinstance(bin_price, float):
+                bin_price_str = f"${bin_price:>7.2f}"
+            else:
+                bin_price_str = f"{bin_price:>7}"
             summary += (
-                f"  BIN Price : ${item.get('buy_it_now_price', 'N/A')}\n"
-                f"  Bids      : {item.get('bids_count', 0)}\n"
-                f"  Time Left : {item.get('time_remaining', 'N/A')}\n"
+                f"  {'BIN Price':<10}: {bin_price_str}\n"
+                f"  {'Bids':<10}: {item.get('bids_count', 0):>3}\n"
+                f"  {'Time Left':<10}: {item.get('time_remaining', 'N/A')}\n"
             )
         summary += f"  URL       : {truncated_url}\n"
 
