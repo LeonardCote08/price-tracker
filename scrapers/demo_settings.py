@@ -25,7 +25,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        # Masquer la majorité des messages internes de Scrapy et Twisted
+        # Masquer la plupart des messages internes de Scrapy et Twisted
         'scrapy': {
             'handlers': ['console'],
             'level': 'ERROR',
@@ -36,7 +36,7 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': False,
         },
-        # Pour les modules techniques de votre projet, on ne montre que les avertissements
+        # Vos modules techniques afficheront uniquement warnings ou erreurs
         'core.middlewares': {
             'handlers': ['console'],
             'level': 'WARNING',
@@ -52,11 +52,17 @@ LOGGING = {
             'level': 'WARNING',
             'propagate': False,
         },
-        # Vos messages explicatifs dans le spider s'afficheront (niveau INFO)
+        # Les messages explicatifs dans le spider s'afficheront en INFO
         'scrapers.spiders.ebay_spider': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
         },
-    }
+    },
+    # Nouvel ajout : définir le logger racine à ERROR pour masquer les messages de démarrage
+    'root': {
+        'handlers': ['console'],
+        'level': 'ERROR',
+        'propagate': False,
+    },
 }

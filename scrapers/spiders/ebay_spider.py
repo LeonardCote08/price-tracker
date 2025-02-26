@@ -311,12 +311,12 @@ class EbaySpider(scrapy.Spider):
 
         if item["listing_type"] == "auction":
             summary = (
-                "Product: %s\n"
+                "Title: %s\n"
                 "Type: Auction\n"
                 "Price: $%.2f\n"
                 "Bids: %s\n"
                 "Time remaining: %s\n"
-                "Detail URL: %s"
+                "URL: %s"
             ) % (
                 display_title,
                 item.get("price", 0),
@@ -326,13 +326,13 @@ class EbaySpider(scrapy.Spider):
             )
         elif item["listing_type"] == "auction_with_bin":
             summary = (
-                "Product: %s\n"
+                "Title: %s\n"
                 "Type: Auction + BIN\n"
                 "Price: $%.2f\n"
                 "BIN Price: %s\n"
                 "Bids: %s\n"
                 "Time remaining: %s\n"
-                "Detail URL: %s"
+                "URL: %s"
             ) % (
                 display_title,
                 item.get("price", 0),
@@ -343,10 +343,10 @@ class EbaySpider(scrapy.Spider):
             )
         elif item["listing_type"] == "fixed_price":
             summary = (
-                "Product: %s\n"
+                "Title: %s\n"
                 "Type: Fixed Price\n"
                 "Price: $%.2f\n"
-                "Detail URL: %s"
+                "URL: %s"
             ) % (
                 display_title,
                 item.get("price", 0),
@@ -354,10 +354,10 @@ class EbaySpider(scrapy.Spider):
             )
         else:
             summary = (
-                "Product: %s\n"
+                "Title: %s\n"
                 "Type: %s\n"
                 "Price: $%.2f\n"
-                "Detail URL: %s"
+                "URL: %s"
             ) % (
                 display_title,
                 item.get("listing_type", "N/A"),
