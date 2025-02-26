@@ -4,7 +4,7 @@ from scrapers.settings import *
 
 DEMO_MODE = True
 LOG_LEVEL = "INFO"
-LOG_FORMAT = '%(levelname)s: %(message)s'
+LOG_FORMAT = '%(message)s'
 TELNETCONSOLE_ENABLED = False
 
 LOGGING = {

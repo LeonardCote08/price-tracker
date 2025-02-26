@@ -26,7 +26,7 @@ class RandomUserAgentMiddleware:
     def process_request(self, request, spider):
         ua = random.choice(self.user_agents)
         if self.crawler.settings.getbool("DEMO_MODE"):
-            logger.info(f"[RandomUserAgent] Using User-Agent: {ua}")
+            logger.info("User-Agent: %s", ua)
         else:
             logger.debug(f"[RandomUserAgent] Using User-Agent: {ua}")
 
@@ -68,7 +68,7 @@ class ProxyMiddleware:
     def process_request(self, request, spider):
         if not self.proxies:
             # Si on n'a pas de proxy chargé, on n'en met pas
-            logger.debug("[ProxyMiddleware] Aucune liste de proxy disponible.")
+            logger.debug("No proxies available")
             return
 
         # Choix aléatoire dans self.proxies
@@ -76,7 +76,7 @@ class ProxyMiddleware:
         request.meta['proxy'] = proxy
         if spider.settings.getbool("DEMO_MODE"):
             masked_proxy = re.sub(r'(http://)([^:]+):([^@]+)@', r'\1\2:****@', proxy)
-            logger.info(f"[ProxyMiddleware] Using proxy: {masked_proxy}")
+            logger.info("Proxy: %s", masked_proxy)
         else:
             logger.debug(f"[ProxyMiddleware] Using proxy: {proxy}")
 
