@@ -6,47 +6,40 @@ import re
 
 logger = logging.getLogger(__name__)
 
-# Codes ANSI pour colorer les messages dans la console
-ANSI_BLUE   = "\033[94m"  # Pour les messages d'User-Agent
-ANSI_YELLOW = "\033[93m"  # Pour les messages de proxy
-ANSI_RED    = "\033[91m"  # Pour les avertissements/erreurs
-ANSI_RESET  = "\033[0m"   # Pour réinitialiser la couleur
+# ANSI color codes (if needed)
+ANSI_BLUE   = "\033[94m"
+ANSI_YELLOW = "\033[93m"
+ANSI_RED    = "\033[91m"
+ANSI_RESET  = "\033[0m"
 
 class RandomUserAgentMiddleware:
-    """Middleware pour attribuer un User-Agent aléatoire à chaque requête."""
+    """Middleware to assign a random User-Agent to each request."""
     def __init__(self, user_agents=None):
         self.user_agents = user_agents or [
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
             "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1",
-            # Ajoutez d'autres User-Agents ici
+            # Add more User-Agents here
         ]
 
     @classmethod
     def from_crawler(cls, crawler):
         instance = cls()
-        instance.crawler = crawler  # Stocke les settings pour y accéder plus tard
+        instance.crawler = crawler  # Access to settings if needed
         return instance
 
     def process_request(self, request, spider):
         ua = random.choice(self.user_agents)
-        if self.crawler.settings.getbool("DEMO_MODE"):
-            message = f"{ANSI_BLUE}[UA ROTATION] Using User-Agent: {ua}{ANSI_RESET}"
-            logger.info(message)
-            print(message, flush=True)
-        else:
-            logger.debug(f"[RandomUserAgent] Using User-Agent: {ua}")
         request.headers["User-Agent"] = ua
 
 class ProxyMiddleware:
     def __init__(self, proxies=None):
-        # Stocke la liste des proxys
         self.proxies = proxies or []
 
     @classmethod
     def from_crawler(cls, crawler):
         """
-        Lit le fichier de proxys (chaque ligne au format: host:port:user:pass)
-        et le convertit en URL proxy de la forme:
+        Reads the proxies file (each line in the format: host:port:user:pass)
+        and converts it to a proxy URL of the form:
             http://user:pass@host:port
         """
         proxies_file = crawler.settings.get('PROXIES_FILE', 'webshare_proxies.txt')
@@ -56,7 +49,7 @@ class ProxyMiddleware:
                 for line in f:
                     line = line.strip()
                     if not line or line.startswith('#'):
-                        continue  # Ignore les lignes vides ou commentées
+                        continue  # Skip empty or commented lines
                     try:
                         host, port, user, pwd = line.split(':')
                         proxy_url = f"http://{user}:{pwd}@{host}:{port}"
@@ -73,19 +66,6 @@ class ProxyMiddleware:
 
     def process_request(self, request, spider):
         if not self.proxies:
-            logger.debug("No proxies available")
-            print("No proxies available", flush=True)
             return
-
-        # Choix aléatoire d'un proxy dans la liste
         proxy = random.choice(self.proxies)
         request.meta['proxy'] = proxy
-
-        if spider.settings.getbool("DEMO_MODE"):
-            # Masquer le mot de passe pour l'affichage
-            masked_proxy = re.sub(r'(http://)([^:]+):([^@]+)@', r'\1\2:****@', proxy)
-            message = f"{ANSI_YELLOW}[PROXY ROTATION] Using proxy: {masked_proxy}{ANSI_RESET}"
-            logger.info(message)
-            print(message, flush=True)
-        else:
-            logger.debug(f"[ProxyMiddleware] Using proxy: {proxy}")
