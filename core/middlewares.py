@@ -17,12 +17,18 @@ class RandomUserAgentMiddleware:
 
     @classmethod
     def from_crawler(cls, crawler):
-        # Tu pourrais charger une liste custom depuis les settings
-        return cls()
+        instance = cls()
+        instance.crawler = crawler  # stocke les settings
+        proxies_file = crawler.settings.get('PROXIES_FILE', 'webshare_proxies.txt')
+        return instance
 
     def process_request(self, request, spider):
         ua = random.choice(self.user_agents)
-        logger.debug(f"[RandomUserAgent] UA choisi: {ua}")
+        if self.crawler.settings.getbool("DEMO_MODE"):
+            logger.info(f"[RandomUserAgent] Using User-Agent: {ua}")
+        else:
+            logger.debug(f"[RandomUserAgent] Using User-Agent: {ua}")
+
         request.headers["User-Agent"] = ua
 
 
@@ -67,4 +73,8 @@ class ProxyMiddleware:
         # Choix aléatoire dans self.proxies
         proxy = random.choice(self.proxies)
         request.meta['proxy'] = proxy
-        logger.debug(f"[ProxyMiddleware] Utilisation du proxy: {proxy}")
+        if spider.settings.getbool("DEMO_MODE"):
+            logger.info(f"[ProxyMiddleware] Using proxy: {proxy}")
+        else:
+            logger.debug(f"[ProxyMiddleware] Using proxy: {proxy}")
+

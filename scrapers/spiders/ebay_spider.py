@@ -117,7 +117,11 @@ class EbaySpider(scrapy.Spider):
 
         # Mettre à jour l'URL avec celle de la réponse finale (après redirection)
         item["item_url"] = response.url
-        self.logger.debug("URL de détail utilisée: %s", response.url)
+        if self.settings.getbool("DEMO_MODE"):
+            self.logger.info("Detail URL used: %s", response.url)
+        else:
+            self.logger.debug("Detail URL used: %s", response.url)
+
         self.logger.debug("Extrait de la réponse: %s", response.text[:500])
 
         # Détection d'une annonce terminée
