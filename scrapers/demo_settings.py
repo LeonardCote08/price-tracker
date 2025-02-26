@@ -7,6 +7,13 @@ LOG_LEVEL = "INFO"
 LOG_FORMAT = '%(message)s'
 TELNETCONSOLE_ENABLED = False
 
+SPIDER_MIDDLEWARES = {
+    'scrapy.spidermiddlewares.httperror.HttpErrorMiddleware': None,
+    'core.custom_http_error_middleware.CustomHttpErrorMiddleware': 50,
+}
+
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

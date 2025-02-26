@@ -37,6 +37,7 @@ class EbaySpider(scrapy.Spider):
 
     def parse(self, response):
         """Extrait les informations essentielles depuis la page de résultats eBay."""
+        self.logger.info("\n=== Step 1: Retrieving product listings from eBay ===\n")
         results = response.xpath('//li[contains(@class, "s-item")]')
         for product in results:
             item = EbayItem()
@@ -104,6 +105,7 @@ class EbaySpider(scrapy.Spider):
 
     def parse_item(self, response):
         """Extrait l'ID, le vendeur, la catégorie et les nouveaux champs depuis la page détaillée."""
+        self.logger.info("\n=== Step 2: Processing product detail page ===\n")
         item = response.meta.get("item", EbayItem())
     
         # Récupérer l'URL initiale passée dans le meta et en extraire l'item_id initial
@@ -304,12 +306,12 @@ class EbaySpider(scrapy.Spider):
             item["category"] = ""
 
 
-        # Tronquer le titre pour ne pas dépasser 50 caractères
+         # Tronquer le titre à 50 caractères maximum
         display_title = item.get("title", "N/A")
         if len(display_title) > 50:
             display_title = display_title[:50] + "..."
 
-        # Construire le résumé en fonction du listing_type
+        # Construire le résumé en fonction du type d'annonce
         if item["listing_type"] == "auction":
             summary = (
                 "Product: %s\n"
