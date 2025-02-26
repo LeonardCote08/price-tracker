@@ -100,7 +100,7 @@ class EbaySpider(scrapy.Spider):
             title_text = re.sub(r"\s*\|\s*ebay\s*$", "", title_text, flags=re.IGNORECASE).strip()
             item["title"] = title_text
 
-            # NEW: Skip items with title "eBay Home"
+            # New: Skip items with title "eBay Home"
             if item["title"].lower() == "ebay home":
                 continue
 
@@ -187,6 +187,11 @@ class EbaySpider(scrapy.Spider):
                               response.xpath('//title/text()').get() or "")
             fallback_title = re.sub(r"\s*\|\s*ebay\s*$", "", fallback_title, flags=re.IGNORECASE).strip()
             item["title"] = fallback_title
+
+        # New: Skip item if title is "eBay Home" after fallback
+        if item["title"].lower() == "ebay home":
+            print(f"{RED}[INFO] Skipping product due to title 'eBay Home': {shorten_url(response.url)}{RESET}", flush=True)
+            return
 
         if item["title"].strip().lower() == "error page":
             print(f"{RED}[INFO] Skipping product due to error page: {shorten_url(response.url)}{RESET}", flush=True)
