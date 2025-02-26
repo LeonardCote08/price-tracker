@@ -1,3 +1,4 @@
+# core/middlewares.py
 import os
 import random
 import logging
@@ -29,8 +30,9 @@ class RandomUserAgentMiddleware:
     def process_request(self, request, spider):
         ua = random.choice(self.user_agents)
         if self.crawler.settings.getbool("DEMO_MODE"):
-            # Affichage en bleu pour indiquer la rotation de User-Agent
-            logger.info(f"{ANSI_BLUE}[UA ROTATION] Using User-Agent: {ua}{ANSI_RESET}")
+            message = f"{ANSI_BLUE}[UA ROTATION] Using User-Agent: {ua}{ANSI_RESET}"
+            logger.info(message)
+            print(message)
         else:
             logger.debug(f"[RandomUserAgent] Using User-Agent: {ua}")
         request.headers["User-Agent"] = ua
@@ -61,15 +63,20 @@ class ProxyMiddleware:
                         proxy_url = f"http://{user}:{pwd}@{host}:{port}"
                         proxies_list.append(proxy_url)
                     except Exception as e:
-                        logger.warning(f"{ANSI_RED}[ProxyMiddleware] Erreur lors de la lecture de la ligne: {line} ({e}){ANSI_RESET}")
+                        err_msg = f"{ANSI_RED}[ProxyMiddleware] Error reading line: {line} ({e}){ANSI_RESET}"
+                        logger.warning(err_msg)
+                        print(err_msg)
         else:
-            logger.warning(f"{ANSI_RED}[ProxyMiddleware] Fichier {proxies_file} introuvable. Aucune liste de proxys chargée.{ANSI_RESET}")
+            err_msg = f"{ANSI_RED}[ProxyMiddleware] File {proxies_file} not found. No proxies loaded.{ANSI_RESET}"
+            logger.warning(err_msg)
+            print(err_msg)
 
         return cls(proxies=proxies_list)
 
     def process_request(self, request, spider):
         if not self.proxies:
             logger.debug("No proxies available")
+            print("No proxies available")
             return
 
         # Choix aléatoire d'un proxy dans la liste
@@ -79,6 +86,8 @@ class ProxyMiddleware:
         if spider.settings.getbool("DEMO_MODE"):
             # Masquer le mot de passe pour l'affichage
             masked_proxy = re.sub(r'(http://)([^:]+):([^@]+)@', r'\1\2:****@', proxy)
-            logger.info(f"{ANSI_YELLOW}[PROXY ROTATION] Using proxy: {masked_proxy}{ANSI_RESET}")
+            message = f"{ANSI_YELLOW}[PROXY ROTATION] Using proxy: {masked_proxy}{ANSI_RESET}"
+            logger.info(message)
+            print(message)
         else:
             logger.debug(f"[ProxyMiddleware] Using proxy: {proxy}")
