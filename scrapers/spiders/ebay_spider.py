@@ -37,7 +37,6 @@ class EbaySpider(scrapy.Spider):
 
     def parse(self, response):
         """Extrait les informations essentielles depuis la page de résultats eBay."""
-        self.logger.info("\n=== Step 1: Retrieving product listings from eBay ===\n")
         results = response.xpath('//li[contains(@class, "s-item")]')
         for product in results:
             item = EbayItem()
@@ -105,7 +104,6 @@ class EbaySpider(scrapy.Spider):
 
     def parse_item(self, response):
         """Extrait l'ID, le vendeur, la catégorie et les nouveaux champs depuis la page détaillée."""
-        self.logger.info("\n=== Step 2: Processing product detail page ===\n")
         item = response.meta.get("item", EbayItem())
     
         # Récupérer l'URL initiale passée dans le meta et en extraire l'item_id initial
@@ -119,14 +117,6 @@ class EbaySpider(scrapy.Spider):
 
         # Mettre à jour l'URL avec celle de la réponse finale (après redirection)
         item["item_url"] = response.url
-        if self.settings.getbool("DEMO_MODE"):
-            truncated_url = response.url if len(response.url) <= 80 else response.url[:80] + "..."
-            self.logger.info("Detail URL used: %s", truncated_url)
-
-        else:
-            self.logger.debug("Detail URL used: %s", response.url)
-
-        self.logger.debug("Extrait de la réponse: %s", response.text[:500])
 
         # Détection d'une annonce terminée
         ended_message = " ".join(response.xpath('//div[@data-testid="d-statusmessage"]//text()').getall()).strip()
@@ -306,13 +296,12 @@ class EbaySpider(scrapy.Spider):
             item["category"] = ""
 
 
-         # Tronquer le titre à 50 caractères maximum
-        # Construction du résumé synthétique pour la démo
+
+        # --- Construction du résumé synthétique pour la démo ---
         display_title = item.get("title", "N/A")
         if len(display_title) > 50:
             display_title = display_title[:50] + "..."
 
-        # Optionnel : ajouter l'URL tronquée si vous jugez pertinent (par exemple, pour vérification)
         truncated_url = response.url if len(response.url) <= 80 else response.url[:80] + "..."
 
         if item["listing_type"] == "auction":
@@ -372,6 +361,7 @@ class EbaySpider(scrapy.Spider):
             )
 
         self.logger.info("\n=== Product Summary ===\n%s\n=======================\n", summary)
+
 
 
 
