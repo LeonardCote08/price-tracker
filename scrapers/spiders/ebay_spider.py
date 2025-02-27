@@ -27,7 +27,9 @@ class EbaySpider(scrapy.Spider):
     def __init__(self, keyword=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Initialize counters and start time
-        self.product_count = 0
+        self.product_count = 0        # Total products attempted
+        self.processed_count = 0      # Successfully scraped (yielded) products
+        self.ignored_count = 0        # Products ignored/skipped (e.g. error pages, multi-variation, etc.)
         self.page_count = 0
         self.start_time = datetime.datetime.now()
         self.new_count = 0
@@ -54,7 +56,7 @@ class EbaySpider(scrapy.Spider):
         }
         print(f"{BOLD}{YELLOW}===== CONFIGURATION ====={RESET}", flush=True)
         print(f"Download Delay: {config['Download Delay']}s | AutoThrottle: ON ({config['AutoThrottle Start Delay']}s -> {config['AutoThrottle Max Delay']}s)", flush=True)
-        print(f"Proxy Rotation: Enabled | User-Agent Rotation: Enabled", flush=True)
+        print("Proxy Rotation: Enabled | User-Agent Rotation: Enabled", flush=True)
         print(f"Demo Mode: {config['Demo Mode']}\n", flush=True)
         print(f"{BOLD}{CYAN}-> User-Agent and Proxy Rotation activated.{RESET}\n", flush=True)
         print(f"{BOLD}{CYAN}-> Anti-blocking delays activated.{RESET}\n", flush=True)
@@ -141,7 +143,7 @@ class EbaySpider(scrapy.Spider):
         if self.demo_limit_reached:
             return
 
-        # Increment product counter and print progress indicator
+        # Increment attempted product counter
         self.product_count += 1
         print(f"\n{BOLD}Processing product {self.product_count}/30...{RESET}", flush=True)
 
@@ -184,13 +186,10 @@ class EbaySpider(scrapy.Spider):
             fallback_title = re.sub(r"\s*\|\s*ebay\s*$", "", fallback_title, flags=re.IGNORECASE).strip()
             item["title"] = fallback_title
 
-        # New check: if the title is "eBay Home", consider it an error page
-        if item["title"].strip().lower() == "ebay home":
-            print(f"{RED}[INFO] Skipping product due to error page (item ignored){RESET}", flush=True)
-            return
-
-        if item["title"].strip().lower() == "error page":
-            print(f"{RED}[INFO] Skipping product due to error page (item ignored){RESET}", flush=True)
+        # New check: if the title is "eBay Home" or "error page", count as ignored (but not an error)
+        if item["title"].strip().lower() in ["ebay home", "error page"]:
+            print(f"{RED}[INFO] Skipping product due to missing page (item ignored){RESET}", flush=True)
+            self.ignored_count += 1
             return
 
         multi_variation_button = response.xpath(
@@ -198,6 +197,7 @@ class EbaySpider(scrapy.Spider):
         )
         if multi_variation_button:
             print(f"{RED}[INFO] Skipping multi-variation listing (item ignored){RESET}", flush=True)
+            self.ignored_count += 1
             return
 
         raw_condition = item.get("item_condition", "").strip().lower()
@@ -220,9 +220,11 @@ class EbaySpider(scrapy.Spider):
         title_lower = item["title"].lower()
         if item["title"].count("#") > 1:
             print(f"{RED}[INFO] Skipping multi-figure listing (item ignored){RESET}", flush=True)
+            self.ignored_count += 1
             return
         if any(kw in title_lower for kw in ["lot", "bundle", "set"]):
             print(f"{RED}[INFO] Skipping bundle listing (item ignored){RESET}", flush=True)
+            self.ignored_count += 1
             return
 
         try:
@@ -302,13 +304,15 @@ class EbaySpider(scrapy.Spider):
             print(f"{RED}[ERROR] Error extracting category: {e}{RESET}", flush=True)
             item["category"] = ""
 
-        # Update condition counters and price stats
+        # Update condition counters and price stats (only for processed products)
         if item["normalized_condition"] == "New":
             self.new_count += 1
         else:
             self.used_count += 1
         if item.get("price", 0) > 0:
             self.prices.append(item["price"])
+        # Increment processed counter
+        self.processed_count += 1
 
         # Check demo limit and close spider if reached (display message only once)
         if self.product_count > 30 and not self.demo_limit_reached:
@@ -321,8 +325,7 @@ class EbaySpider(scrapy.Spider):
         display_title = item.get("title", "N/A")
         if len(display_title) > 50:
             display_title = display_title[:50] + "..."
-        truncated_url = shorten_url(response.url, max_length=80)
-        summary = f"[{self.product_count}/30] Title: {display_title:<50} | Price: ${item.get('price', 0):>7.2f} | Condition: {item.get('normalized_condition', 'N/A'):<8} | Type: {item.get('listing_type', 'N/A'):<12} | In Box: {'Yes' if item.get('in_box', False) else 'No'}"
+        summary = f"[{self.product_count}/30] Title: {display_title:<50} | Price: ${item.get('price', 0):>7.2f} | Condition: {item.get('normalized_condition', 'N/A'):<8} | Type: {item.get('listing_type', 'N/A'):<12}"
         if item["listing_type"] == "Auction":
             summary += f" | Bids: {item.get('bids_count', 0):>3} | Time Left: {item.get('time_remaining', 'N/A')}"
         elif item["listing_type"] == "Auction + BIN":
@@ -332,7 +335,7 @@ class EbaySpider(scrapy.Spider):
             else:
                 bin_price_str = f"{bin_price:>7}"
             summary += f" | BIN Price: {bin_price_str} | Bids: {item.get('bids_count', 0):>3} | Time Left: {item.get('time_remaining', 'N/A')}"
-        summary += f" | URL: {truncated_url}"
+
         
         print(summary, flush=True)
         yield item
@@ -345,7 +348,9 @@ class EbaySpider(scrapy.Spider):
         print("            Scraping Completed", flush=True)
         print("==========================================", flush=True)
         print(f"[INFO] Reason for closure : {reason}", flush=True)
-        print(f"[INFO] Total products processed : {self.product_count}", flush=True)
+        print(f"[INFO] Total products attempted : {self.product_count}", flush=True)
+        print(f"[INFO] Successfully processed   : {self.processed_count}", flush=True)
+        print(f"[INFO] Ignored products         : {self.ignored_count}", flush=True)
         print(f"[INFO] Total pages crawled      : {self.page_count}", flush=True)
         print(f"[INFO] Execution time           : {elapsed:.2f} seconds", flush=True)
         print(f"[INFO] Processing rate          : {rate:.2f} products/min", flush=True)
