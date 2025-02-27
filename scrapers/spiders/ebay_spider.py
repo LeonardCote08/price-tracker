@@ -12,7 +12,7 @@ import statistics
 # ANSI codes for color (optional)
 RESET = "\033[0m"
 BOLD = "\033[1m"
-YELLOW = "\033[34m"
+YELLOW = "\033[38;2;21;149;235m"
 CYAN = "\033[96m"
 
 def shorten_url(url, max_length=60):
