@@ -336,6 +336,7 @@ class EbaySpider(scrapy.Spider):
 
         if self.product_count > 30 and not self.demo_limit_reached:
             print(f"\n{BOLD}{TURQUOISE}=== Demo limit reached: 30 products processed. Stopping the scraper. ==={RESET}\n", flush=True)
+            print(SUB_SEPARATOR, flush=True)
             self.demo_limit_reached = True
             self.crawler.engine.close_spider(self, reason="Demo limit reached")
             return
