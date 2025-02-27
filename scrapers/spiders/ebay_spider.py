@@ -322,9 +322,10 @@ class EbaySpider(scrapy.Spider):
             return
 
         # Prepare a condensed, tabular product summary in one line
+        max_length = 50
         display_title = item.get("title", "N/A")
-        if len(display_title) > 50:
-            display_title = display_title[:50] + "..."
+        if len(display_title) > max_length:
+            display_title = display_title[:max_length - 3] + "..."
         summary = f"[{self.product_count}/30] Title: {display_title:<50} | Price: ${item.get('price', 0):>7.2f} | Condition: {item.get('normalized_condition', 'N/A'):<8} | Type: {item.get('listing_type', 'N/A'):<12}"
         if item["listing_type"] == "Auction":
             summary += f" | Bids: {item.get('bids_count', 0):>3} | Time Left: {item.get('time_remaining', 'N/A')}"
