@@ -52,10 +52,13 @@ class EbaySpider(scrapy.Spider):
         print(HEADER_SEPARATOR + f"{RESET}\n", flush=True)
 
         # Configuration section
-        print(f"{variante1}Keyword           : Funko Pop Doctor Doom #561\n", flush=True)
+        print(f"{BOLD}{variante1}Keyword           : Funko Pop Doctor Doom #561\n", flush=True)
         print(HEADER_SEPARATOR, flush=True)
         print(f"{BOLD}{BLUE}{'CONFIGURATION'.center(60)}", flush=True)
-
+        print(f"{variante1}{'variante1'.center(60)}", flush=True)
+        print(f"{variante2}{'variante2'.center(60)}", flush=True)
+        print(f"{variante3}{'variante3'.center(60)}", flush=True)
+        print(f"{variante4}{'variante1'.center(60)}", flush=True)
         print(HEADER_SEPARATOR + f"{RESET}", flush=True)
         config = {
             "Download Delay": 1.5,
