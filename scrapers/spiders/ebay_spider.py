@@ -94,7 +94,7 @@ class EbaySpider(scrapy.Spider):
         self.page_count += 1
         page_start = time.time()
         # En-tête de la page
-        print(f"\n{BOLD}{BLUE}=== RETRIEVING PRODUCTS (Page {self.page_count}) ==={RESET}", flush=True)
+        print(f"{BOLD}{BLUE}=== RETRIEVING PRODUCTS (Page {self.page_count}) ==={RESET}", flush=True)
         
         results = response.xpath('//li[contains(@class, "s-item")]')
         found_this_page = 0
@@ -146,8 +146,8 @@ class EbaySpider(scrapy.Spider):
 
         page_elapsed = time.time() - page_start
         # Afficher le résumé de la page
-        print(f"{BLUE}Page {RESET}{self.page_count} processed in {RESET}{page_elapsed:.2f} seconds", flush=True)
-        print(f"{BLUE}Found {RESET}{found_this_page} products on this page", flush=True)
+        print(f"{RESET}Page {self.page_count} processed in {RESET}{page_elapsed:.2f} seconds", flush=True)
+        print(f"{RESET}Found{found_this_page} products on this page", flush=True)
 
         # Afficher un séparateur intermédiaire
         print(SUB_SEPARATOR, flush=True)
@@ -334,9 +334,8 @@ class EbaySpider(scrapy.Spider):
             self.prices.append(item["price"])
         self.processed_count += 1
 
-        if self.product_count > 10 and not self.demo_limit_reached:
-            print(f"\n\n{BOLD}{TURQUOISE}=== Demo limit reached: 30 products processed. Stopping the scraper. ==={RESET}\n", flush=True)
-            print(SUB_SEPARATOR, flush=True)
+        if self.product_count > 5 and not self.demo_limit_reached:
+            print(f"\n{BOLD}{TURQUOISE}=== Demo limit reached: 30 products processed. Stopping the scraper. ==={RESET}", flush=True)
             self.demo_limit_reached = True
             self.crawler.engine.close_spider(self, reason="Demo limit reached")
             return
