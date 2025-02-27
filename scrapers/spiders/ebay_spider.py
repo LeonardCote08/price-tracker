@@ -147,7 +147,7 @@ class EbaySpider(scrapy.Spider):
         page_elapsed = time.time() - page_start
         # Afficher le résumé de la page
         print(f"{RESET}Page {self.page_count} processed in {RESET}{page_elapsed:.2f} seconds", flush=True)
-        print(f"{RESET}Found{found_this_page} products on this page", flush=True)
+        print(f"{RESET}Found {found_this_page} products on this page", flush=True)
 
         # Afficher un séparateur intermédiaire
         print(SUB_SEPARATOR, flush=True)
