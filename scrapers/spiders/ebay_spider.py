@@ -14,7 +14,7 @@ RESET = "\033[38;2;241;241;242m"
 BOLD = "\033[1m"
 BLUE = "\033[38;2;21;149;235m"
 TURQUOISE = "\033[38;2;64;189;191m"
-RED = "\033[38;2;216;92;90m"
+RED = "\033[38;2;71;49;152m"
 
 def shorten_url(url, max_length=60):
     """Return the shortened URL if it exceeds max_length characters."""
@@ -216,7 +216,7 @@ class EbaySpider(scrapy.Spider):
         )
         if multi_variation_button:
             reason = "Skipping multi-variation listing"
-            print(f"{BOLD}{RED}[{prod_num:>2}/30] ❌ {reason} (item ignored){RESET}", flush=True)
+            print(f"{BOLD}{RED}[{prod_num:>2}/30] ❌ {reason}{RESET}", flush=True)
             self.ignored_count += 1
             return
 
@@ -240,12 +240,12 @@ class EbaySpider(scrapy.Spider):
         title_lower = item["title"].lower()
         if item["title"].count("#") > 1:
             reason = "Skipping multi-figure listing"
-            print(f"{BOLD}{RED}[{prod_num:>2}/30] ❌ {reason} (item ignored){RESET}", flush=True)
+            print(f"{BOLD}{RED}[{prod_num:>2}/30] ❌ {reason}{RESET}", flush=True)
             self.ignored_count += 1
             return
         if any(kw in title_lower for kw in ["lot", "bundle", "set"]):
             reason = "Skipping bundle listing"
-            print(f"{BOLD}{RED}[{prod_num:>2}/30] ❌ {reason} (item ignored){RESET}", flush=True)
+            print(f"{BOLD}{RED}[{prod_num:>2}/30] ❌ {reason}{RESET}", flush=True)
             self.ignored_count += 1
             return
 
