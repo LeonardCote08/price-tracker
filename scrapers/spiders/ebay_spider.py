@@ -10,7 +10,7 @@ import time
 import statistics
 
 # ANSI codes for color (optional)
-RESET = "\033[38;2;245;245;245m"
+RESET = "\033[38;2;241;241;242m"
 BOLD = "\033[1m"
 YELLOW = "\033[38;2;21;149;235m"
 CYAN = "\033[38;2;56;163;165m"
