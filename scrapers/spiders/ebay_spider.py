@@ -40,9 +40,9 @@ class EbaySpider(scrapy.Spider):
         self.demo_limit_reached = False  # To stop after a demo limit
 
         # Startup header and configuration
-        print(f"{BOLD}{YELLOW}" + "=" * 50, flush=True)
+        print(f"{BOLD}{YELLOW}" + "=" * 100, flush=True)
         print("   Starting eBay scraper for 'Funko Pop Doctor Doom #561'", flush=True)
-        print("=" * 50 + f"{RESET}\n", flush=True)
+        print("=" * 100 + f"{RESET}\n", flush=True)
 
         # Configuration section with separator
         print(f"{BOLD}{YELLOW}===== CONFIGURATION ====={RESET}", flush=True)
