@@ -19,7 +19,7 @@ def shorten_url(url, max_length=60):
     """Return the shortened URL if it exceeds max_length characters."""
     return url if len(url) <= max_length else url[:max_length] + "..."
 
-# Définir un séparateur en cyan
+# Définir un séparateur en cyan sur 50 caractères
 SEPARATOR = f"{BOLD}{CYAN}" + "-" * 50 + f"{RESET}"
 
 class EbaySpider(scrapy.Spider):
@@ -43,7 +43,7 @@ class EbaySpider(scrapy.Spider):
         print("   Starting eBay scraper for 'Funko Pop Doctor Doom #561'", flush=True)
         print("=" * 50 + f"{RESET}\n", flush=True)
 
-        # Configuration section with separator
+        # Configuration section avec toutes les infos jumelées
         print(f"{BOLD}{YELLOW}===== CONFIGURATION ====={RESET}", flush=True)
         print(SEPARATOR, flush=True)
         config = {
@@ -53,15 +53,19 @@ class EbaySpider(scrapy.Spider):
             "AutoThrottle Start Delay": 1.0,
             "AutoThrottle Max Delay": 5.0,
             "Target Concurrency": 2.0,
-            "Demo Mode": True
+            "Demo Mode": True,
+            "Proxy Rotation": "Enabled",
+            "User-Agent Rotation": "Enabled",
+            "Anti-blocking delays": "Enabled"
         }
         print(f"Download Delay: {config['Download Delay']}s | AutoThrottle: ON "
               f"({config['AutoThrottle Start Delay']}s -> {config['AutoThrottle Max Delay']}s)", flush=True)
-        print("Proxy Rotation: Enabled | User-Agent Rotation: Enabled", flush=True)
-        print(f"Demo Mode: {config['Demo Mode']}", flush=True)
+        print(f"Proxy Rotation: {config['Proxy Rotation']} | User-Agent Rotation: {config['User-Agent Rotation']}", flush=True)
+        print(f"Anti-blocking delays: {config['Anti-blocking delays']} | Demo Mode: {config['Demo Mode']}", flush=True)
         print(SEPARATOR + "\n", flush=True)
-        print(f"{BOLD}{CYAN}-> User-Agent and Proxy Rotation activated.{RESET}\n", flush=True)
-        print(f"{BOLD}{CYAN}-> Anti-blocking delays activated.{RESET}\n", flush=True)
+        # Les messages suivants sont déjà inclus dans la config, donc on les commente :
+        # print(f"{BOLD}{CYAN}-> User-Agent and Proxy Rotation activated.{RESET}\n", flush=True)
+        # print(f"{BOLD}{CYAN}-> Anti-blocking delays activated.{RESET}\n", flush=True)
 
         zip_code = "90210"  # Beverly Hills ZIP code
         self.keyword = keyword or "Funko Pop Doctor Doom #561"
