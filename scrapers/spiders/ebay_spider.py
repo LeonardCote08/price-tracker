@@ -13,7 +13,7 @@ import statistics
 RESET = "\033[38;2;241;241;242m"
 BOLD = "\033[1m"
 BLUE = "\033[38;2;21;149;235m"
-VERDIGRIS = "\033[38;2;56;163;165m"
+VERDIGRIS = "\033[38;2;67;211;172m"
 
 def shorten_url(url, max_length=60):
     """Return the shortened URL if it exceeds max_length characters."""
