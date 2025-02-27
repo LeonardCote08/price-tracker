@@ -322,20 +322,38 @@ class EbaySpider(scrapy.Spider):
             return
 
         # Prepare a condensed, tabular product summary in one line
+        # 1) Fixe la longueur maximum du titre
         max_length = 50
         display_title = item.get("title", "N/A")
         if len(display_title) > max_length:
             display_title = display_title[:max_length - 3] + "..."
-        summary = f"[{self.product_count}/30] Title: {display_title:<50} | Price: ${item.get('price', 0):>7.2f} | Condition: {item.get('normalized_condition', 'N/A'):<8} | Type: {item.get('listing_type', 'N/A'):<12}"
+
+        # 2) Construit le résumé en imposant des largeurs et alignements
+        summary = (
+            f"[{self.product_count:>2}/30] "  # Ex: [ 3/30]
+            f"Title: {display_title:<50} | "
+            f"Price: ${item.get('price', 0):>7.2f} | "
+            f"Condition: {item.get('normalized_condition', 'N/A'):<8} | "
+            f"Type: {item.get('listing_type', 'N/A'):<12}"
+        )
+
+        # 3) Ajoute les champs supplémentaires pour les enchères
         if item["listing_type"] == "Auction":
-            summary += f" | Bids: {item.get('bids_count', 0):>3} | Time Left: {item.get('time_remaining', 'N/A')}"
+            summary += (
+                f" | Bids: {item.get('bids_count', 0):>3}"
+                f" | Time Left: {item.get('time_remaining', 'N/A')}"
+            )
         elif item["listing_type"] == "Auction + BIN":
             bin_price = item.get('buy_it_now_price', 'N/A')
             if isinstance(bin_price, float):
                 bin_price_str = f"${bin_price:>7.2f}"
             else:
                 bin_price_str = f"{bin_price:>7}"
-            summary += f" | BIN Price: {bin_price_str} | Bids: {item.get('bids_count', 0):>3} | Time Left: {item.get('time_remaining', 'N/A')}"
+            summary += (
+                f" | BIN Price: {bin_price_str}"
+                f" | Bids: {item.get('bids_count', 0):>3}"
+                f" | Time Left: {item.get('time_remaining', 'N/A')}"
+            )
 
         
         print(summary, flush=True)
