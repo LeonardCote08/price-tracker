@@ -40,7 +40,7 @@ class EbaySpider(scrapy.Spider):
 
         # Startup header
         print(f"{BOLD}{BLUE}" + "=" * 60, flush=True)
-        print(f"{BOLD}{BLUE}           eBay Scraper - Startup           ", flush=True)
+        print(f"{BOLD}{BLUE}           PriceTracker           ", flush=True)
         print(f"{BOLD}{BLUE}" + "=" * 60 + f"{RESET}\n", flush=True)
 
         # Configuration section
