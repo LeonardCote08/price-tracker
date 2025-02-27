@@ -15,6 +15,10 @@ BOLD = "\033[1m"
 BLUE = "\033[38;2;21;149;235m"
 TURQUOISE = "\033[38;2;64;189;191m"
 RED = "\033[38;2;119;82;255m"
+variante1 = "\033[38;2;50;140;255m"
+variante2 = "\033[38;2;40;160;255m"
+variante3 = "\033[38;2;60;150;255m"
+variante4="\033[38;2;30;150;255m"
 
 
 def shorten_url(url, max_length=60):
@@ -51,6 +55,10 @@ class EbaySpider(scrapy.Spider):
         print(f"{BOLD}{TURQUOISE}Keyword           : {RESET}Funko Pop Doctor Doom #561\n", flush=True)
         print(HEADER_SEPARATOR, flush=True)
         print(f"{BOLD}{BLUE}{'CONFIGURATION'.center(60)}", flush=True)
+        print(f"{variante1}{'variante1'.center(60)}", flush=True)
+        print(f"{variante2}{'variante2'.center(60)}", flush=True)
+        print(f"{variante3}{'variante3'.center(60)}", flush=True)
+        print(f"{variante4}{'variante4'.center(60)}", flush=True)
         print(HEADER_SEPARATOR + f"{RESET}", flush=True)
         config = {
             "Download Delay": 1.5,
