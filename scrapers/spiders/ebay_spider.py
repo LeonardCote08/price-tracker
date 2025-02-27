@@ -338,9 +338,9 @@ class EbaySpider(scrapy.Spider):
             display_title = display_title[:max_length - 3] + "..."
         summary = (
             f"[{prod_num:>2}/30] "  # e.g. [ 3/30]
-            f"✅ Title: {display_title:<50} | "
+            f"✅ Title: {display_title:<45} | "
             f"Price: ${item.get('price', 0):>7.2f} | "
-            f"Condition: {item.get('normalized_condition', 'N/A'):<5} | "
+            f"Condition: {item.get('normalized_condition', 'N/A'):<3} | "
             f"Type: {item.get('listing_type', 'N/A'):<12}"
         )
         if item["listing_type"] == "Auction":
