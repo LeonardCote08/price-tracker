@@ -28,23 +28,21 @@ class EbaySpider(scrapy.Spider):
         super().__init__(*args, **kwargs)
         # Initialize counters and start time
         self.product_count = 0        # Total products attempted
-        self.processed_count = 0      # Successfully scraped (yielded) products
-        self.ignored_count = 0        # Products ignored/skipped (e.g. error pages, multi-variation, etc.)
+        self.processed_count = 0      # Successfully scraped products
+        self.ignored_count = 0        # Products ignored/skipped
         self.page_count = 0
         self.start_time = datetime.datetime.now()
         self.new_count = 0
         self.used_count = 0
         self.prices = []
-        # Flag to avoid multiple messages when demo limit is reached
-        self.demo_limit_reached = False
+        self.demo_limit_reached = False  # To stop after a demo limit
 
-        # Startup header and demo configuration
+        # Startup header and configuration
         print(f"{BOLD}{YELLOW}==========================================", flush=True)
         print("   Starting eBay scraper for 'Funko Pop Doctor Doom #561'", flush=True)
         print("==========================================", flush=True)
         print(f"{RESET}\n", flush=True)
 
-        # Configuration section
         config = {
             "Download Delay": 1.5,
             "Randomize Download Delay": True,
@@ -61,8 +59,7 @@ class EbaySpider(scrapy.Spider):
         print(f"{BOLD}{CYAN}-> User-Agent and Proxy Rotation activated.{RESET}\n", flush=True)
         print(f"{BOLD}{CYAN}-> Anti-blocking delays activated.{RESET}\n", flush=True)
 
-        # ZIP code selection (90210 for Beverly Hills)
-        zip_code = "90210"
+        zip_code = "90210"  # Beverly Hills ZIP code
         self.keyword = keyword or "Funko Pop Doctor Doom #561"
         self.start_urls = [
             f"https://www.ebay.com/sch/i.html?_nkw={quote_plus(self.keyword)}&_stpos={zip_code}"
@@ -145,7 +142,7 @@ class EbaySpider(scrapy.Spider):
 
         # Increment attempted product counter
         self.product_count += 1
-        print(f"\n{BOLD}Processing product {self.product_count}/30...{RESET}", flush=True)
+        prod_num = self.product_count  # Save product number for summary
 
         item = response.meta.get("item", EbayItem())
         original_url = item.get("item_url", "")
@@ -186,9 +183,10 @@ class EbaySpider(scrapy.Spider):
             fallback_title = re.sub(r"\s*\|\s*ebay\s*$", "", fallback_title, flags=re.IGNORECASE).strip()
             item["title"] = fallback_title
 
-        # New check: if the title is "eBay Home" or "error page", count as ignored (but not an error)
+        # Check for error pages (eBay Home or error page)
         if item["title"].strip().lower() in ["ebay home", "error page"]:
-            print(f"{RED}[INFO] Skipping product due to missing page (item ignored){RESET}", flush=True)
+            reason = "Skipping product due to missing page"
+            print(f"[{prod_num:>2}/30] ❌ {reason}", flush=True)
             self.ignored_count += 1
             return
 
@@ -196,7 +194,8 @@ class EbaySpider(scrapy.Spider):
             '//button[contains(@class, "listbox-button__control") and contains(@class, "btn--form") and @value="Select"]'
         )
         if multi_variation_button:
-            print(f"{RED}[INFO] Skipping multi-variation listing (item ignored){RESET}", flush=True)
+            reason = "Skipping multi-variation listing"
+            print(f"[{prod_num:>2}/30] ❌ {reason} (item ignored)", flush=True)
             self.ignored_count += 1
             return
 
@@ -219,11 +218,13 @@ class EbaySpider(scrapy.Spider):
 
         title_lower = item["title"].lower()
         if item["title"].count("#") > 1:
-            print(f"{RED}[INFO] Skipping multi-figure listing (item ignored){RESET}", flush=True)
+            reason = "Skipping multi-figure listing"
+            print(f"[{prod_num:>2}/30] ❌ {reason} (item ignored)", flush=True)
             self.ignored_count += 1
             return
         if any(kw in title_lower for kw in ["lot", "bundle", "set"]):
-            print(f"{RED}[INFO] Skipping bundle listing (item ignored){RESET}", flush=True)
+            reason = "Skipping bundle listing"
+            print(f"[{prod_num:>2}/30] ❌ {reason} (item ignored)", flush=True)
             self.ignored_count += 1
             return
 
@@ -314,30 +315,25 @@ class EbaySpider(scrapy.Spider):
         # Increment processed counter
         self.processed_count += 1
 
-        # Check demo limit and close spider if reached (display message only once)
+        # Check demo limit and close spider if reached (only once)
         if self.product_count > 30 and not self.demo_limit_reached:
             print(f"\n{BOLD}{YELLOW}=== Demo limit reached: 30 products processed. Stopping the scraper. ==={RESET}\n", flush=True)
             self.demo_limit_reached = True
             self.crawler.engine.close_spider(self, reason="Demo limit reached")
             return
 
-        # Prepare a condensed, tabular product summary in one line
-        # 1) Fixe la longueur maximum du titre
+        # Build a condensed, tabular product summary in one line with proper alignment.
         max_length = 50
         display_title = item.get("title", "N/A")
         if len(display_title) > max_length:
             display_title = display_title[:max_length - 3] + "..."
-
-        # 2) Construit le résumé en imposant des largeurs et alignements
         summary = (
-            f"[{self.product_count:>2}/30] "  # Ex: [ 3/30]
-            f"Title: {display_title:<50} | "
+            f"[{prod_num:>2}/30] "  # e.g. [ 3/30]
+            f"✅ Title: {display_title:<50} | "
             f"Price: ${item.get('price', 0):>7.2f} | "
-            f"Condition: {item.get('normalized_condition', 'N/A'):<8} | "
+            f"Condition: {item.get('normalized_condition', 'N/A'):<5} | "
             f"Type: {item.get('listing_type', 'N/A'):<12}"
         )
-
-        # 3) Ajoute les champs supplémentaires pour les enchères
         if item["listing_type"] == "Auction":
             summary += (
                 f" | Bids: {item.get('bids_count', 0):>3}"
@@ -355,7 +351,6 @@ class EbaySpider(scrapy.Spider):
                 f" | Time Left: {item.get('time_remaining', 'N/A')}"
             )
 
-        
         print(summary, flush=True)
         yield item
 
