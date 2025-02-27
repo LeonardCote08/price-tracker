@@ -14,7 +14,7 @@ RESET = "\033[38;2;241;241;242m"
 BOLD = "\033[1m"
 BLUE = "\033[38;2;21;149;235m"
 TURQUOISE = "\033[38;2;64;189;191m"
-RED = "\033[38;2;119;82;255m"
+RED = "\033[38;2;30;150;255m"
 VARIANTEX = "\033[38;2;50;140;255m"
 variante2 = "\033[38;2;40;160;255m"
 variante3 = "\033[38;2;60;150;255m"
@@ -28,7 +28,7 @@ def shorten_url(url, max_length=60):
 # Séparateur principal (60 "=") en BLUE
 HEADER_SEPARATOR = f"{BOLD}{BLUE}" + "=" * 60 + f"{RESET}"
 # Séparateur de configuration et section intermédiaire (60 "-" ) en TURQUOISE
-SUB_SEPARATOR = f"{BOLD}{VARIANTEX}" + "-" * 60 + f"{RESET}"
+SUB_SEPARATOR = f"{BOLD}{TURQUOISE}" + "-" * 60 + f"{RESET}"
 
 class EbaySpider(scrapy.Spider):
     name = "ebay_spider"
