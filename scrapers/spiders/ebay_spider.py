@@ -19,9 +19,8 @@ def shorten_url(url, max_length=60):
     """Return the shortened URL if it exceeds max_length characters."""
     return url if len(url) <= max_length else url[:max_length] + "..."
 
-# Définir des séparateurs en BLUE pour les bordures et en VERDIGRIS pour les sous-titres
-HEADER_SEPARATOR = f"{BOLD}{BLUE}" + "=" * 60 + f"{RESET}"
-CONFIG_SEPARATOR = f"{BOLD}{BLUE}" + "-" * 60 + f"{RESET}"
+# Définir un séparateur en VERDIGRIS sur 50 caractères, en gras
+SEPARATOR = f"{BOLD}{VERDIGRIS}" + "-" * 50 + f"{RESET}"
 
 class EbaySpider(scrapy.Spider):
     name = "ebay_spider"
@@ -40,16 +39,16 @@ class EbaySpider(scrapy.Spider):
         self.demo_limit_reached = False  # To stop after a demo limit
 
         # Startup header
-        print(f"{HEADER_SEPARATOR}", flush=True)
+        print(f"{BOLD}{BLUE}" + "=" * 60, flush=True)
         print(f"{BOLD}{BLUE}           eBay Scraper - Startup           ", flush=True)
-        print(f"{HEADER_SEPARATOR}{RESET}\n", flush=True)
+        print(f"{BOLD}{BLUE}" + "=" * 60 + f"{RESET}\n", flush=True)
 
         # Configuration section
         print(f"{BOLD}{VERDIGRIS}Keyword           : {RESET}Funko Pop Doctor Doom #561\n", flush=True)
-        print(f"{HEADER_SEPARATOR}", flush=True)
+        print(f"{BOLD}{BLUE}" + "=" * 60, flush=True)
         print(f"{BOLD}{BLUE}           CONFIGURATION                     ", flush=True)
-        print(f"{HEADER_SEPARATOR}{RESET}", flush=True)
-        print(CONFIG_SEPARATOR, flush=True)
+        print(f"{BOLD}{BLUE}" + "=" * 60 + f"{RESET}", flush=True)
+        print(SEPARATOR, flush=True)
         config = {
             "Download Delay": 1.5,
             "AutoThrottle Start Delay": 1.0,
@@ -60,12 +59,14 @@ class EbaySpider(scrapy.Spider):
             "Demo Mode": True
         }
         print(f"Download Delay    : {RESET}{config['Download Delay']}s", flush=True)
-        print(f"AutoThrottle      : {RESET}ON ( {config['AutoThrottle Start Delay']}s -> {config['AutoThrottle Max Delay']}s )", flush=True)
+        print(f"AutoThrottle      : {RESET}ON", flush=True)
+        print(f"    - Initial Delay : {RESET}{config['AutoThrottle Start Delay']}s", flush=True)
+        print(f"    - Maximum Delay : {RESET}{config['AutoThrottle Max Delay']}s", flush=True)
         print(f"Proxy Rotation    : {RESET}{config['Proxy Rotation']}", flush=True)
         print(f"User-Agent Rotation: {RESET}{config['User-Agent Rotation']}", flush=True)
         print(f"Anti-blocking Delays: {RESET}{config['Anti-blocking delays']}", flush=True)
         print(f"Demo Mode         : {RESET}{config['Demo Mode']}", flush=True)
-        print(CONFIG_SEPARATOR + "\n", flush=True)
+        print(SEPARATOR + "\n", flush=True)
 
         zip_code = "90210"  # Beverly Hills ZIP code
         self.keyword = keyword or "Funko Pop Doctor Doom #561"
@@ -86,7 +87,7 @@ class EbaySpider(scrapy.Spider):
     def parse(self, response):
         self.page_count += 1
         page_start = time.time()
-        print(f"\n{BOLD}{VERDIGRIS}=== RETRIEVING PRODUCTS (Page {self.page_count}) ==={RESET}", flush=True)
+        print(f"\n{BOLD}{BLUE}=== RETRIEVING PRODUCTS (Page {self.page_count}) ==={RESET}", flush=True)
         
         results = response.xpath('//li[contains(@class, "s-item")]')
         found_this_page = 0
@@ -137,11 +138,11 @@ class EbaySpider(scrapy.Spider):
                 yield item
 
         page_elapsed = time.time() - page_start
-        print(f"{BLUE}Page {self.page_count} processed in {RESET}{page_elapsed:.2f} seconds", flush=True)
-        print(f"{BLUE}Found {RESET}{found_this_page} products on this page", flush=True)
-        print(HEADER_SEPARATOR, flush=True)
-        # Section RETRIEVING PRODUCTS DETAILS
-        print(f"{BOLD}{VERDIGRIS}=== RETRIEVING PRODUCTS DETAILS ==={RESET}\n", flush=True)
+        print(f"{BOLD}[INFO]{RESET} Page {self.page_count} processed in {page_elapsed:.2f} seconds", flush=True)
+        print(f"{BOLD}[INFO]{RESET} Found {found_this_page} products on this page", flush=True)
+        print(SEPARATOR, flush=True)
+        # Nouvelle section pour l'affichage des produits
+        print(f"{BOLD}{BLUE}=== RETRIEVING PRODUCTS DETAILS ==={RESET}\n", flush=True)
 
         next_page_url = response.xpath("//a[@aria-label='Suivant' or @aria-label='Next']/@href").get()
         if next_page_url:
@@ -151,6 +152,7 @@ class EbaySpider(scrapy.Spider):
         if self.demo_limit_reached:
             return
 
+        # Increment attempted product counter
         self.product_count += 1
         prod_num = self.product_count  # Save product number for summary
 
@@ -322,8 +324,10 @@ class EbaySpider(scrapy.Spider):
             self.used_count += 1
         if item.get("price", 0) > 0:
             self.prices.append(item["price"])
+        # Increment processed counter
         self.processed_count += 1
 
+        # Check demo limit and close spider if reached (only once)
         if self.product_count > 30 and not self.demo_limit_reached:
             print(f"\n{BOLD}{BLUE}=== Demo limit reached: 30 products processed. Stopping the scraper. ==={RESET}\n", flush=True)
             self.demo_limit_reached = True
@@ -336,7 +340,7 @@ class EbaySpider(scrapy.Spider):
         if len(display_title) > max_length:
             display_title = display_title[:max_length - 3] + "..."
         summary = (
-            f"[{prod_num:>2}/30] "  # ex: [ 3/30]
+            f"[{prod_num:>2}/30] "  # e.g. [ 3/30]
             f"✅ Title: {display_title:<45} | "
             f"Price: ${item.get('price', 0):>7.2f} | "
             f"Condition: {item.get('normalized_condition', 'N/A'):<3} | "
@@ -369,19 +373,19 @@ class EbaySpider(scrapy.Spider):
         print(f"\n{BOLD}{BLUE}" + "=" * 60, flush=True)
         print("            Scraping Completed", flush=True)
         print("=" * 60 + f"{RESET}", flush=True)
-        print(f"Reason for closure : {RESET}shutdown", flush=True)
-        print(f"Total products attempted : {RESET}{self.product_count}", flush=True)
-        print(f"Successfully processed   : {RESET}{self.processed_count}", flush=True)
-        print(f"Ignored products         : {RESET}{self.ignored_count}", flush=True)
-        print(f"Total pages crawled      : {RESET}{self.page_count}", flush=True)
-        print(f"Execution time           : {RESET}{elapsed:.2f} seconds", flush=True)
-        print(f"Processing rate          : {RESET}{rate:.2f} products/min", flush=True)
+        print(f"[INFO] Reason for closure : {RESET}shutdown", flush=True)
+        print(f"[INFO] Total products attempted : {RESET}{self.product_count}", flush=True)
+        print(f"[INFO] Successfully processed   : {RESET}{self.processed_count}", flush=True)
+        print(f"[INFO] Ignored products         : {RESET}{self.ignored_count}", flush=True)
+        print(f"[INFO] Total pages crawled      : {RESET}{self.page_count}", flush=True)
+        print(f"[INFO] Execution time           : {RESET}{elapsed:.2f} seconds", flush=True)
+        print(f"[INFO] Processing rate          : {RESET}{rate:.2f} products/min", flush=True)
         if self.prices:
             minimum = min(self.prices)
             maximum = max(self.prices)
             avg = statistics.mean(self.prices)
-            print(f"Price stats              : {RESET}min=${minimum:.2f}, max=${maximum:.2f}, avg=${avg:.2f}", flush=True)
+            print(f"[INFO] Price stats              : {RESET}min=${minimum:.2f}, max=${maximum:.2f}, avg=${avg:.2f}", flush=True)
         else:
-            print(f"Price stats              : {RESET}No price stats available (no valid prices found)", flush=True)
-        print(f"Condition summary        : {RESET}New={self.new_count}, Used={self.used_count}", flush=True)
+            print(f"[INFO] No price stats available (no valid prices found)", flush=True)
+        print(f"[INFO] Condition summary        : {RESET}New={self.new_count}, Used={self.used_count}", flush=True)
         print(f"{BOLD}{BLUE}" + "=" * 60 + f"{RESET}\n", flush=True)
