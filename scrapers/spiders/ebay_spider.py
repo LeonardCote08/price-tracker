@@ -13,7 +13,7 @@ import statistics
 RESET = "\033[38;2;241;241;242m"
 BOLD = "\033[1m"
 BLUE = "\033[38;2;21;149;235m"
-TURQUOISE = "\033[38;2;67;211;172m"
+TURQUOISE = "\033[38;2;61;180;182m"
 RED = "\033[38;2;216;92;90m"
 
 def shorten_url(url, max_length=60):
