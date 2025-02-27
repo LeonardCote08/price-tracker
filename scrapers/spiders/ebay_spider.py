@@ -63,9 +63,6 @@ class EbaySpider(scrapy.Spider):
         print(f"Proxy Rotation: {config['Proxy Rotation']} | User-Agent Rotation: {config['User-Agent Rotation']}", flush=True)
         print(f"Anti-blocking delays: {config['Anti-blocking delays']} | Demo Mode: {config['Demo Mode']}", flush=True)
         print(SEPARATOR + "\n", flush=True)
-        # Les messages suivants sont déjà inclus dans la config, donc on les commente :
-        # print(f"{BOLD}{CYAN}-> User-Agent and Proxy Rotation activated.{RESET}\n", flush=True)
-        # print(f"{BOLD}{CYAN}-> Anti-blocking delays activated.{RESET}\n", flush=True)
 
         zip_code = "90210"  # Beverly Hills ZIP code
         self.keyword = keyword or "Funko Pop Doctor Doom #561"
@@ -86,7 +83,8 @@ class EbaySpider(scrapy.Spider):
     def parse(self, response):
         self.page_count += 1
         page_start = time.time()
-        print(f"\n{BOLD}=== Retrieving product listings from eBay (Page {self.page_count}) ==={RESET}", flush=True)
+        # Afficher l'en-tête de la section "Retrieving products"
+        print(f"\n{BOLD}{YELLOW}=== RETRIEVING PRODUCTS (Page {self.page_count}) ==={RESET}", flush=True)
         
         results = response.xpath('//li[contains(@class, "s-item")]')
         found_this_page = 0
@@ -137,9 +135,11 @@ class EbaySpider(scrapy.Spider):
                 yield item
 
         page_elapsed = time.time() - page_start
-        print(f"[INFO] Page {self.page_count} processed in {page_elapsed:.2f} seconds", flush=True)
-        print(f"[INFO] Found {found_this_page} products on this page\n", flush=True)
+        print(f"{BOLD}[INFO]{RESET} Page {self.page_count} processed in {page_elapsed:.2f} seconds", flush=True)
+        print(f"{BOLD}[INFO]{RESET} Found {found_this_page} products on this page", flush=True)
         print(SEPARATOR, flush=True)
+        # Nouvelle section : RETRIEVING PRODUCTS (les produits seront affichés par parse_item)
+        print(f"{BOLD}{YELLOW}=== RETRIEVING PRODUCTS DETAILS ==={RESET}\n", flush=True)
 
         next_page_url = response.xpath("//a[@aria-label='Suivant' or @aria-label='Next']/@href").get()
         if next_page_url:
