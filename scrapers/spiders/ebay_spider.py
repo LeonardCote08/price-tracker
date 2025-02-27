@@ -28,7 +28,7 @@ def shorten_url(url, max_length=60):
 # Séparateur principal (60 "=") en BLUE
 HEADER_SEPARATOR = f"{BOLD}{BLUE}" + "=" * 60 + f"{RESET}"
 # Séparateur de configuration et section intermédiaire (60 "-" ) en TURQUOISE
-SUB_SEPARATOR = f"{BOLD}{TURQUOISE}" + "-" * 60 + f"{RESET}"
+SUB_SEPARATOR = f"{BOLD}{VARIANTEX}" + "-" * 60 + f"{RESET}"
 
 class EbaySpider(scrapy.Spider):
     name = "ebay_spider"
