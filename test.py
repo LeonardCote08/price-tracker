@@ -8,6 +8,9 @@ def print_color_block(ansi_color, description):
 if __name__ == '__main__':
     variants = [
         ("\033[38;2;75;78;109m", "Variante 1 : RGB (50, 140, 255)"),
+        ("\033[38;2;90;78;109m", "Variante 1 : RGB (50, 140, 255)"),
+        ("\033[38;2;100;78;109m", "Variante 1 : RGB (50, 140, 255)"),
+        ("\033[1;38;2;75;78;109m", "Variante 1 : RGB (50, 140, 255)"),
 
     ]
     
