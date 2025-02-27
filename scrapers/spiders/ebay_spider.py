@@ -19,9 +19,8 @@ def shorten_url(url, max_length=60):
     """Return the shortened URL if it exceeds max_length characters."""
     return url if len(url) <= max_length else url[:max_length] + "..."
 
-# Définir des séparateurs
-HEADER_SEPARATOR = f"{BOLD}{BLUE}" + "=" * 60 + f"{RESET}"
-INNER_SEPARATOR  = f"{BOLD}{BLUE}" + "-" * 60 + f"{RESET}"
+# Définir un séparateur en TURQUOISE sur 50 caractères, en gras
+SEPARATOR = f"{BOLD}{TURQUOISE}" + "-" * 50 + f"{RESET}"
 
 class EbaySpider(scrapy.Spider):
     name = "ebay_spider"
@@ -40,18 +39,16 @@ class EbaySpider(scrapy.Spider):
         self.demo_limit_reached = False  # To stop after a demo limit
 
         # Startup header
-        print(HEADER_SEPARATOR, flush=True)
+        print(f"{BOLD}{BLUE}" + "=" * 60, flush=True)
         print(f"{BOLD}{BLUE}           PriceTracker           ", flush=True)
-        print(HEADER_SEPARATOR + f"{RESET}\n", flush=True)
-
-        # Keyword
-        print(f"{BOLD}{TURQUOISE}Keyword           : {RESET}Funko Pop Doctor Doom #561\n", flush=True)
+        print(f"{BOLD}{BLUE}" + "=" * 60 + f"{RESET}\n", flush=True)
 
         # Configuration section
-        print(HEADER_SEPARATOR, flush=True)
+        print(f"{BOLD}{TURQUOISE}Keyword           : {RESET}Funko Pop Doctor Doom #561\n", flush=True)
+        print(f"{BOLD}{BLUE}" + "=" * 60, flush=True)
         print(f"{BOLD}{BLUE}           CONFIGURATION                     ", flush=True)
-        print(HEADER_SEPARATOR + f"{RESET}", flush=True)
-        print(INNER_SEPARATOR, flush=True)
+        print(f"{BOLD}{BLUE}" + "=" * 60 + f"{RESET}", flush=True)
+        print(SEPARATOR, flush=True)
         config = {
             "Download Delay": 1.5,
             "AutoThrottle Start Delay": 1.0,
@@ -61,7 +58,7 @@ class EbaySpider(scrapy.Spider):
             "Anti-blocking delays": "Enabled",
             "Demo Mode": True
         }
-        # Affichage avec alignement sur 20 caractères pour les étiquettes
+        # Aligner les champs sur 20 caractères pour une présentation propre
         print(f"{'Download Delay':<20} : {RESET}{config['Download Delay']}s", flush=True)
         print(f"{'AutoThrottle':<20} : {RESET}ON", flush=True)
         print(f"{' - Initial Delay':<20} : {RESET}{config['AutoThrottle Start Delay']}s", flush=True)
@@ -70,7 +67,7 @@ class EbaySpider(scrapy.Spider):
         print(f"{'User-Agent Rotation':<20} : {RESET}{config['User-Agent Rotation']}", flush=True)
         print(f"{'Anti-blocking Delays':<20} : {RESET}{config['Anti-blocking delays']}", flush=True)
         print(f"{'Demo Mode':<20} : {RESET}{config['Demo Mode']}", flush=True)
-        print(INNER_SEPARATOR + "\n", flush=True)
+        print(SEPARATOR + "\n", flush=True)
 
         zip_code = "90210"  # Beverly Hills ZIP code
         self.keyword = keyword or "Funko Pop Doctor Doom #561"
@@ -144,11 +141,9 @@ class EbaySpider(scrapy.Spider):
         page_elapsed = time.time() - page_start
         print(f"{BLUE}Page {RESET}{self.page_count} processed in {RESET}{page_elapsed:.2f} seconds", flush=True)
         print(f"{BLUE}Found {RESET}{found_this_page} products on this page", flush=True)
-        print(HEADER_SEPARATOR, flush=True)
-        # Fusion des sections : afficher d'abord le résumé global, puis le titre PRODUCT DETAILS:
-        print(f"{BLUE}Page {RESET}{self.page_count} Summary: {RESET}{page_elapsed:.2f} seconds, {found_this_page} products", flush=True)
-        print(HEADER_SEPARATOR, flush=True)
-        print(f"{BOLD}{TURQUOISE}PRODUCT DETAILS:{RESET}\n", flush=True)
+        print(SEPARATOR, flush=True)
+        # Section de détails produits
+        print(f"{BOLD}{BLUE}=== RETRIEVING PRODUCTS DETAILS ==={RESET}\n", flush=True)
 
         next_page_url = response.xpath("//a[@aria-label='Suivant' or @aria-label='Next']/@href").get()
         if next_page_url:
@@ -158,6 +153,7 @@ class EbaySpider(scrapy.Spider):
         if self.demo_limit_reached:
             return
 
+        # Increment attempted product counter
         self.product_count += 1
         prod_num = self.product_count  # Save product number for summary
 
@@ -200,6 +196,7 @@ class EbaySpider(scrapy.Spider):
             fallback_title = re.sub(r"\s*\|\s*ebay\s*$", "", fallback_title, flags=re.IGNORECASE).strip()
             item["title"] = fallback_title
 
+        # Check for error pages (eBay Home or error page)
         if item["title"].strip().lower() in ["ebay home", "error page"]:
             reason = "Skipping product due to missing page"
             print(f"{BOLD}{TURQUOISE}[{prod_num:>2}/30] ❌ {reason}{RESET}", flush=True)
@@ -321,6 +318,7 @@ class EbaySpider(scrapy.Spider):
             print(f"{BOLD}{TURQUOISE}[ERROR] Error extracting category: {e}{RESET}", flush=True)
             item["category"] = ""
 
+        # Update condition counters and price stats (only for processed products)
         if item["normalized_condition"] == "New":
             self.new_count += 1
         else:
@@ -335,6 +333,7 @@ class EbaySpider(scrapy.Spider):
             self.crawler.engine.close_spider(self, reason="Demo limit reached")
             return
 
+        # Build a condensed, tabular product summary in one line with proper alignment.
         max_length = 50
         display_title = item.get("title", "N/A")
         if len(display_title) > max_length:
