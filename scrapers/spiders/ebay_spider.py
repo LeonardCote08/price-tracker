@@ -21,7 +21,7 @@ def shorten_url(url, max_length=60):
     """Return the shortened URL if it exceeds max_length characters."""
     return url if len(url) <= max_length else url[:max_length] + "..."
 
-SEPARATOR = f"{BOLD}{CYAN}" + "-" * 50 + f"{RESET}"
+SEPARATOR = f"{BOLD}{CYAN}" + "-" * 100 + f"{RESET}"
 
 class EbaySpider(scrapy.Spider):
     name = "ebay_spider"
