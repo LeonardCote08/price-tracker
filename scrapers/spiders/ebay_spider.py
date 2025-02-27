@@ -12,8 +12,8 @@ import statistics
 # ANSI codes for color (optional)
 RESET = "\033[38;2;241;241;242m"
 BOLD = "\033[1m"
-YELLOW = "\033[38;2;21;149;235m"
-CYAN = "\033[38;2;56;163;165m"
+BLUE = "\033[38;2;21;149;235m"
+VERDIGRIS = "\033[38;2;56;163;165m"
 
 def shorten_url(url, max_length=60):
     """Return the shortened URL if it exceeds max_length characters."""
