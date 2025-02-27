@@ -298,7 +298,7 @@ class EbaySpider(scrapy.Spider):
         display_title = item.get("title", "N/A")
         if len(display_title) > 50:
             display_title = display_title[:50] + "..."
-        truncated_url = response.url if len(response.url) <= 80 else response.url[:80] + "..."
+        truncated_url = response.url
         summary = (
             f"{BOLD}Product {self.product_count}/30:{RESET}\n"
             f"  Title     : {display_title}\n"
