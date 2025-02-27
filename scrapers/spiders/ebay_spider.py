@@ -14,7 +14,8 @@ RESET = "\033[38;2;241;241;242m"
 BOLD = "\033[1m"
 BLUE = "\033[38;2;21;149;235m"
 TURQUOISE = "\033[38;2;64;189;191m"
-RED = "\033[38;2;71;49;152m"
+RED = "\033[38;2;119;82;255m"
+
 
 def shorten_url(url, max_length=60):
     """Return the shortened URL if it exceeds max_length characters."""
