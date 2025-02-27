@@ -186,11 +186,11 @@ class EbaySpider(scrapy.Spider):
 
         # New check: if the title is "eBay Home", consider it an error page
         if item["title"].strip().lower() == "ebay home":
-            print(f"{RED}[ERROR] Detected error page: 'eBay Home' page. The page appears to be missing. URL: {shorten_url(response.url)}{RESET}", flush=True)
+            print(f"{RED}[INFO] Skipping product due to error page (item ignored){RESET}", flush=True)
             return
 
         if item["title"].strip().lower() == "error page":
-            print(f"{RED}[INFO] Skipping product due to error page: {shorten_url(response.url)}{RESET}", flush=True)
+            print(f"{RED}[INFO] Skipping product due to error page (item ignored){RESET}", flush=True)
             return
 
         multi_variation_button = response.xpath(
