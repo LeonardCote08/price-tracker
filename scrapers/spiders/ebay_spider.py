@@ -50,7 +50,6 @@ class EbaySpider(scrapy.Spider):
         print(HEADER_SEPARATOR, flush=True)
         print(f"{BOLD}{BLUE}{'CONFIGURATION'.center(60)}", flush=True)
         print(HEADER_SEPARATOR + f"{RESET}", flush=True)
-        print(SUB_SEPARATOR, flush=True)
         config = {
             "Download Delay": 1.5,
             "AutoThrottle Start Delay": 1.0,
@@ -69,7 +68,6 @@ class EbaySpider(scrapy.Spider):
         print(f"{'User-Agent Rotation':<20} : {RESET}{config['User-Agent Rotation']}", flush=True)
         print(f"{'Anti-blocking Delays':<20} : {RESET}{config['Anti-blocking delays']}", flush=True)
         print(f"{'Demo Mode':<20} : {RESET}{config['Demo Mode']}", flush=True)
-        print(SUB_SEPARATOR + "\n", flush=True)
 
         # Nouvelle section "PRODUCT SCRAPING"
         print(HEADER_SEPARATOR, flush=True)
@@ -152,8 +150,6 @@ class EbaySpider(scrapy.Spider):
         print(f"{BLUE}Found {RESET}{found_this_page} products on this page", flush=True)
         # Afficher un séparateur intermédiaire
         print(SUB_SEPARATOR, flush=True)
-        # Afficher le sous-titre "PRODUCT DETAILS:" centré
-        print(f"{BOLD}{TURQUOISE}{'PRODUCT DETAILS:'.center(60)}{RESET}\n", flush=True)
 
         next_page_url = response.xpath("//a[@aria-label='Suivant' or @aria-label='Next']/@href").get()
         if next_page_url:
@@ -338,6 +334,8 @@ class EbaySpider(scrapy.Spider):
         self.processed_count += 1
 
         if self.product_count > 30 and not self.demo_limit_reached:
+            print(SUB_SEPARATOR, flush=True)
+
             print(f"\n{BOLD}{TURQUOISE}=== Demo limit reached: 30 products processed. Stopping the scraper. ==={RESET}\n", flush=True)
             self.demo_limit_reached = True
             self.crawler.engine.close_spider(self, reason="Demo limit reached")
