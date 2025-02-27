@@ -52,10 +52,10 @@ class EbaySpider(scrapy.Spider):
         print(HEADER_SEPARATOR + f"{RESET}\n", flush=True)
 
         # Configuration section
-        print(f"{BOLD}{VARIANTEX}Keyword           : {RESET}Funko Pop Doctor Doom #561\n", flush=True)
+        print(f"{BOLD}{TURQUOISE}Keyword           : {RESET}Funko Pop Doctor Doom #561\n", flush=True)
         print(HEADER_SEPARATOR, flush=True)
         print(f"{BOLD}{BLUE}{'CONFIGURATION'.center(60)}", flush=True)
- 
+
         print(HEADER_SEPARATOR + f"{RESET}", flush=True)
         config = {
             "Download Delay": 1.5,
