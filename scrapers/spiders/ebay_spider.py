@@ -9,19 +9,17 @@ import datetime
 import time
 import statistics
 
-# ANSI codes for color (optional)
+# ANSI codes for color (using only WHITE (RESET), YELLOW and CYAN, with BOLD)
 RESET = "\033[0m"
 BOLD = "\033[1m"
 YELLOW = "\033[93m"
-GREEN = "\033[92m"
-RED = "\033[91m"
 CYAN = "\033[96m"
 
 def shorten_url(url, max_length=60):
     """Return the shortened URL if it exceeds max_length characters."""
     return url if len(url) <= max_length else url[:max_length] + "..."
 
-SEPARATOR = f"{BOLD}{CYAN}" + "-" * 100 + f"{RESET}"
+SEPARATOR = f"{BOLD}{CYAN}" + "-" * 50 + f"{RESET}"
 
 class EbaySpider(scrapy.Spider):
     name = "ebay_spider"
@@ -39,12 +37,12 @@ class EbaySpider(scrapy.Spider):
         self.prices = []
         self.demo_limit_reached = False  # To stop after a demo limit
 
-        # Startup header and configuration
-        print(f"{BOLD}{YELLOW}" + "=" * 100, flush=True)
+        # Startup header and configuration (en-tête en YELLOW)
+        print(f"{BOLD}{YELLOW}" + "=" * 50, flush=True)
         print("   Starting eBay scraper for 'Funko Pop Doctor Doom #561'", flush=True)
-        print("=" * 100 + f"{RESET}\n", flush=True)
+        print("=" * 50 + f"{RESET}\n", flush=True)
 
-        # Configuration section with separator
+        # Configuration section
         print(f"{BOLD}{YELLOW}===== CONFIGURATION ====={RESET}", flush=True)
         print(SEPARATOR, flush=True)
         config = {
@@ -157,7 +155,7 @@ class EbaySpider(scrapy.Spider):
             try:
                 original_item_id = original_url.split("/itm/")[1].split("?")[0]
             except Exception as e:
-                print(f"{RED}[WARNING] Failed to extract initial item_id from URL {shorten_url(original_url)}: {e}{RESET}", flush=True)
+                print(f"{YELLOW}[WARNING] Failed to extract initial item_id from URL {shorten_url(original_url)}: {e}{RESET}", flush=True)
         item["item_url"] = response.url
 
         ended_message = " ".join(response.xpath('//div[@data-testid="d-statusmessage"]//text()').getall()).strip()
@@ -176,7 +174,7 @@ class EbaySpider(scrapy.Spider):
             final_item_id = response.url.split("/itm/")[1].split("?")[0]
             item["item_id"] = final_item_id
         except Exception as e:
-            print(f"{RED}[WARNING] Failed to extract item_id from URL: {shorten_url(response.url)} ({e}){RESET}", flush=True)
+            print(f"{YELLOW}[WARNING] Failed to extract item_id from URL: {shorten_url(response.url)} ({e}){RESET}", flush=True)
             item["item_id"] = ""
 
         if original_item_id and final_item_id and original_item_id != final_item_id:
@@ -239,14 +237,14 @@ class EbaySpider(scrapy.Spider):
             if meta_img:
                 item["image_url"] = meta_img.strip()
         except Exception as e:
-            print(f"{RED}[ERROR] Error extracting image URL: {e}{RESET}", flush=True)
+            print(f"{YELLOW}[WARNING] Error extracting image URL: {e}{RESET}", flush=True)
 
         try:
             seller_name = (response.xpath('//span[@class="mbg-nw"]/text()').get() or
                            response.xpath('//div[contains(@class,"info__about-seller")]/a/span/text()').get())
             item["seller_username"] = seller_name.strip() if seller_name else ""
         except Exception as e:
-            print(f"{RED}[ERROR] Error extracting seller username: {e}{RESET}", flush=True)
+            print(f"{YELLOW}[WARNING] Error extracting seller username: {e}{RESET}", flush=True)
             item["seller_username"] = ""
 
         bid_button = response.xpath("//*[starts-with(@id, 'bidBtn_btn')]").get()
@@ -263,7 +261,7 @@ class EbaySpider(scrapy.Spider):
                 bids_text = bid_container.xpath('.//span/text()').re_first(r'(\d+)')
                 item["bids_count"] = int(bids_text) if bids_text else 0
             except Exception as e:
-                print(f"{RED}[ERROR] Error extracting bids_count: {e}{RESET}", flush=True)
+                print(f"{YELLOW}[WARNING] Error extracting bids_count: {e}{RESET}", flush=True)
                 item["bids_count"] = 0
         else:
             item["bids_count"] = None
@@ -276,7 +274,7 @@ class EbaySpider(scrapy.Spider):
             else:
                 item["time_remaining"] = None
         except Exception as e:
-            print(f"{RED}[ERROR] Error extracting time_remaining: {e}{RESET}", flush=True)
+            print(f"{YELLOW}[WARNING] Error extracting time_remaining: {e}{RESET}", flush=True)
             item["time_remaining"] = None
 
         if item["listing_type"] == "Auction + BIN":
@@ -308,7 +306,7 @@ class EbaySpider(scrapy.Spider):
             else:
                 item["category"] = ""
         except Exception as e:
-            print(f"{RED}[ERROR] Error extracting category: {e}{RESET}", flush=True)
+            print(f"{YELLOW}[WARNING] Error extracting category: {e}{RESET}", flush=True)
             item["category"] = ""
 
         # Update condition counters and price stats (only for processed products)
@@ -367,19 +365,19 @@ class EbaySpider(scrapy.Spider):
         print(f"\n{BOLD}{YELLOW}" + "=" * 50, flush=True)
         print("            Scraping Completed", flush=True)
         print("=" * 50 + f"{RESET}", flush=True)
-        print(f"{GREEN}[INFO] Reason for closure : {reason}{RESET}", flush=True)
-        print(f"{GREEN}[INFO] Total products attempted : {self.product_count}{RESET}", flush=True)
-        print(f"{GREEN}[INFO] Successfully processed   : {self.processed_count}{RESET}", flush=True)
-        print(f"{GREEN}[INFO] Ignored products         : {self.ignored_count}{RESET}", flush=True)
-        print(f"{GREEN}[INFO] Total pages crawled      : {self.page_count}{RESET}", flush=True)
-        print(f"{GREEN}[INFO] Execution time           : {elapsed:.2f} seconds{RESET}", flush=True)
-        print(f"{GREEN}[INFO] Processing rate          : {rate:.2f} products/min{RESET}", flush=True)
+        print(f"{YELLOW}[INFO] Reason for closure : {RESET}{self.crawler.engine.reason}", flush=True)
+        print(f"{YELLOW}[INFO] Total products attempted : {RESET}{self.product_count}", flush=True)
+        print(f"{YELLOW}[INFO] Successfully processed   : {RESET}{self.processed_count}", flush=True)
+        print(f"{YELLOW}[INFO] Ignored products         : {RESET}{self.ignored_count}", flush=True)
+        print(f"{YELLOW}[INFO] Total pages crawled      : {RESET}{self.page_count}", flush=True)
+        print(f"{YELLOW}[INFO] Execution time           : {RESET}{elapsed:.2f} seconds", flush=True)
+        print(f"{YELLOW}[INFO] Processing rate          : {RESET}{rate:.2f} products/min", flush=True)
         if self.prices:
             minimum = min(self.prices)
             maximum = max(self.prices)
             avg = statistics.mean(self.prices)
-            print(f"{GREEN}[INFO] Price stats              : min=${minimum:.2f}, max=${maximum:.2f}, avg=${avg:.2f}{RESET}", flush=True)
+            print(f"{YELLOW}[INFO] Price stats              : {RESET}min=${minimum:.2f}, max=${maximum:.2f}, avg=${avg:.2f}", flush=True)
         else:
-            print(f"{GREEN}[INFO] No price stats available (no valid prices found){RESET}", flush=True)
-        print(f"{GREEN}[INFO] Condition summary        : New={self.new_count}, Used={self.used_count}{RESET}", flush=True)
+            print(f"{YELLOW}[INFO] No price stats available (no valid prices found){RESET}", flush=True)
+        print(f"{YELLOW}[INFO] Condition summary        : {RESET}New={self.new_count}, Used={self.used_count}", flush=True)
         print(f"{BOLD}{YELLOW}" + "=" * 50 + f"{RESET}\n", flush=True)
