@@ -148,6 +148,7 @@ class EbaySpider(scrapy.Spider):
         # Afficher le résumé de la page
         print(f"{BLUE}Page {RESET}{self.page_count} processed in {RESET}{page_elapsed:.2f} seconds", flush=True)
         print(f"{BLUE}Found {RESET}{found_this_page} products on this page", flush=True)
+
         # Afficher un séparateur intermédiaire
         print(SUB_SEPARATOR, flush=True)
 
@@ -334,8 +335,6 @@ class EbaySpider(scrapy.Spider):
         self.processed_count += 1
 
         if self.product_count > 30 and not self.demo_limit_reached:
-            print(SUB_SEPARATOR, flush=True)
-
             print(f"\n{BOLD}{TURQUOISE}=== Demo limit reached: 30 products processed. Stopping the scraper. ==={RESET}\n", flush=True)
             self.demo_limit_reached = True
             self.crawler.engine.close_spider(self, reason="Demo limit reached")
@@ -378,6 +377,8 @@ class EbaySpider(scrapy.Spider):
         elapsed = (end_time - self.start_time).total_seconds()
         rate = self.product_count / (elapsed / 60) if elapsed > 0 else 0
         # Section finale "Scraping Completed"
+
+        print(SUB_SEPARATOR, flush=True)
         print(f"\n{HEADER_SEPARATOR}", flush=True)
         print(f"{BOLD}{BLUE}{'Scraping Completed'.center(60)}", flush=True)
         print(f"{HEADER_SEPARATOR}{RESET}", flush=True)
