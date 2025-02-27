@@ -13,7 +13,7 @@ import statistics
 RESET = "\033[38;2;241;241;242m"
 BOLD = "\033[1m"
 BLUE = "\033[38;2;21;149;235m"
-TURQUOISE = "\033[38;2;61;180;182m"
+TURQUOISE = "\033[38;2;64;189;191m"
 RED = "\033[38;2;216;92;90m"
 
 def shorten_url(url, max_length=60):
@@ -95,7 +95,7 @@ class EbaySpider(scrapy.Spider):
         self.page_count += 1
         page_start = time.time()
         # En-tête de la page
-        print(f"{BOLD}{BLUE}=== RETRIEVING PRODUCTS (Page {self.page_count}) ==={RESET}", flush=True)
+        print(f"{BOLD}{TURQUOISE}=== RETRIEVING PRODUCTS (Page {self.page_count}) ==={RESET}", flush=True)
         
         results = response.xpath('//li[contains(@class, "s-item")]')
         found_this_page = 0
