@@ -22,6 +22,10 @@ def shorten_url(url, max_length=60):
     """Return the shortened URL if it exceeds max_length characters."""
     return url if len(url) <= max_length else url[:max_length] + "..."
 
+def shorten_text(text, max_length=45):
+    """Return the shortened text if it exceeds max_length characters."""
+    return text if len(text) <= max_length else text[:max_length - 3] + "..."
+
 # Box drawing characters
 TOP_LEFT = "╔"
 TOP_RIGHT = "╗"
@@ -38,29 +42,109 @@ SUB_BOTTOM_RIGHT = "┘"
 SUB_HORIZONTAL = "─"
 SUB_VERTICAL = "│"
 
-# Main header box (60 chars wide)
+# Main header box (70 chars wide)
 def main_header_box(title):
-    width = 60
+    width = 70
     top_border = f"{BOLD}{BLUE}{TOP_LEFT}{HORIZONTAL * (width - 2)}{TOP_RIGHT}{RESET}"
     title_line = f"{BOLD}{BLUE}{VERTICAL}{title.center(width - 2)}{VERTICAL}{RESET}"
     bottom_border = f"{BOLD}{BLUE}{BOTTOM_LEFT}{HORIZONTAL * (width - 2)}{BOTTOM_RIGHT}{RESET}"
     return f"{top_border}\n{title_line}\n{bottom_border}"
 
-# Sub header box (60 chars wide)
+# Sub header box (70 chars wide)
 def sub_header_box(title):
-    width = 60
+    width = 70
     top_border = f"{BOLD}{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * (width - 2)}{SUB_TOP_RIGHT}{RESET}"
     title_line = f"{BOLD}{TURQUOISE}{SUB_VERTICAL}{title.center(width - 2)}{SUB_VERTICAL}{RESET}"
     bottom_border = f"{BOLD}{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * (width - 2)}{SUB_BOTTOM_RIGHT}{RESET}"
     return f"{top_border}\n{title_line}\n{bottom_border}"
 
-# Alert box for notifications (60 chars wide)
+# Alert box for notifications (70 chars wide)
 def alert_box(title, icon="⚠️", color=YELLOW):
-    width = 60
-    top_border = f"{BOLD}{color}{SUB_TOP_LEFT}{SUB_HORIZONTAL * (width - 2)}{SUB_TOP_RIGHT}{RESET}"
-    content = f"{BOLD}{color}{SUB_VERTICAL}  {icon} {title}{' ' * (width - 5 - len(title))}{SUB_VERTICAL}{RESET}"
-    bottom_border = f"{BOLD}{color}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * (width - 2)}{SUB_BOTTOM_RIGHT}{RESET}"
+    width = 70
+    top_border = f"{BOLD}{color}{icon} {HORIZONTAL * (width - 4)} {icon}{RESET}"
+    content = f"{BOLD}{color}{title.center(width)}{RESET}"
+    bottom_border = f"{BOLD}{color}{icon} {HORIZONTAL * (width - 4)} {icon}{RESET}"
     return f"{top_border}\n{content}\n{bottom_border}"
+
+# Section box for grouped config items
+def section_box(title, lines, width=66):
+    result = []
+    result.append(f"{TURQUOISE}{SUB_TOP_LEFT}─ {title} {SUB_HORIZONTAL * (width - len(title) - 4)}{SUB_TOP_RIGHT}{RESET}")
+    for line in lines:
+        result.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET}{line}{' ' * (width - len(line) - 1)}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    result.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * width}{SUB_BOTTOM_RIGHT}{RESET}")
+    return "\n".join(result)
+
+# Product box for displaying product details
+def product_box(product_num, total, success, item):
+    width = 70
+    max_title_length = 55
+    
+    if success:
+        header = f"{GREEN}PRODUCT [{product_num:02}/{total}] ✅{RESET}"
+    else:
+        reason = item.get("filter_reason", "Unknown reason")
+        return f"{RED}PRODUCT [{product_num:02}/{total}] ❌ FILTERED: {reason}{RESET}"
+    
+    display_title = shorten_text(item.get("title", "N/A"), max_title_length)
+    price = item.get('price', 0)
+    price_str = f"${price:.2f}" if isinstance(price, float) else "N/A"
+    
+    # Main product box
+    lines = []
+    lines.append(f"{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * (width - 2)}{SUB_TOP_RIGHT}{RESET}")
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {header}")
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  Title      : {BOLD}{display_title}{RESET}")
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  Price      : {BOLD}{price_str}{RESET}")
+    
+    # Listing details sub-box
+    details_lines = []
+    details_lines.append(f"  Condition  : {item.get('normalized_condition', 'N/A')}")
+    details_lines.append(f"  Type       : {item.get('listing_type', 'N/A')}")
+    
+    if item.get("listing_type") == "Auction":
+        details_lines.append(f"  Bids       : {item.get('bids_count', 0)}")
+        details_lines.append(f"  Time Left  : {item.get('time_remaining', 'N/A')}")
+    elif item.get("listing_type") == "Auction + BIN":
+        bin_price = item.get('buy_it_now_price', 'N/A')
+        bin_price_str = f"${bin_price:.2f}" if isinstance(bin_price, float) else "N/A"
+        details_lines.append(f"  BIN Price  : {bin_price_str}")
+        details_lines.append(f"  Bids       : {item.get('bids_count', 0)}")
+        details_lines.append(f"  Time Left  : {item.get('time_remaining', 'N/A')}")
+    
+    # Seller info sub-box
+    seller_lines = []
+    seller_username = shorten_text(item.get('seller_username', 'N/A'), 20)
+    item_id = shorten_text(item.get('item_id', 'N/A'), 20)
+    seller_lines.append(f"  Username : {seller_username}")
+    seller_lines.append(f"  Item ID  : {item_id}")
+    
+    # Create sub-boxes with 60% / 40% split
+    details_width = 40
+    seller_width = 23
+    
+    details_box = section_box("Listing Details", details_lines, details_width)
+    seller_box = section_box("Seller Info", seller_lines, seller_width)
+    
+    # Split details_box and seller_box into lines
+    details_lines = details_box.split('\n')
+    seller_lines = seller_box.split('\n')
+    
+    # Combine the boxes side by side
+    combined_height = max(len(details_lines), len(seller_lines))
+    for i in range(combined_height):
+        details_line = details_lines[i] if i < len(details_lines) else " " * (details_width + 2)
+        seller_line = seller_lines[i] if i < len(seller_lines) else " " * (seller_width + 2)
+        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  {details_line} {seller_line}  {TURQUOISE}{SUB_VERTICAL}{RESET}")
+
+    lines.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * (width - 2)}{SUB_BOTTOM_RIGHT}{RESET}")
+    return "\n".join(lines)
+
+def create_progress_bar(value, total, width=40, char="█"):
+    """Create a visual progress bar."""
+    percent = value / total if total > 0 else 0
+    bar_width = int(width * percent)
+    return char * bar_width + " " * (width - bar_width)
 
 class EbaySpider(scrapy.Spider):
     name = "ebay_spider"
@@ -78,10 +162,11 @@ class EbaySpider(scrapy.Spider):
         self.prices = []
         self.demo_limit_reached = False  # To stop after a demo limit
         self.demo_limit = 5
-
+        self.max_products = 30   # For display purposes
+        
         # Startup header
         print(main_header_box("PRICETRACKER"), flush=True)
-        print("\n🔍 Keyword: Funko Pop Doctor Doom #561\n", flush=True)
+        print(f"\n{BOLD}🔍 Keyword:{RESET} Funko Pop Doctor Doom #561\n", flush=True)
         
         # Configuration section
         print(main_header_box("CONFIGURATION"), flush=True)
@@ -95,15 +180,30 @@ class EbaySpider(scrapy.Spider):
             "Demo Mode": True
         }
         
-        # Affichage avec champs alignés sur 20 caractères
-        print(f"\n  {'Download Delay':<20} : {RESET}{config['Download Delay']}s", flush=True)
-        print(f"  {'AutoThrottle':<20} : {RESET}ON", flush=True)
-        print(f"   {'-':<1} {'Initial Delay':<18} : {RESET}{config['AutoThrottle Start Delay']}s", flush=True)
-        print(f"   {'-':<1} {'Maximum Delay':<18} : {RESET}{config['AutoThrottle Max Delay']}s", flush=True)
-        print(f"  {'Proxy Rotation':<20} : {RESET}{config['Proxy Rotation']}", flush=True)
-        print(f"  {'User-Agent Rotation':<20} : {RESET}{config['User-Agent Rotation']}", flush=True)
-        print(f"  {'Anti-blocking Delays':<20} : {RESET}{config['Anti-blocking delays']}", flush=True)
-        print(f"  {'Demo Mode':<20} : {RESET}{config['Demo Mode']}\n", flush=True)
+        # Network settings section
+        network_lines = [
+            f"  Download Delay       : {RESET}{config['Download Delay']}s",
+            f"  Proxy Rotation       : {RESET}{config['Proxy Rotation']}",
+            f"  User-Agent Rotation  : {RESET}{config['User-Agent Rotation']}",
+            f"  Anti-blocking Delays : {RESET}{config['Anti-blocking delays']}"
+        ]
+        
+        # Throttle control section
+        throttle_lines = [
+            f"  AutoThrottle         : {RESET}ON",
+            f"  Initial Delay        : {RESET}{config['AutoThrottle Start Delay']}s",
+            f"  Maximum Delay        : {RESET}{config['AutoThrottle Max Delay']}s"
+        ]
+        
+        # Mode section
+        mode_lines = [
+            f"  Demo Mode            : {RESET}{config['Demo Mode']}  (5 product limit)"
+        ]
+        
+        print("\n" + section_box("Network Settings", network_lines), flush=True)
+        print("\n" + section_box("Throttle Control", throttle_lines), flush=True)
+        print("\n" + section_box("Mode", mode_lines), flush=True)
+        print("", flush=True)
 
         # Product scraping section
         print(main_header_box("PRODUCT SCRAPING"), flush=True)
@@ -129,8 +229,8 @@ class EbaySpider(scrapy.Spider):
         self.page_count += 1
         page_start = time.time()
         
-        # En-tête de la page avec le nouveau style
-        page_header = sub_header_box(f"RETRIEVING PRODUCTS (Page {self.page_count})")
+        # Page header
+        page_header = sub_header_box(f"RETRIEVING PRODUCTS (Page {self.page_count}/?)")
         print(page_header, flush=True)
         
         results = response.xpath('//li[contains(@class, "s-item")]')
@@ -182,10 +282,10 @@ class EbaySpider(scrapy.Spider):
                 yield item
 
         page_elapsed = time.time() - page_start
-        # Afficher le résumé de la page
-        print(f"{SUB_VERTICAL}  ⏱️  Page processed in {page_elapsed:.2f} seconds{' ' * (55 - len(f'{page_elapsed:.2f}'))}│", flush=True)
-        print(f"{SUB_VERTICAL}  📊 Found {found_this_page} products on this page{' ' * (55 - len(str(found_this_page)))}│", flush=True)
-        print(f"{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * 60}{SUB_BOTTOM_RIGHT}\n", flush=True)
+        # Display page summary
+        print(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  ⏱️  Page processed in {page_elapsed:.2f} seconds{' ' * (65 - len(f'{page_elapsed:.2f}'))}{TURQUOISE}{SUB_VERTICAL}{RESET}", flush=True)
+        print(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  📊 Found {found_this_page} products on this page{' ' * (65 - len(str(found_this_page)))}{TURQUOISE}{SUB_VERTICAL}{RESET}", flush=True)
+        print(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * 68}{SUB_BOTTOM_RIGHT}{RESET}\n", flush=True)
 
         next_page_url = response.xpath("//a[@aria-label='Suivant' or @aria-label='Next']/@href").get()
         if next_page_url:
@@ -240,7 +340,8 @@ class EbaySpider(scrapy.Spider):
 
         # Check for error pages (eBay Home or error page)
         if item["title"].strip().lower() in ["ebay home", "error page"]:
-            print(f"{BOLD}{RED}PRODUCT [{prod_num:02}/30] ❌ FILTERED: Content unavailable (page not found){RESET}", flush=True)
+            item["filter_reason"] = "Content unavailable (page not found)"
+            print(product_box(prod_num, self.max_products, False, item), flush=True)
             self.ignored_count += 1
             return
 
@@ -248,7 +349,8 @@ class EbaySpider(scrapy.Spider):
             '//button[contains(@class, "listbox-button__control") and contains(@class, "btn--form") and @value="Select"]'
         )
         if multi_variation_button:
-            print(f"{BOLD}{RED}PRODUCT [{prod_num:02}/30] ❌ FILTERED: Multi-variation listing excluded{RESET}", flush=True)
+            item["filter_reason"] = "Multi-variation listing excluded"
+            print(product_box(prod_num, self.max_products, False, item), flush=True)
             self.ignored_count += 1
             return
 
@@ -271,11 +373,13 @@ class EbaySpider(scrapy.Spider):
 
         title_lower = item["title"].lower()
         if item["title"].count("#") > 1:
-            print(f"{BOLD}{RED}PRODUCT [{prod_num:02}/30] ❌ FILTERED: Multi-figure listing excluded{RESET}", flush=True)
+            item["filter_reason"] = "Multi-figure listing excluded"
+            print(product_box(prod_num, self.max_products, False, item), flush=True)
             self.ignored_count += 1
             return
         if any(kw in title_lower for kw in ["lot", "bundle", "set"]):
-            print(f"{BOLD}{RED}PRODUCT [{prod_num:02}/30] ❌ FILTERED: Bundle listing excluded{RESET}", flush=True)
+            item["filter_reason"] = "Bundle listing excluded"
+            print(product_box(prod_num, self.max_products, False, item), flush=True)
             self.ignored_count += 1
             return
 
@@ -365,41 +469,18 @@ class EbaySpider(scrapy.Spider):
             self.prices.append(item["price"])
         self.processed_count += 1
 
-        if self.product_count > self.demo_limit and not self.demo_limit_reached:
-            print(f"\n{alert_box('Demo limit reached: 5 products processed', '⚠️')}", flush=True)
-            print(f"{alert_box('Stopping the scraper', '🛑', RED)}\n", flush=True)
+        # Display product info with the new format
+        print(product_box(prod_num, self.max_products, True, item), flush=True)
+        print("", flush=True)
+        
+        if self.product_count >= self.demo_limit and not self.demo_limit_reached:
+            print(alert_box("DEMO LIMIT REACHED: 5 PRODUCTS PROCESSED", "⚠️"), flush=True)
+            print(alert_box("STOPPING THE SCRAPER", "🛑", RED), flush=True)
+            print("", flush=True)
             self.demo_limit_reached = True
             self.crawler.engine.close_spider(self, reason="Demo limit reached")
             return
-
-        # Nouveau format d'affichage des produits
-        max_title_length = 45
-        display_title = item.get("title", "N/A")
-        if len(display_title) > max_title_length:
-            display_title = display_title[:max_title_length - 3] + "..."
             
-        # En-tête du produit
-        print(f"{GREEN}PRODUCT [{prod_num:02}/30] ✅ {RESET}", flush=True)
-        print(f"  Title      : {display_title}", flush=True)
-        print(f"  Price      : ${item.get('price', 0):.2f}", flush=True)
-        print(f"  Condition  : {item.get('normalized_condition', 'N/A')}", flush=True)
-        print(f"  Type       : {item.get('listing_type', 'N/A')}", flush=True)
-        
-        # Informations spécifiques au type de listing
-        if item["listing_type"] == "Auction":
-            print(f"  Bids       : {item.get('bids_count', 0)}", flush=True)
-            print(f"  Time Left  : {item.get('time_remaining', 'N/A')}", flush=True)
-        elif item["listing_type"] == "Auction + BIN":
-            bin_price = item.get('buy_it_now_price', 'N/A')
-            bin_price_str = f"${bin_price:.2f}" if isinstance(bin_price, float) else "N/A"
-            print(f"  BIN Price  : {bin_price_str}", flush=True)
-            print(f"  Bids       : {item.get('bids_count', 0)}", flush=True)
-            print(f"  Time Left  : {item.get('time_remaining', 'N/A')}", flush=True)
-            
-        # Informations supplémentaires
-        print(f"  Seller     : {item.get('seller_username', 'N/A')}", flush=True)
-        print(f"  Item ID    : {item.get('item_id', 'N/A')}\n", flush=True)
-        
         yield item
 
     def closed(self, reason):
@@ -408,32 +489,48 @@ class EbaySpider(scrapy.Spider):
         elapsed = (end_time - self.start_time).total_seconds()
         rate = self.product_count / (elapsed / 60) if elapsed > 0 else 0
 
-        # Affichage du résumé final
+        # Display final summary
         print(main_header_box("SCRAPING COMPLETED"), flush=True)
-        print(f"\n  Reason for closure       : {RESET}{reason}", flush=True)
-        print(f"  Total products attempted : {RESET}{self.product_count}", flush=True)
-        print(f"  Successfully processed   : {RESET}{self.processed_count}", flush=True)
-        print(f"  Filtered products        : {RESET}{self.ignored_count}", flush=True)
-        print(f"  Total pages crawled      : {RESET}{self.page_count}", flush=True)
-        print(f"  Execution time           : {RESET}{elapsed:.2f} seconds", flush=True)
-        print(f"  Processing rate          : {RESET}{rate:.2f} products/min\n", flush=True)
+        
+        # Summary section
+        summary_lines = [
+            f"  Reason for closure       : {RESET}{reason}",
+            f"  Total products attempted : {RESET}{self.product_count}",
+            f"  Successfully processed   : {RESET}{self.processed_count}",
+            f"  Filtered products        : {RESET}{self.ignored_count}",
+            f"  Total pages crawled      : {RESET}{self.page_count}",
+            f"  Execution time           : {RESET}{elapsed:.2f} seconds",
+            f"  Processing rate          : {RESET}{rate:.2f} products/min"
+        ]
+        
+        print("\n" + section_box("Summary", summary_lines), flush=True)
+        print("", flush=True)
 
-        # Statistiques de prix
+        # Price statistics
         print(sub_header_box("PRICE STATISTICS"), flush=True)
         
         if self.prices:
             minimum = min(self.prices)
             maximum = max(self.prices)
             avg = statistics.mean(self.prices)
-            print(f"{SUB_VERTICAL}  Minimum price  : ${minimum:.2f}{' ' * (38 - len(f'{minimum:.2f}'))}{SUB_VERTICAL}", flush=True)
-            print(f"{SUB_VERTICAL}  Maximum price  : ${maximum:.2f}{' ' * (38 - len(f'{maximum:.2f}'))}{SUB_VERTICAL}", flush=True)
-            print(f"{SUB_VERTICAL}  Average price  : ${avg:.2f}{' ' * (38 - len(f'{avg:.2f}'))}{SUB_VERTICAL}", flush=True)
+            
+            print(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  ↓ Minimum price  : ${minimum:.2f}{' ' * (48 - len(f'{minimum:.2f}'))}{TURQUOISE}{SUB_VERTICAL}{RESET}", flush=True)
+            print(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  ↑ Maximum price  : ${maximum:.2f}{' ' * (48 - len(f'{maximum:.2f}'))}{TURQUOISE}{SUB_VERTICAL}{RESET}", flush=True)
+            print(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  ~ Average price  : ${avg:.2f}{' ' * (48 - len(f'{avg:.2f}'))}{TURQUOISE}{SUB_VERTICAL}{RESET}", flush=True)
         else:
-            print(f"{SUB_VERTICAL}  No price stats available (no valid prices found){' ' * 13}{SUB_VERTICAL}", flush=True)
-        print(f"{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * 60}{SUB_BOTTOM_RIGHT}\n", flush=True)
+            print(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  No price stats available (no valid prices found){' ' * 13}{TURQUOISE}{SUB_VERTICAL}{RESET}", flush=True)
+        print(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * 68}{SUB_BOTTOM_RIGHT}{RESET}\n", flush=True)
 
-        # Résumé des conditions
+        # Condition summary with visual bars
         print(sub_header_box("CONDITION SUMMARY"), flush=True)
-        print(f"{SUB_VERTICAL}  New  : {self.new_count}{' ' * (48 - len(str(self.new_count)))}{SUB_VERTICAL}", flush=True)
-        print(f"{SUB_VERTICAL}  Used : {self.used_count}{' ' * (48 - len(str(self.used_count)))}{SUB_VERTICAL}", flush=True)
-        print(f"{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * 60}{SUB_BOTTOM_RIGHT}\n", flush=True)
+        
+        total = self.new_count + self.used_count
+        new_percent = (self.new_count / total * 100) if total > 0 else 0
+        used_percent = (self.used_count / total * 100) if total > 0 else 0
+        
+        new_bar = create_progress_bar(self.new_count, total, 30)
+        used_bar = create_progress_bar(self.used_count, total, 30)
+        
+        print(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  New  : {new_bar} {self.new_count} ({new_percent:.1f}%){' ' * (10 - len(f'{new_percent:.1f}'))}{TURQUOISE}{SUB_VERTICAL}{RESET}", flush=True)
+        print(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  Used : {used_bar} {self.used_count} ({used_percent:.1f}%){' ' * (10 - len(f'{used_percent:.1f}'))}{TURQUOISE}{SUB_VERTICAL}{RESET}", flush=True)
+        print(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * 68}{SUB_BOTTOM_RIGHT}{RESET}\n", flush=True)
