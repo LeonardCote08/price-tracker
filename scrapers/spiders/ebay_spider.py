@@ -98,23 +98,8 @@ def section_box(title, lines, width=80):
     
     return "\n".join(result)
 
-# Simplified product box with all information in one section
-def product_box(product_num, total, success, item):
-    if not success:
-        # Version alternative très simple pour les produits filtrés
-        reason = item.get("filter_reason", "Unknown reason")
-        title = item.get("title", "N/A")
-        if len(title) > 50:
-            title = title[:47] + "..."
-            
-        filtered_box = f"""┌───────────────────────────────────────────────────────────────────────────────────┐
-│ {RED}PRODUCT [{product_num:02}/{total}] ❌ FILTERED{RESET}                                                │
-│                                                                                     │
-│   Reason     : {reason}                                                            │
-│   Title      : {title}                                                             │
-└───────────────────────────────────────────────────────────────────────────────────┘"""
-        return filtered_box
-    
+# Product box ONLY for successful products
+def product_box(product_num, total, item):
     box_width = 85  # Increased from 75 to 85
     
     # Prepare main product info for successful products
@@ -407,10 +392,9 @@ class EbaySpider(scrapy.Spider):
 
         # Check for error pages (eBay Home or error page)
         if item["title"].strip().lower() in ["ebay home", "error page"]:
-            item["filter_reason"] = "Content unavailable (page not found)"
-            # Version simplifiée
-            print(product_box(prod_num, self.max_products, False, item), flush=True)
-            print("", flush=True)  # Ligne vide pour l'espacement
+            reason = "Content unavailable (page not found)"
+            # Message simple pour les produits filtrés
+            print(f"{RED}PRODUCT [{prod_num:02}/{self.max_products}] ❌ FILTERED: {reason}{RESET}", flush=True)
             self.ignored_count += 1
             return
 
@@ -418,10 +402,9 @@ class EbaySpider(scrapy.Spider):
             '//button[contains(@class, "listbox-button__control") and contains(@class, "btn--form") and @value="Select"]'
         )
         if multi_variation_button:
-            item["filter_reason"] = "Multi-variation listing excluded"
-            # Version simplifiée
-            print(product_box(prod_num, self.max_products, False, item), flush=True)
-            print("", flush=True)  # Ligne vide pour l'espacement
+            reason = "Multi-variation listing excluded"
+            # Message simple pour les produits filtrés
+            print(f"{RED}PRODUCT [{prod_num:02}/{self.max_products}] ❌ FILTERED: {reason}{RESET}", flush=True)
             self.ignored_count += 1
             return
 
@@ -444,18 +427,16 @@ class EbaySpider(scrapy.Spider):
 
         title_lower = item["title"].lower()
         if item["title"].count("#") > 1:
-            item["filter_reason"] = "Multi-figure listing excluded"
-            # Version simplifiée
-            print(product_box(prod_num, self.max_products, False, item), flush=True)
-            print("", flush=True)  # Ligne vide pour l'espacement
+            reason = "Multi-figure listing excluded"
+            # Message simple pour les produits filtrés
+            print(f"{RED}PRODUCT [{prod_num:02}/{self.max_products}] ❌ FILTERED: {reason}{RESET}", flush=True)
             self.ignored_count += 1
             return
             
         if any(kw in title_lower for kw in ["lot", "bundle", "set"]):
-            item["filter_reason"] = "Bundle listing excluded"
-            # Version simplifiée
-            print(product_box(prod_num, self.max_products, False, item), flush=True)
-            print("", flush=True)  # Ligne vide pour l'espacement
+            reason = "Bundle listing excluded"
+            # Message simple pour les produits filtrés
+            print(f"{RED}PRODUCT [{prod_num:02}/{self.max_products}] ❌ FILTERED: {reason}{RESET}", flush=True)
             self.ignored_count += 1
             return
 
@@ -545,8 +526,8 @@ class EbaySpider(scrapy.Spider):
             self.prices.append(item["price"])
         self.processed_count += 1
 
-        # Display product info with the new format
-        print(product_box(prod_num, self.max_products, True, item), flush=True)
+        # Display product info with the new format (pour les produits réussis seulement)
+        print(product_box(prod_num, self.max_products, item), flush=True)
         print("", flush=True)
         
         if self.product_count >= self.demo_limit and not self.demo_limit_reached:
