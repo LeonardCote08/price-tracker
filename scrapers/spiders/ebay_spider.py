@@ -611,7 +611,7 @@ class EbaySpider(scrapy.Spider):
             
         print("", flush=True)
 
-        # Condition summary with wider box 
+        # Condition summary with wider box
         condition_box = sub_header_box("CONDITION SUMMARY")
         print(condition_box, flush=True)
         
