@@ -9,77 +9,21 @@ import datetime
 import time
 import statistics
 
-# ANSI codes for color and styling
-RESET = "\033[0m"
+# ANSI codes for color
+RESET = "\033[38;2;241;241;242m"
 BOLD = "\033[1m"
 BLUE = "\033[38;2;21;149;235m"
 TURQUOISE = "\033[38;2;64;189;191m"
 RED = "\033[38;2;206;71;96m"
-GREEN = "\033[38;2;75;179;82m"
-YELLOW = "\033[38;2;255;204;0m"
 
-# Box drawing characters
-TOP_LEFT = "╔"
-TOP_RIGHT = "╗"
-BOTTOM_LEFT = "╚"
-BOTTOM_RIGHT = "╝"
-HORIZONTAL = "═"
-VERTICAL = "║"
-LEFT_T = "╠"
-RIGHT_T = "╣"
-CROSS = "╬"
-VERT_RIGHT = "├"
-VERT_LEFT = "┤"
+def shorten_url(url, max_length=60):
+    """Return the shortened URL if it exceeds max_length characters."""
+    return url if len(url) <= max_length else url[:max_length] + "..."
 
-def shorten_text(text, max_length=50):
-    """Return the shortened text if it exceeds max_length characters."""
-    if not text:
-        return ""
-    return text if len(text) <= max_length else text[:max_length - 3] + "..."
-
-def draw_box_line(left_char, center_char, right_char, width=80):
-    """Draw a horizontal box line with specified characters."""
-    return f"{left_char}{HORIZONTAL * (width - 2)}{right_char}"
-
-def draw_header(title, width=80):
-    """Draw a section header with a title."""
-    title_centered = title.center(width - 2)
-    return (
-        f"{LEFT_T}{HORIZONTAL * (width - 2)}{RIGHT_T}\n"
-        f"{VERTICAL} {BOLD}{BLUE}{title_centered}{RESET} {VERTICAL}\n"
-        f"{LEFT_T}{HORIZONTAL * (width - 2)}{RIGHT_T}"
-    )
-
-def draw_content_line(content, width=80, padding_right=True):
-    """Draw a content line with left and right borders."""
-    # Calculate content length without ANSI escape codes
-    visible_length = len(re.sub(r'\033\[[0-9;]*[a-zA-Z]', '', content))
-    
-    # Ensure content fits within the width
-    available_space = width - 4  # 2 for VERTICAL chars, 2 for spaces
-    if visible_length > available_space:
-        # Remove escape codes, truncate, then re-add escape codes
-        ansi_codes = re.findall(r'\033\[[0-9;]*[a-zA-Z]', content)
-        clean_content = re.sub(r'\033\[[0-9;]*[a-zA-Z]', '', content)
-        truncated = clean_content[:available_space - 3] + "..."
-        # This is simplistic, might need improvement for complex color cases
-        if ansi_codes and ansi_codes[0] in content:
-            content = ansi_codes[0] + truncated + RESET
-        else:
-            content = truncated
-        visible_length = len(re.sub(r'\033\[[0-9;]*[a-zA-Z]', '', content))
-    
-    # Add padding to ensure the right border is at the correct position
-    if padding_right:
-        padding = ' ' * (width - visible_length - 4)
-    else:
-        padding = ''
-        
-    return f"{VERTICAL} {content}{padding} {VERTICAL}"
-
-def format_price(price):
-    """Format a price with dollar sign."""
-    return f"${price:.2f}"
+# Séparateur principal (60 "=") en BLUE
+HEADER_SEPARATOR = f"{BOLD}{BLUE}" + "=" * 60 + f"{RESET}"
+# Séparateur de configuration et section intermédiaire (60 "-" ) en TURQUOISE
+SUB_SEPARATOR = f"{BOLD}{TURQUOISE}" + "-" * 60 + f"{RESET}"
 
 class EbaySpider(scrapy.Spider):
     name = "ebay_spider"
@@ -97,58 +41,44 @@ class EbaySpider(scrapy.Spider):
         self.prices = []
         self.demo_limit_reached = False  # To stop after a demo limit
         self.demo_limit = 5
-        self.box_width = 80  # Default box width
 
-        # Start the display with the top box
-        print(f"{BLUE}{draw_box_line(TOP_LEFT, HORIZONTAL, TOP_RIGHT, self.box_width)}", flush=True)
-        print(f"{BLUE}{VERTICAL}{BOLD}{BLUE}{'PRICETRACKER'.center(self.box_width - 2)}{RESET}{BLUE}{VERTICAL}", flush=True)
-        
-        # Keyword section
-        print(f"{BLUE}{draw_header('SEARCH PARAMETERS', self.box_width)}", flush=True)
-        
-        # Set the keyword
-        self.keyword = keyword or "Funko Pop Marvel Iron Man #1424 -17 -990 -916 -591 -Venomized"
-        keyword_line = draw_content_line(f'Keyword: {self.keyword}', self.box_width)
-        print(f"{BLUE}{keyword_line}", flush=True)
+        # Startup header
+        print(HEADER_SEPARATOR, flush=True)
+        print(f"{BOLD}{BLUE}{'PriceTracker'.center(60)}", flush=True)
+        print(HEADER_SEPARATOR + f"{RESET}\n", flush=True)
 
         # Configuration section
-        print(f"{BLUE}{draw_header('CONFIGURATION', self.box_width)}", flush=True)
-        
+        print(f"{BOLD}{TURQUOISE}Keyword           : {RESET}Funko Pop Doctor Doom #561\n", flush=True)
+        print(HEADER_SEPARATOR, flush=True)
+        print(f"{BOLD}{BLUE}{'CONFIGURATION'.center(60)}", flush=True)
+
+        print(HEADER_SEPARATOR + f"{RESET}", flush=True)
         config = {
-            "Download Delay": "1.5s",
-            "AutoThrottle": "✓ ENABLED",
-            "Initial Delay": "1.0s",
-            "Maximum Delay": "5.0s",
-            "Proxy Rotation": "✓ ENABLED",
-            "User-Agent Rotation": "✓ ENABLED",
-            "Anti-blocking Delays": "✓ ENABLED",
-            "Demo Mode": "✓ ENABLED"
+            "Download Delay": 1.5,
+            "AutoThrottle Start Delay": 1.0,
+            "AutoThrottle Max Delay": 5.0,
+            "Proxy Rotation": "Enabled",
+            "User-Agent Rotation": "Enabled",
+            "Anti-blocking delays": "Enabled",
+            "Demo Mode": True
         }
-        
-        # Display configuration in a more structured way - using intermediate variables
-        dl_line = draw_content_line(f'Download Delay        : {config["Download Delay"]}', self.box_width)
-        at_line = draw_content_line(f'AutoThrottle          : {config["AutoThrottle"]}', self.box_width)
-        id_line = draw_content_line(f'├─ Initial Delay      : {config["Initial Delay"]}', self.box_width)
-        md_line = draw_content_line(f'└─ Maximum Delay      : {config["Maximum Delay"]}', self.box_width)
-        pr_line = draw_content_line(f'Proxy Rotation        : {config["Proxy Rotation"]}', self.box_width)
-        ua_line = draw_content_line(f'User-Agent Rotation   : {config["User-Agent Rotation"]}', self.box_width)
-        ad_line = draw_content_line(f'Anti-blocking Delays  : {config["Anti-blocking Delays"]}', self.box_width)
-        dm_line = draw_content_line(f'Demo Mode             : {config["Demo Mode"]}', self.box_width)
-        
-        print(f"{BLUE}{dl_line}", flush=True)
-        print(f"{BLUE}{at_line}", flush=True)
-        print(f"{BLUE}{id_line}", flush=True)
-        print(f"{BLUE}{md_line}", flush=True)
-        print(f"{BLUE}{pr_line}", flush=True)
-        print(f"{BLUE}{ua_line}", flush=True)
-        print(f"{BLUE}{ad_line}", flush=True)
-        print(f"{BLUE}{dm_line}", flush=True)
+        # Affichage avec champs alignés sur 20 caractères
+        print(f"{'Download Delay':<20} : {RESET}{config['Download Delay']}s", flush=True)
+        print(f"{'AutoThrottle':<20} : {RESET}ON", flush=True)
+        print(f"{' - Initial Delay':<20} : {RESET}{config['AutoThrottle Start Delay']}s", flush=True)
+        print(f"{' - Maximum Delay':<20} : {RESET}{config['AutoThrottle Max Delay']}s", flush=True)
+        print(f"{'Proxy Rotation':<20} : {RESET}{config['Proxy Rotation']}", flush=True)
+        print(f"{'User-Agent Rotation':<20} : {RESET}{config['User-Agent Rotation']}", flush=True)
+        print(f"{'Anti-blocking Delays':<20} : {RESET}{config['Anti-blocking delays']}", flush=True)
+        print(f"{'Demo Mode':<20} : {RESET}{config['Demo Mode']}", flush=True)
 
-        # Product scraping section
-        print(f"{BLUE}{draw_header('PRODUCT EXTRACTION', self.box_width)}", flush=True)
+        # Nouvelle section "PRODUCT SCRAPING"
+        print(HEADER_SEPARATOR, flush=True)
+        print(f"{BOLD}{BLUE}{'PRODUCT SCRAPING'.center(60)}", flush=True)
+        print(HEADER_SEPARATOR + f"{RESET}\n", flush=True)
 
-        # Set up the start URLs
         zip_code = "90210"  # Beverly Hills ZIP code
+        self.keyword = keyword or "Funko Pop Doctor Doom #561"
         self.start_urls = [
             f"https://www.ebay.com/sch/i.html?_nkw={quote_plus(self.keyword)}&_stpos={zip_code}"
         ]
@@ -166,14 +96,13 @@ class EbaySpider(scrapy.Spider):
     def parse(self, response):
         self.page_count += 1
         page_start = time.time()
-        
-        # Page header within the box
-        header_line = draw_content_line(f'🔍 RETRIEVING PRODUCTS (Page {self.page_count})', self.box_width)
-        print(f"{BLUE}{header_line}", flush=True)
+        # En-tête de la page
+        texte = f"=== RETRIEVING PRODUCTS (Page {self.page_count}) ==="
+        print(f"{BOLD}{TURQUOISE}{texte.center(60)}{RESET}", flush=True)
 
+        
         results = response.xpath('//li[contains(@class, "s-item")]')
         found_this_page = 0
-        
         for product in results:
             found_this_page += 1
             item = EbayItem()
@@ -221,14 +150,14 @@ class EbaySpider(scrapy.Spider):
                 yield item
 
         page_elapsed = time.time() - page_start
-        
-        # Page summary within the box
-        time_line = draw_content_line(f'Page {self.page_count} processed in {page_elapsed:.2f} seconds', self.box_width)
-        found_line = draw_content_line(f'{found_this_page} products found on this page', self.box_width)
-        print(f"{BLUE}{time_line}", flush=True)
-        print(f"{BLUE}{found_line}", flush=True)
+        # Afficher le résumé de la page
+        print(f"{RESET}Page {self.page_count} processed in {RESET}{page_elapsed:.2f} seconds", flush=True)
+        print(f"{RESET}Found {found_this_page} products on this page", flush=True)
 
-        next_page_url = response.xpath("//a[@aria-label='Next']/@href").get()
+        # Afficher un séparateur intermédiaire
+        print(SUB_SEPARATOR, flush=True)
+
+        next_page_url = response.xpath("//a[@aria-label='Suivant' or @aria-label='Next']/@href").get()
         if next_page_url:
             yield scrapy.Request(url=next_page_url, callback=self.parse)
 
@@ -246,8 +175,8 @@ class EbaySpider(scrapy.Spider):
         if original_url:
             try:
                 original_item_id = original_url.split("/itm/")[1].split("?")[0]
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"{BOLD}{RED}[WARNING] Failed to extract initial item_id from URL {shorten_url(original_url)}: {e}{RESET}", flush=True)
         item["item_url"] = response.url
 
         ended_message = " ".join(response.xpath('//div[@data-testid="d-statusmessage"]//text()').getall()).strip()
@@ -265,10 +194,12 @@ class EbaySpider(scrapy.Spider):
         try:
             final_item_id = response.url.split("/itm/")[1].split("?")[0]
             item["item_id"] = final_item_id
-        except Exception:
+        except Exception as e:
+            print(f"{BOLD}{RED}[WARNING] Failed to extract item_id from URL: {shorten_url(response.url)} ({e}){RESET}", flush=True)
             item["item_id"] = ""
 
         if original_item_id and final_item_id and original_item_id != final_item_id:
+            print(f"{BOLD}{RED}[NOTE] Redirection detected (original: {original_item_id}, final: {final_item_id}). Marking as ended.{RESET}", flush=True)
             item["ended"] = True
 
         if not item.get("title"):
@@ -279,9 +210,8 @@ class EbaySpider(scrapy.Spider):
 
         # Check for error pages (eBay Home or error page)
         if item["title"].strip().lower() in ["ebay home", "error page"]:
-            reason = "Product page not found"
-            skip_line = draw_content_line(f'[{prod_num:02d}/{self.demo_limit}] {RED}✗ Skipping - {reason}{RESET}', self.box_width)
-            print(f"{BLUE}{skip_line}", flush=True)
+            reason = "Skipping product due to missing page"
+            print(f"{BOLD}{RED}[{prod_num:>2}/30] ❌ {reason}{RESET}", flush=True)
             self.ignored_count += 1
             return
 
@@ -289,9 +219,8 @@ class EbaySpider(scrapy.Spider):
             '//button[contains(@class, "listbox-button__control") and contains(@class, "btn--form") and @value="Select"]'
         )
         if multi_variation_button:
-            reason = "Multi-variation listing"
-            skip_line = draw_content_line(f'[{prod_num:02d}/{self.demo_limit}] {RED}✗ Skipping - {reason}{RESET}', self.box_width)
-            print(f"{BLUE}{skip_line}", flush=True)
+            reason = "Skipping multi-variation listing"
+            print(f"{BOLD}{RED}[{prod_num:>2}/30] ❌ {reason}{RESET}", flush=True)
             self.ignored_count += 1
             return
 
@@ -314,15 +243,13 @@ class EbaySpider(scrapy.Spider):
 
         title_lower = item["title"].lower()
         if item["title"].count("#") > 1:
-            reason = "Multi-figure listing"
-            skip_line = draw_content_line(f'[{prod_num:02d}/{self.demo_limit}] {RED}✗ Skipping - {reason}{RESET}', self.box_width)
-            print(f"{BLUE}{skip_line}", flush=True)
+            reason = "Skipping multi-figure listing"
+            print(f"{BOLD}{RED}[{prod_num:>2}/30] ❌ {reason}{RESET}", flush=True)
             self.ignored_count += 1
             return
         if any(kw in title_lower for kw in ["lot", "bundle", "set"]):
-            reason = "Bundle listing"
-            skip_line = draw_content_line(f'[{prod_num:02d}/{self.demo_limit}] {RED}✗ Skipping - {reason}{RESET}', self.box_width)
-            print(f"{BLUE}{skip_line}", flush=True)
+            reason = "Skipping bundle listing"
+            print(f"{BOLD}{RED}[{prod_num:>2}/30] ❌ {reason}{RESET}", flush=True)
             self.ignored_count += 1
             return
 
@@ -330,14 +257,15 @@ class EbaySpider(scrapy.Spider):
             meta_img = response.xpath('//meta[@property="og:image"]/@content').get()
             if meta_img:
                 item["image_url"] = meta_img.strip()
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"{BOLD}{RED}[ERROR] Error extracting image URL: {e}{RESET}", flush=True)
 
         try:
             seller_name = (response.xpath('//span[@class="mbg-nw"]/text()').get() or
                            response.xpath('//div[contains(@class,"info__about-seller")]/a/span/text()').get())
             item["seller_username"] = seller_name.strip() if seller_name else ""
-        except Exception:
+        except Exception as e:
+            print(f"{BOLD}{RED}[ERROR] Error extracting seller username: {e}{RESET}", flush=True)
             item["seller_username"] = ""
 
         bid_button = response.xpath("//*[starts-with(@id, 'bidBtn_btn')]").get()
@@ -353,7 +281,8 @@ class EbaySpider(scrapy.Spider):
                 bid_container = response.xpath('//div[@data-testid="x-bid-count"]')
                 bids_text = bid_container.xpath('.//span/text()').re_first(r'(\d+)')
                 item["bids_count"] = int(bids_text) if bids_text else 0
-            except Exception:
+            except Exception as e:
+                print(f"{BOLD}{RED}[ERROR] Error extracting bids_count: {e}{RESET}", flush=True)
                 item["bids_count"] = 0
         else:
             item["bids_count"] = None
@@ -365,7 +294,8 @@ class EbaySpider(scrapy.Spider):
                                           else raw_texts[0].replace("Ends in", "").strip())
             else:
                 item["time_remaining"] = None
-        except Exception:
+        except Exception as e:
+            print(f"{BOLD}{RED}[ERROR] Error extracting time_remaining: {e}{RESET}", flush=True)
             item["time_remaining"] = None
 
         if item["listing_type"] == "Auction + BIN":
@@ -396,7 +326,8 @@ class EbaySpider(scrapy.Spider):
                     item["category"] = ""
             else:
                 item["category"] = ""
-        except Exception:
+        except Exception as e:
+            print(f"{BOLD}{RED}[ERROR] Error extracting category: {e}{RESET}", flush=True)
             item["category"] = ""
 
         # Update condition counters and price stats (only for processed products)
@@ -408,45 +339,42 @@ class EbaySpider(scrapy.Spider):
             self.prices.append(item["price"])
         self.processed_count += 1
 
-        # Check if demo limit reached
-        if self.product_count >= self.demo_limit and not self.demo_limit_reached:
-            demo_limit_line = draw_content_line(f'{YELLOW}⚠ Demo limit reached: {self.demo_limit} products processed. Stopping scraper.{RESET}', self.box_width)
-            print(f"{BLUE}{demo_limit_line}", flush=True)
+        if self.product_count > self.demo_limit and not self.demo_limit_reached:
+            print(f"\n{BOLD}{TURQUOISE}=== Demo limit reached: {self.demo_limit} products processed. Stopping the scraper. ==={RESET}", flush=True)
             self.demo_limit_reached = True
             self.crawler.engine.close_spider(self, reason="Demo limit reached")
             return
 
-        # Display product info in the structured box format - matching the screenshot style
-        title_display = shorten_text(item.get("title", "N/A"), 60)
-        
-        # Format the displayed information based on listing type
-        if item["listing_type"] == "Fixed Price":
-            # Display line 1: Product number, status icon, title
-            title_line = draw_content_line(f'[{prod_num:02d}/{self.demo_limit}] {GREEN}✓ {GREEN}{title_display}{RESET}', self.box_width)
-            print(f"{BLUE}{title_line}", flush=True)
-            
-            # Display price on its own line (matching screenshots)
-            price_line = draw_content_line(f'$ {format_price(item.get("price", 0))}', self.box_width)
-            print(f"{BLUE}{price_line}", flush=True)
-            
-        elif item["listing_type"] == "Auction":
-            # Display line 1: Product number, status icon, title
-            title_line = draw_content_line(f'[{prod_num:02d}/{self.demo_limit}] {GREEN}✓ {GREEN}{title_display}{RESET}', self.box_width)
-            print(f"{BLUE}{title_line}", flush=True)
-            
-            # Display price on its own line (matching screenshots)
-            price_line = draw_content_line(f'$ {format_price(item.get("price", 0))}', self.box_width)
-            print(f"{BLUE}{price_line}", flush=True)
-            
+        # Build a condensed, tabular product summary in one line with proper alignment.
+        max_length = 50
+        display_title = item.get("title", "N/A")
+        if len(display_title) > max_length:
+            display_title = display_title[:max_length - 3] + "..."
+        summary = (
+            f"[{prod_num:>2}/30] "  # ex: [ 3/30]
+            f"✅ Title: {display_title:<45} | "
+            f"Price: ${item.get('price', 0):>7.2f} | "
+            f"Condition: {item.get('normalized_condition', 'N/A'):<3} | "
+            f"Type: {item.get('listing_type', 'N/A'):<12}"
+        )
+        if item["listing_type"] == "Auction":
+            summary += (
+                f" | Bids: {item.get('bids_count', 0):>3}"
+                f" | Time Left: {item.get('time_remaining', 'N/A')}"
+            )
         elif item["listing_type"] == "Auction + BIN":
-            # Display line 1: Product number, status icon, title
-            title_line = draw_content_line(f'[{prod_num:02d}/{self.demo_limit}] {GREEN}✓ {GREEN}{title_display}{RESET}', self.box_width)
-            print(f"{BLUE}{title_line}", flush=True)
-            
-            # Display line 2: Current price
-            price_line = draw_content_line(f'$ {format_price(item.get("price", 0))}', self.box_width)
-            print(f"{BLUE}{price_line}", flush=True)
-                
+            bin_price = item.get('buy_it_now_price', 'N/A')
+            if isinstance(bin_price, float):
+                bin_price_str = f"${bin_price:>7.2f}"
+            else:
+                bin_price_str = f"{bin_price:>7}"
+            summary += (
+                f" | BIN Price: {bin_price_str}"
+                f" | Bids: {item.get('bids_count', 0):>3}"
+                f" | Time Left: {item.get('time_remaining', 'N/A')}"
+            )
+
+        print(summary, flush=True)
         yield item
 
     def closed(self, reason):
@@ -455,54 +383,23 @@ class EbaySpider(scrapy.Spider):
         elapsed = (end_time - self.start_time).total_seconds()
         rate = self.product_count / (elapsed / 60) if elapsed > 0 else 0
 
-        # Summary header
-        print(f"{BLUE}{draw_header('EXTRACTION SUMMARY', self.box_width)}", flush=True)
-        
-        # Display summary statistics in a structured way
-        closure_line = draw_content_line(f'Reason for closure      : {reason}', self.box_width)
-        attempted_line = draw_content_line(f'Products attempted      : {self.product_count}', self.box_width)
-        processed_line = draw_content_line(f'Successfully processed  : {self.processed_count}', self.box_width)
-        ignored_line = draw_content_line(f'Ignored products        : {self.ignored_count}', self.box_width)
-        pages_line = draw_content_line(f'Pages crawled           : {self.page_count}', self.box_width)
-        time_line = draw_content_line(f'Execution time          : {elapsed:.2f} seconds', self.box_width)
-        rate_line = draw_content_line(f'Processing rate         : {rate:.2f} products/min', self.box_width)
-        
-        print(f"{BLUE}{closure_line}", flush=True)
-        print(f"{BLUE}{attempted_line}", flush=True)
-        print(f"{BLUE}{processed_line}", flush=True)
-        print(f"{BLUE}{ignored_line}", flush=True)
-        print(f"{BLUE}{pages_line}", flush=True)
-        print(f"{BLUE}{time_line}", flush=True)
-        print(f"{BLUE}{rate_line}", flush=True)
-        
-        # Price statistics section with the chart icon
-        stats_header = draw_content_line(f'📊 PRICE STATISTICS', self.box_width)
-        print(f"{BLUE}{stats_header}", flush=True)
-        
+        print(SUB_SEPARATOR, flush=True)
+        print(f"\n{HEADER_SEPARATOR}", flush=True)
+        print(f"{BOLD}{BLUE}{'Scraping Completed'.center(60)}", flush=True)
+        print(f"{HEADER_SEPARATOR}{RESET}", flush=True)
+        print(f"Reason for closure       : {RESET}{reason}", flush=True)
+        print(f"Total products attempted : {RESET}{self.product_count}", flush=True)
+        print(f"Successfully processed   : {RESET}{self.processed_count}", flush=True)
+        print(f"Ignored products         : {RESET}{self.ignored_count}", flush=True)
+        print(f"Total pages crawled      : {RESET}{self.page_count}", flush=True)
+        print(f"Execution time           : {RESET}{elapsed:.2f} seconds", flush=True)
+        print(f"Processing rate          : {RESET}{rate:.2f} products/min", flush=True)
         if self.prices:
             minimum = min(self.prices)
             maximum = max(self.prices)
             avg = statistics.mean(self.prices)
-            
-            min_line = draw_content_line(f'├─ Minimum               : ${minimum:.2f}', self.box_width)
-            max_line = draw_content_line(f'├─ Maximum               : ${maximum:.2f}', self.box_width)
-            avg_line = draw_content_line(f'└─ Average               : ${avg:.2f}', self.box_width)
-            
-            print(f"{BLUE}{min_line}", flush=True)
-            print(f"{BLUE}{max_line}", flush=True)
-            print(f"{BLUE}{avg_line}", flush=True)
+            print(f"Price stats              : {RESET}min=${minimum:.2f}, max=${maximum:.2f}, avg=${avg:.2f}", flush=True)
         else:
-            no_stats_line = draw_content_line(f'└─ No price statistics available (no valid prices found)', self.box_width)
-            print(f"{BLUE}{no_stats_line}", flush=True)
-        
-        # Condition summary section with the box icon
-        condition_header = draw_content_line(f'📦 PRODUCT CONDITIONS', self.box_width)
-        new_line = draw_content_line(f'├─ New                   : {self.new_count}', self.box_width)
-        used_line = draw_content_line(f'└─ Used                  : {self.used_count}', self.box_width)
-        
-        print(f"{BLUE}{condition_header}", flush=True)
-        print(f"{BLUE}{new_line}", flush=True)
-        print(f"{BLUE}{used_line}", flush=True)
-        
-        # Close the box
-        print(f"{BLUE}{draw_box_line(BOTTOM_LEFT, HORIZONTAL, BOTTOM_RIGHT, self.box_width)}{RESET}", flush=True)
+            print(f"Price stats              : {RESET}No price stats available (no valid prices found)", flush=True)
+        print(f"Condition summary        : {RESET}New={self.new_count}, Used={self.used_count}", flush=True)
+        print(f"{HEADER_SEPARATOR}{RESET}\n", flush=True)
