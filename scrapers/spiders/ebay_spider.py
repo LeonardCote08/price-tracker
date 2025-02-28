@@ -16,6 +16,7 @@ BLUE = "\033[38;2;21;149;235m"
 TURQUOISE = "\033[38;2;64;189;191m"
 GREEN = "\033[38;2;80;200;120m"
 RED = "\033[38;2;206;71;96m"
+YELLOW = "\033[38;2;255;204;0m"
 
 def shorten_url(url, max_length=60):
     """Return the shortened URL if it exceeds max_length characters."""
@@ -52,6 +53,14 @@ def sub_header_box(title):
     title_line = f"{BOLD}{TURQUOISE}{SUB_VERTICAL}{title.center(width - 2)}{SUB_VERTICAL}{RESET}"
     bottom_border = f"{BOLD}{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * (width - 2)}{SUB_BOTTOM_RIGHT}{RESET}"
     return f"{top_border}\n{title_line}\n{bottom_border}"
+
+# Alert box for notifications (60 chars wide)
+def alert_box(title, icon="⚠️", color=YELLOW):
+    width = 60
+    top_border = f"{BOLD}{color}{SUB_TOP_LEFT}{SUB_HORIZONTAL * (width - 2)}{SUB_TOP_RIGHT}{RESET}"
+    content = f"{BOLD}{color}{SUB_VERTICAL}  {icon} {title}{' ' * (width - 5 - len(title))}{SUB_VERTICAL}{RESET}"
+    bottom_border = f"{BOLD}{color}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * (width - 2)}{SUB_BOTTOM_RIGHT}{RESET}"
+    return f"{top_border}\n{content}\n{bottom_border}"
 
 class EbaySpider(scrapy.Spider):
     name = "ebay_spider"
@@ -121,7 +130,7 @@ class EbaySpider(scrapy.Spider):
         page_start = time.time()
         
         # En-tête de la page avec le nouveau style
-        page_header = sub_header_box(f"RETRIEVING PRODUCTS (Page {self.page_count}/?)")
+        page_header = sub_header_box(f"RETRIEVING PRODUCTS (Page {self.page_count})")
         print(page_header, flush=True)
         
         results = response.xpath('//li[contains(@class, "s-item")]')
@@ -174,9 +183,9 @@ class EbaySpider(scrapy.Spider):
 
         page_elapsed = time.time() - page_start
         # Afficher le résumé de la page
-        print(f"│  ⏱️  Page processed in {page_elapsed:.2f} seconds{' ' * 29}│", flush=True)
-        print(f"│  📊 Found {found_this_page} products on this page{' ' * 32}│", flush=True)
-        print(f"└{SUB_HORIZONTAL * 60}┘\n", flush=True)
+        print(f"{SUB_VERTICAL}  ⏱️  Page processed in {page_elapsed:.2f} seconds{' ' * (55 - len(f'{page_elapsed:.2f}'))}│", flush=True)
+        print(f"{SUB_VERTICAL}  📊 Found {found_this_page} products on this page{' ' * (55 - len(str(found_this_page)))}│", flush=True)
+        print(f"{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * 60}{SUB_BOTTOM_RIGHT}\n", flush=True)
 
         next_page_url = response.xpath("//a[@aria-label='Suivant' or @aria-label='Next']/@href").get()
         if next_page_url:
@@ -231,8 +240,7 @@ class EbaySpider(scrapy.Spider):
 
         # Check for error pages (eBay Home or error page)
         if item["title"].strip().lower() in ["ebay home", "error page"]:
-            reason = "Skipping product due to missing page"
-            print(f"{BOLD}{RED}PRODUCT [{prod_num:02}/30] ❌ {reason}{RESET}", flush=True)
+            print(f"{BOLD}{RED}PRODUCT [{prod_num:02}/30] ❌ FILTERED: Content unavailable (page not found){RESET}", flush=True)
             self.ignored_count += 1
             return
 
@@ -240,8 +248,7 @@ class EbaySpider(scrapy.Spider):
             '//button[contains(@class, "listbox-button__control") and contains(@class, "btn--form") and @value="Select"]'
         )
         if multi_variation_button:
-            reason = "Skipping multi-variation listing"
-            print(f"{BOLD}{RED}PRODUCT [{prod_num:02}/30] ❌ {reason}{RESET}", flush=True)
+            print(f"{BOLD}{RED}PRODUCT [{prod_num:02}/30] ❌ FILTERED: Multi-variation listing excluded{RESET}", flush=True)
             self.ignored_count += 1
             return
 
@@ -264,13 +271,11 @@ class EbaySpider(scrapy.Spider):
 
         title_lower = item["title"].lower()
         if item["title"].count("#") > 1:
-            reason = "Skipping multi-figure listing"
-            print(f"{BOLD}{RED}PRODUCT [{prod_num:02}/30] ❌ {reason}{RESET}", flush=True)
+            print(f"{BOLD}{RED}PRODUCT [{prod_num:02}/30] ❌ FILTERED: Multi-figure listing excluded{RESET}", flush=True)
             self.ignored_count += 1
             return
         if any(kw in title_lower for kw in ["lot", "bundle", "set"]):
-            reason = "Skipping bundle listing"
-            print(f"{BOLD}{RED}PRODUCT [{prod_num:02}/30] ❌ {reason}{RESET}", flush=True)
+            print(f"{BOLD}{RED}PRODUCT [{prod_num:02}/30] ❌ FILTERED: Bundle listing excluded{RESET}", flush=True)
             self.ignored_count += 1
             return
 
@@ -361,8 +366,8 @@ class EbaySpider(scrapy.Spider):
         self.processed_count += 1
 
         if self.product_count > self.demo_limit and not self.demo_limit_reached:
-            demo_limit_msg = sub_header_box(f"⚠️  Demo limit reached: {self.demo_limit} products processed\n  🛑 Stopping the scraper")
-            print(f"\n{demo_limit_msg}", flush=True)
+            print(f"\n{alert_box('Demo limit reached: 5 products processed', '⚠️')}", flush=True)
+            print(f"{alert_box('Stopping the scraper', '🛑', RED)}\n", flush=True)
             self.demo_limit_reached = True
             self.crawler.engine.close_spider(self, reason="Demo limit reached")
             return
@@ -408,29 +413,27 @@ class EbaySpider(scrapy.Spider):
         print(f"\n  Reason for closure       : {RESET}{reason}", flush=True)
         print(f"  Total products attempted : {RESET}{self.product_count}", flush=True)
         print(f"  Successfully processed   : {RESET}{self.processed_count}", flush=True)
-        print(f"  Ignored products         : {RESET}{self.ignored_count}", flush=True)
+        print(f"  Filtered products        : {RESET}{self.ignored_count}", flush=True)
         print(f"  Total pages crawled      : {RESET}{self.page_count}", flush=True)
         print(f"  Execution time           : {RESET}{elapsed:.2f} seconds", flush=True)
         print(f"  Processing rate          : {RESET}{rate:.2f} products/min\n", flush=True)
 
         # Statistiques de prix
-        price_stats = sub_header_box("PRICE STATISTICS")
-        print(price_stats, flush=True)
+        print(sub_header_box("PRICE STATISTICS"), flush=True)
         
         if self.prices:
             minimum = min(self.prices)
             maximum = max(self.prices)
             avg = statistics.mean(self.prices)
-            print(f"│  Minimum price  : ${minimum:.2f}{' ' * 39}│", flush=True)
-            print(f"│  Maximum price  : ${maximum:.2f}{' ' * 39}│", flush=True)
-            print(f"│  Average price  : ${avg:.2f}{' ' * 39}│", flush=True)
+            print(f"{SUB_VERTICAL}  Minimum price  : ${minimum:.2f}{' ' * (38 - len(f'{minimum:.2f}'))}{SUB_VERTICAL}", flush=True)
+            print(f"{SUB_VERTICAL}  Maximum price  : ${maximum:.2f}{' ' * (38 - len(f'{maximum:.2f}'))}{SUB_VERTICAL}", flush=True)
+            print(f"{SUB_VERTICAL}  Average price  : ${avg:.2f}{' ' * (38 - len(f'{avg:.2f}'))}{SUB_VERTICAL}", flush=True)
         else:
-            print(f"│  No price stats available (no valid prices found){' ' * 14}│", flush=True)
-        print(f"└{SUB_HORIZONTAL * 60}┘\n", flush=True)
+            print(f"{SUB_VERTICAL}  No price stats available (no valid prices found){' ' * 13}{SUB_VERTICAL}", flush=True)
+        print(f"{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * 60}{SUB_BOTTOM_RIGHT}\n", flush=True)
 
         # Résumé des conditions
-        condition_summary = sub_header_box("CONDITION SUMMARY")
-        print(condition_summary, flush=True)
-        print(f"│  New  : {self.new_count}{' ' * 49}│", flush=True)
-        print(f"│  Used : {self.used_count}{' ' * 49}│", flush=True)
-        print(f"└{SUB_HORIZONTAL * 60}┘\n", flush=True)
+        print(sub_header_box("CONDITION SUMMARY"), flush=True)
+        print(f"{SUB_VERTICAL}  New  : {self.new_count}{' ' * (48 - len(str(self.new_count)))}{SUB_VERTICAL}", flush=True)
+        print(f"{SUB_VERTICAL}  Used : {self.used_count}{' ' * (48 - len(str(self.used_count)))}{SUB_VERTICAL}", flush=True)
+        print(f"{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * 60}{SUB_BOTTOM_RIGHT}\n", flush=True)
