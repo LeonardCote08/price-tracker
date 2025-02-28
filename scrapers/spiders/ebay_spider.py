@@ -40,6 +40,7 @@ class EbaySpider(scrapy.Spider):
         self.used_count = 0
         self.prices = []
         self.demo_limit_reached = False  # To stop after a demo limit
+        self.demo_limit = 5
 
         # Startup header
         print(HEADER_SEPARATOR, flush=True)
@@ -338,8 +339,8 @@ class EbaySpider(scrapy.Spider):
             self.prices.append(item["price"])
         self.processed_count += 1
 
-        if self.product_count > 5 and not self.demo_limit_reached:
-            print(f"\n{BOLD}{TURQUOISE}=== Demo limit reached: 30 products processed. Stopping the scraper. ==={RESET}", flush=True)
+        if self.product_count > self.demo_limit and not self.demo_limit_reached:
+            print(f"\n{BOLD}{TURQUOISE}=== Demo limit reached: {self.demo_limit} products processed. Stopping the scraper. ==={RESET}", flush=True)
             self.demo_limit_reached = True
             self.crawler.engine.close_spider(self, reason="Demo limit reached")
             return
