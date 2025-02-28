@@ -138,10 +138,11 @@ def product_box(product_num, total, success, item):
     price_padding = box_width - visible_length(f" {price_line}") - 2
     lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {price_line}{' ' * price_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
-    # Listing details subheader
+    # Listing details subheader - format it similar to the desired output
     details_title = " Listing Details "
-    subheader_line = f"  {TURQUOISE}{details_title}{SUB_HORIZONTAL * (box_width - visible_length(f'  {details_title}') - 4)}{RESET}"
-    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {subheader_line} {TURQUOISE}{SUB_VERTICAL}{RESET}")
+    details_line_content = f"  {TURQUOISE}{details_title}{SUB_HORIZONTAL * (box_width - 6 - len(details_title))}{RESET}"
+    details_line_padding = box_width - visible_length(f" {details_line_content}") - 2
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {details_line_content}{' ' * details_line_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Add all listing details in one section
     details_lines = []
@@ -322,12 +323,29 @@ class EbaySpider(scrapy.Spider):
 
         page_elapsed = time.time() - page_start
         
-        # Create page summary box that properly closes
-        page_summary_lines = [
-            f"  ⏱️  Page processed in {page_elapsed:.2f} seconds",
-            f"  📊 Found {found_this_page} products on this page"
-        ]
-        print(section_box("Page Summary", page_summary_lines), flush=True)
+        width = 66  # Width of the box
+        
+        # Create page summary box with correct width for all elements
+        summary_title = "Page Summary"
+        # Create the box top
+        summary_box = []
+        title_part = f" {summary_title} "
+        summary_box.append(f"{TURQUOISE}{SUB_TOP_LEFT}{title_part}{SUB_HORIZONTAL * (width - len(title_part))}{SUB_TOP_RIGHT}{RESET}")
+        
+        # Add content with correct padding
+        line1 = f"  ⏱️  Page processed in {page_elapsed:.2f} seconds"
+        line2 = f"  📊 Found {found_this_page} products on this page"
+        
+        padding1 = width - visible_length(line1)
+        padding2 = width - visible_length(line2)
+        
+        summary_box.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET}{line1}{' ' * padding1}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        summary_box.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET}{line2}{' ' * padding2}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        
+        # Add the bottom of the box
+        summary_box.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * width}{SUB_BOTTOM_RIGHT}{RESET}")
+        
+        print("\n".join(summary_box), flush=True)
         print("", flush=True)
 
         next_page_url = response.xpath("//a[@aria-label='Suivant' or @aria-label='Next']/@href").get()
@@ -535,7 +553,16 @@ class EbaySpider(scrapy.Spider):
         # Display final summary
         print(main_header_box("SCRAPING COMPLETED"), flush=True)
         
-        # Summary section
+        # Summary section - create custom box with correct width
+        width = 66
+        summary_title = "Summary"
+        summary_box = []
+        
+        # Create box top with title
+        title_part = f" {summary_title} "
+        summary_box.append(f"{TURQUOISE}{SUB_TOP_LEFT}{title_part}{SUB_HORIZONTAL * (width - len(title_part))}{SUB_TOP_RIGHT}{RESET}")
+        
+        # Add content lines with correct padding
         summary_lines = [
             f"  Reason for closure       : {reason}",
             f"  Total products attempted : {self.product_count}",
@@ -546,7 +573,14 @@ class EbaySpider(scrapy.Spider):
             f"  Processing rate          : {rate:.2f} products/min"
         ]
         
-        print("\n" + section_box("Summary", summary_lines), flush=True)
+        for line in summary_lines:
+            padding = width - visible_length(line)
+            summary_box.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET}{line}{' ' * padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        
+        # Add box bottom
+        summary_box.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * width}{SUB_BOTTOM_RIGHT}{RESET}")
+        
+        print("\n" + "\n".join(summary_box), flush=True)
         print("", flush=True)
 
         # Price statistics
@@ -558,17 +592,39 @@ class EbaySpider(scrapy.Spider):
             maximum = max(self.prices)
             avg = statistics.mean(self.prices)
             
+            # Create custom stats box with correct width
+            stats_box = []
+            
+            # Create box top (without title in this case)
+            stats_box.append(f"{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * width}{SUB_TOP_RIGHT}{RESET}")
+            
+            # Add price stats with correct padding
             price_lines = [
                 f"  ↓ Minimum price  : ${minimum:.2f}",
                 f"  ↑ Maximum price  : ${maximum:.2f}",
                 f"  ~ Average price  : ${avg:.2f}"
             ]
-            print(section_box("", price_lines), flush=True)
+            
+            for line in price_lines:
+                padding = width - visible_length(line)
+                stats_box.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET}{line}{' ' * padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+            
+            # Add box bottom
+            stats_box.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * width}{SUB_BOTTOM_RIGHT}{RESET}")
+            
+            print("\n".join(stats_box), flush=True)
         else:
-            no_stats_lines = [
-                f"  No price stats available (no valid prices found)"
-            ]
-            print(section_box("", no_stats_lines), flush=True)
+            # Create custom box for no stats
+            no_stats_box = []
+            no_stats_box.append(f"{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * width}{SUB_TOP_RIGHT}{RESET}")
+            
+            line = f"  No price stats available (no valid prices found)"
+            padding = width - visible_length(line)
+            no_stats_box.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET}{line}{' ' * padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+            
+            no_stats_box.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * width}{SUB_BOTTOM_RIGHT}{RESET}")
+            
+            print("\n".join(no_stats_box), flush=True)
             
         print("", flush=True)
 
@@ -584,15 +640,33 @@ class EbaySpider(scrapy.Spider):
             new_bar = create_progress_bar(self.new_count, total, 30)
             used_bar = create_progress_bar(self.used_count, total, 30)
             
+            # Create custom condition box with correct width
+            condition_summary_box = []
+            condition_summary_box.append(f"{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * width}{SUB_TOP_RIGHT}{RESET}")
+            
             condition_lines = [
                 f"  New  : {new_bar} {self.new_count} ({new_percent:.1f}%)",
                 f"  Used : {used_bar} {self.used_count} ({used_percent:.1f}%)"
             ]
-            print(section_box("", condition_lines), flush=True)
+            
+            for line in condition_lines:
+                padding = width - visible_length(line)
+                condition_summary_box.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET}{line}{' ' * padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+            
+            condition_summary_box.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * width}{SUB_BOTTOM_RIGHT}{RESET}")
+            
+            print("\n".join(condition_summary_box), flush=True)
         else:
-            no_condition_lines = [
-                f"  No condition stats available (no items processed)"
-            ]
-            print(section_box("", no_condition_lines), flush=True)
+            # Create custom box for no condition stats
+            no_condition_box = []
+            no_condition_box.append(f"{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * width}{SUB_TOP_RIGHT}{RESET}")
+            
+            line = f"  No condition stats available (no items processed)"
+            padding = width - visible_length(line)
+            no_condition_box.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET}{line}{' ' * padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+            
+            no_condition_box.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * width}{SUB_BOTTOM_RIGHT}{RESET}")
+            
+            print("\n".join(no_condition_box), flush=True)
             
         print("", flush=True)
