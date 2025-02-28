@@ -105,7 +105,7 @@ def section_box(title, lines, width=66):
     
     return "\n".join(result)
 
-# Improved product box with better layout
+# Simplified product box with all information in one section
 def product_box(product_num, total, success, item):
     if not success:
         reason = item.get("filter_reason", "Unknown reason")
@@ -125,71 +125,56 @@ def product_box(product_num, total, success, item):
     lines.append(f"{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * (box_width - 2)}{SUB_TOP_RIGHT}{RESET}")
     
     # Add header with proper padding
-    header_padding = box_width - visible_length(header) - 3
+    header_padding = box_width - visible_length(f" {header}") - 2
     lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {header}{' ' * header_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Add title with proper padding
     title_line = f"  Title      : {BOLD}{display_title}{RESET}"
-    title_padding = box_width - visible_length(title_line) - 3
+    title_padding = box_width - visible_length(f" {title_line}") - 2
     lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {title_line}{' ' * title_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Add price with proper padding
     price_line = f"  Price      : {BOLD}{price_str}{RESET}"
-    price_padding = box_width - visible_length(price_line) - 3
+    price_padding = box_width - visible_length(f" {price_line}") - 2
     lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {price_line}{' ' * price_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
-    # Prepare details for the two columns
-    listing_details = []
-    listing_details.append(f"  Condition  : {item.get('normalized_condition', 'N/A')}")
-    listing_details.append(f"  Type       : {item.get('listing_type', 'N/A')}")
-    item_id = shorten_text(item.get('item_id', 'N/A'), 20)
-    listing_details.append(f"  Item ID    : {item_id}")
+    # Listing details subheader
+    details_title = " Listing Details "
+    subheader_line = f"  {TURQUOISE}{details_title}{SUB_HORIZONTAL * (box_width - visible_length(f'  {details_title}') - 4)}{RESET}"
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {subheader_line} {TURQUOISE}{SUB_VERTICAL}{RESET}")
+    
+    # Add all listing details in one section
+    details_lines = []
+    
+    # Basic details
+    details_lines.append(f"  Condition  : {item.get('normalized_condition', 'N/A')}")
+    details_lines.append(f"  Type       : {item.get('listing_type', 'N/A')}")
+    
+    # Add seller username
+    seller_username = shorten_text(item.get('seller_username', 'N/A'), 35)
+    details_lines.append(f"  Seller     : {seller_username}")
+    
+    # Add item ID
+    item_id = shorten_text(item.get('item_id', 'N/A'), 35)
+    details_lines.append(f"  Item ID    : {item_id}")
     
     # Add auction-specific details
     if item.get("listing_type") == "Auction":
-        listing_details.append(f"  Bids       : {item.get('bids_count', 0)}")
-        listing_details.append(f"  Time Left  : {item.get('time_remaining', 'N/A')}")
+        details_lines.append(f"  Bids       : {item.get('bids_count', 0)}")
+        details_lines.append(f"  Time Left  : {item.get('time_remaining', 'N/A')}")
     elif item.get("listing_type") == "Auction + BIN":
         bin_price = item.get('buy_it_now_price')
         bin_price_str = f"${bin_price:.2f}" if isinstance(bin_price, float) else "N/A"
-        listing_details.append(f"  BIN Price  : {bin_price_str}")
-        listing_details.append(f"  Bids       : {item.get('bids_count', 0)}")
-        listing_details.append(f"  Time Left  : {item.get('time_remaining', 'N/A')}")
+        details_lines.append(f"  BIN Price  : {bin_price_str}")
+        details_lines.append(f"  Bids       : {item.get('bids_count', 0)}")
+        details_lines.append(f"  Time Left  : {item.get('time_remaining', 'N/A')}")
     
-    # Seller info
-    seller_details = []
-    seller_username = shorten_text(item.get('seller_username', 'N/A'), 25)
-    seller_details.append(f"  Username   : {seller_username}")
+    # Add all details with proper padding
+    for detail in details_lines:
+        detail_padding = box_width - visible_length(f" {detail}") - 2
+        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {detail}{' ' * detail_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
-    # Add the two columns side by side manually
-    left_width = 40
-    right_width = 22
-    details_title = "Listing Details"
-    seller_title = "Seller Info"
-    
-    # Add combined top border with titles
-    details_title_part = f" {details_title} "
-    details_remaining = left_width - len(details_title_part)
-    seller_title_part = f" {seller_title} "
-    seller_remaining = right_width - len(seller_title_part)
-    
-    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {TURQUOISE}{SUB_TOP_LEFT}{details_title_part}{SUB_HORIZONTAL * details_remaining}{SUB_TOP_RIGHT} {SUB_TOP_LEFT}{seller_title_part}{SUB_HORIZONTAL * seller_remaining}{SUB_TOP_RIGHT}{RESET} {TURQUOISE}{SUB_VERTICAL}{RESET}")
-    
-    # Combine content lines
-    max_rows = max(len(listing_details), len(seller_details))
-    for i in range(max_rows):
-        left_content = listing_details[i] if i < len(listing_details) else " " * (left_width - 2)
-        right_content = seller_details[i] if i < len(seller_details) else " " * (right_width - 2)
-        
-        left_padding = left_width - visible_length(left_content)
-        right_padding = right_width - visible_length(right_content)
-        
-        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {TURQUOISE}{SUB_VERTICAL}{RESET}{left_content}{' ' * left_padding}{TURQUOISE}{SUB_VERTICAL} {SUB_VERTICAL}{RESET}{right_content}{' ' * right_padding}{TURQUOISE}{SUB_VERTICAL}{RESET} {TURQUOISE}{SUB_VERTICAL}{RESET}")
-    
-    # Add combined bottom border
-    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * left_width}{SUB_BOTTOM_RIGHT} {SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * right_width}{SUB_BOTTOM_RIGHT}{RESET} {TURQUOISE}{SUB_VERTICAL}{RESET}")
-    
-    # Close the main box
+    # Close the box
     lines.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * (box_width - 2)}{SUB_BOTTOM_RIGHT}{RESET}")
     
     return "\n".join(lines)
