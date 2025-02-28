@@ -124,15 +124,15 @@ class EbaySpider(scrapy.Spider):
             "Demo Mode": "✓ ENABLED"
         }
         
-        # Display configuration in a more structured way
-        print(f"{BLUE}{draw_content_line(f'Download Delay        : {config[\"Download Delay\"]}', self.box_width)}", flush=True)
-        print(f"{BLUE}{draw_content_line(f'AutoThrottle          : {config[\"AutoThrottle\"]}', self.box_width)}", flush=True)
-        print(f"{BLUE}{draw_content_line(f'├─ Initial Delay      : {config[\"Initial Delay\"]}', self.box_width)}", flush=True)
-        print(f"{BLUE}{draw_content_line(f'└─ Maximum Delay      : {config[\"Maximum Delay\"]}', self.box_width)}", flush=True)
-        print(f"{BLUE}{draw_content_line(f'Proxy Rotation        : {config[\"Proxy Rotation\"]}', self.box_width)}", flush=True)
-        print(f"{BLUE}{draw_content_line(f'User-Agent Rotation   : {config[\"User-Agent Rotation\"]}', self.box_width)}", flush=True)
-        print(f"{BLUE}{draw_content_line(f'Anti-blocking Delays  : {config[\"Anti-blocking Delays\"]}', self.box_width)}", flush=True)
-        print(f"{BLUE}{draw_content_line(f'Demo Mode             : {config[\"Demo Mode\"]}', self.box_width)}", flush=True)
+        # Display configuration in a more structured way - using different quotes to avoid backslash issues
+        print(f"{BLUE}{draw_content_line(f'Download Delay        : {config["Download Delay"]}', self.box_width)}", flush=True)
+        print(f"{BLUE}{draw_content_line(f'AutoThrottle          : {config["AutoThrottle"]}', self.box_width)}", flush=True)
+        print(f"{BLUE}{draw_content_line(f'├─ Initial Delay      : {config["Initial Delay"]}', self.box_width)}", flush=True)
+        print(f"{BLUE}{draw_content_line(f'└─ Maximum Delay      : {config["Maximum Delay"]}', self.box_width)}", flush=True)
+        print(f"{BLUE}{draw_content_line(f'Proxy Rotation        : {config["Proxy Rotation"]}', self.box_width)}", flush=True)
+        print(f"{BLUE}{draw_content_line(f'User-Agent Rotation   : {config["User-Agent Rotation"]}', self.box_width)}", flush=True)
+        print(f"{BLUE}{draw_content_line(f'Anti-blocking Delays  : {config["Anti-blocking Delays"]}', self.box_width)}", flush=True)
+        print(f"{BLUE}{draw_content_line(f'Demo Mode             : {config["Demo Mode"]}', self.box_width)}", flush=True)
 
         # Product scraping section
         print(f"{BLUE}{draw_header('PRODUCT EXTRACTION', self.box_width)}", flush=True)
