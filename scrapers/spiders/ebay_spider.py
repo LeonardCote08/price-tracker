@@ -100,41 +100,42 @@ def section_box(title, lines, width=80):
 
 # Simplified product box with all information in one section
 def product_box(product_num, total, success, item):
-    box_width = 85  # Increased from 75 to 85
+    box_width = 85  # Box width setting
     
     if not success:
+        # For filtered products
         reason = item.get("filter_reason", "Unknown reason")
         
-        # Create a proper box for filtered products, similar to successful products
-        lines = []
-        lines.append(f"{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * (box_width - 2)}{SUB_TOP_RIGHT}{RESET}")
+        # Create formatted box for filtered products
+        result = []
+        result.append(f"{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * (box_width - 2)}{SUB_TOP_RIGHT}{RESET}")
         
-        # Add header with proper padding
+        # Header for filtered product
         header = f"{RED}PRODUCT [{product_num:02}/{total}] ❌ FILTERED{RESET}"
-        header_visible_length = len(f"PRODUCT [{product_num:02}/{total}] ❌ FILTERED")  # Simplified length calculation
-        header_padding = box_width - header_visible_length - 3
-        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {header}{' ' * header_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        header_padding = box_width - len("PRODUCT [00/30] ❌ FILTERED") - 3  # Fixed length calculation
+        result.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {header}{' ' * header_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
         
-        # Add filter reason with proper padding
+        # Reason for filtering
         reason_line = f"  Reason     : {reason}"
         reason_padding = box_width - len(reason_line) - 3
-        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {reason_line}{' ' * reason_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        result.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {reason_line}{' ' * reason_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
         
         # Add title if available
         if "title" in item and item["title"]:
             display_title = shorten_text(item.get("title", "N/A"), 70)
             title_line = f"  Title      : {display_title}"
             title_padding = box_width - len(title_line) - 3
-            lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {title_line}{' ' * title_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+            result.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {title_line}{' ' * title_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
         
         # Close the box
-        lines.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * (box_width - 2)}{SUB_BOTTOM_RIGHT}{RESET}")
+        result.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * (box_width - 2)}{SUB_BOTTOM_RIGHT}{RESET}")
         
-        return "\n".join(lines)
+        # Return the complete formatted string
+        return "\n".join(result)
     
-    # Prepare main product info for successful products
+    # For successful products - standard display
     header = f"{GREEN}PRODUCT [{product_num:02}/{total}] ✅{RESET}"
-    display_title = shorten_text(item.get("title", "N/A"), 70)  # Increased max title length from 60 to 70
+    display_title = shorten_text(item.get("title", "N/A"), 70)
     price = item.get('price', 0)
     price_str = f"${price:.2f}" if isinstance(price, float) else "N/A"
     
@@ -143,26 +144,22 @@ def product_box(product_num, total, success, item):
     lines.append(f"{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * (box_width - 2)}{SUB_TOP_RIGHT}{RESET}")
     
     # Add header with proper padding
-    header_visible_length = len(f"PRODUCT [{product_num:02}/{total}] ✅")  # Simplified length calculation
-    header_padding = box_width - header_visible_length - 3
+    header_padding = box_width - len("PRODUCT [00/30] ✅") - 3  # Fixed length calculation
     lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {header}{' ' * header_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Add title with proper padding
-    title_visible_length = len(f"  Title      : {display_title}")  # Simplified length calculation
-    title_padding = box_width - title_visible_length - 3
-    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {RESET}  Title      : {BOLD}{display_title}{RESET}{' ' * title_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    title_line = f"  Title      : {BOLD}{display_title}{RESET}"
+    title_padding = box_width - len(f"  Title      : {display_title}") - 3
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {RESET}{title_line}{' ' * title_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Add price with proper padding
-    price_visible_length = len(f"  Price      : {price_str}")  # Simplified length calculation
-    price_padding = box_width - price_visible_length - 3
-    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {RESET}  Price      : {BOLD}{price_str}{RESET}{' ' * price_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    price_line = f"  Price      : {BOLD}{price_str}{RESET}"
+    price_padding = box_width - len(f"  Price      : {price_str}") - 3
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {RESET}{price_line}{' ' * price_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Listing details separator line
     details_line = f"  {TURQUOISE}Listing Details {SUB_HORIZONTAL * (box_width - 18)}{RESET}"
     lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {details_line}{TURQUOISE}{SUB_VERTICAL}{RESET}")
-    
-    # Add all listing details in one section
-    details_lines = []
     
     # Basic details
     condition_line = f"  Condition  : {item.get('normalized_condition', 'N/A')}"
@@ -174,13 +171,13 @@ def product_box(product_num, total, success, item):
     lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {type_line}{' ' * type_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Add seller username
-    seller_username = shorten_text(item.get('seller_username', 'N/A'), 50)  # Increased max length from 40 to 50
+    seller_username = shorten_text(item.get('seller_username', 'N/A'), 50)
     seller_line = f"  Seller     : {seller_username}"
     seller_padding = box_width - len(seller_line) - 3
     lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {seller_line}{' ' * seller_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Add item ID
-    item_id = shorten_text(item.get('item_id', 'N/A'), 50)  # Increased max length from 40 to 50
+    item_id = shorten_text(item.get('item_id', 'N/A'), 50)
     item_id_line = f"  Item ID    : {item_id}"
     item_id_padding = box_width - len(item_id_line) - 3
     lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {item_id_line}{' ' * item_id_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
@@ -423,7 +420,9 @@ class EbaySpider(scrapy.Spider):
         # Check for error pages (eBay Home or error page)
         if item["title"].strip().lower() in ["ebay home", "error page"]:
             item["filter_reason"] = "Content unavailable (page not found)"
-            print(product_box(prod_num, self.max_products, False, item), flush=True)
+            filtered_box = product_box(prod_num, self.max_products, False, item)
+            print(filtered_box, flush=True)
+            print("", flush=True)  # Add empty line after for spacing
             self.ignored_count += 1
             return
 
@@ -432,7 +431,9 @@ class EbaySpider(scrapy.Spider):
         )
         if multi_variation_button:
             item["filter_reason"] = "Multi-variation listing excluded"
-            print(product_box(prod_num, self.max_products, False, item), flush=True)
+            filtered_box = product_box(prod_num, self.max_products, False, item)
+            print(filtered_box, flush=True)
+            print("", flush=True)  # Add empty line after for spacing
             self.ignored_count += 1
             return
 
@@ -456,12 +457,17 @@ class EbaySpider(scrapy.Spider):
         title_lower = item["title"].lower()
         if item["title"].count("#") > 1:
             item["filter_reason"] = "Multi-figure listing excluded"
-            print(product_box(prod_num, self.max_products, False, item), flush=True)
+            filtered_box = product_box(prod_num, self.max_products, False, item)
+            print(filtered_box, flush=True)
+            print("", flush=True)  # Add empty line after for spacing
             self.ignored_count += 1
             return
+            
         if any(kw in title_lower for kw in ["lot", "bundle", "set"]):
             item["filter_reason"] = "Bundle listing excluded"
-            print(product_box(prod_num, self.max_products, False, item), flush=True)
+            filtered_box = product_box(prod_num, self.max_products, False, item)
+            print(filtered_box, flush=True)
+            print("", flush=True)  # Add empty line after for spacing
             self.ignored_count += 1
             return
 
