@@ -39,7 +39,7 @@ class EbaySpider(scrapy.Spider):
         self.new_count = 0
         self.used_count = 0
         self.prices = []
-        self.demo_limit_reached = False  # To stop after a demo limit
+        self.demo_limit_reached = True  # To stop after a demo limit
 
         # Startup header
         print(HEADER_SEPARATOR, flush=True)
