@@ -96,7 +96,9 @@ class EbaySpider(scrapy.Spider):
         self.page_count += 1
         page_start = time.time()
         # En-tête de la page
-        print(f"{BOLD}{TURQUOISE}{f'=== RETRIEVING PRODUCTS (Page {self.page_count}) ==='.center(60)}{RESET}", flush=True)
+        texte = f"=== RETRIEVING PRODUCTS (Page {self.page_count}) ==="
+        print(f"{BOLD}{TURQUOISE}{texte.center(60)}{RESET}", flush=True)
+
         
         results = response.xpath('//li[contains(@class, "s-item")]')
         found_this_page = 0
