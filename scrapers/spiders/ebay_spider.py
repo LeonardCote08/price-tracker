@@ -24,6 +24,8 @@ def shorten_url(url, max_length=60):
 
 def shorten_text(text, max_length=45):
     """Return the shortened text if it exceeds max_length characters."""
+    if not text:
+        return "N/A"
     return text if len(text) <= max_length else text[:max_length - 3] + "..."
 
 # Box drawing characters
@@ -42,102 +44,175 @@ SUB_BOTTOM_RIGHT = "┘"
 SUB_HORIZONTAL = "─"
 SUB_VERTICAL = "│"
 
-# Main header box (70 chars wide)
+# Main header box (85 chars wide - increased from 75)
 def main_header_box(title):
-    width = 70
+    width = 85
     top_border = f"{BOLD}{BLUE}{TOP_LEFT}{HORIZONTAL * (width - 2)}{TOP_RIGHT}{RESET}"
     title_line = f"{BOLD}{BLUE}{VERTICAL}{title.center(width - 2)}{VERTICAL}{RESET}"
     bottom_border = f"{BOLD}{BLUE}{BOTTOM_LEFT}{HORIZONTAL * (width - 2)}{BOTTOM_RIGHT}{RESET}"
     return f"{top_border}\n{title_line}\n{bottom_border}"
 
-# Sub header box (70 chars wide)
+# Sub header box (85 chars wide - increased from 75)
 def sub_header_box(title):
-    width = 70
+    width = 85
     top_border = f"{BOLD}{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * (width - 2)}{SUB_TOP_RIGHT}{RESET}"
     title_line = f"{BOLD}{TURQUOISE}{SUB_VERTICAL}{title.center(width - 2)}{SUB_VERTICAL}{RESET}"
     bottom_border = f"{BOLD}{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * (width - 2)}{SUB_BOTTOM_RIGHT}{RESET}"
     return f"{top_border}\n{title_line}\n{bottom_border}"
 
-# Alert box for notifications (70 chars wide)
+# Alert box for notifications (85 chars wide - increased from 75)
 def alert_box(title, icon="⚠️", color=YELLOW):
-    width = 70
+    width = 85
     top_border = f"{BOLD}{color}{icon} {HORIZONTAL * (width - 4)} {icon}{RESET}"
     content = f"{BOLD}{color}{title.center(width)}{RESET}"
     bottom_border = f"{BOLD}{color}{icon} {HORIZONTAL * (width - 4)} {icon}{RESET}"
     return f"{top_border}\n{content}\n{bottom_border}"
 
-# Section box for grouped config items
-def section_box(title, lines, width=66):
+# Improved section box with precise width control (80 chars wide - increased from 71)
+def section_box(title, lines, width=80):
     result = []
-    result.append(f"{TURQUOISE}{SUB_TOP_LEFT}─ {title} {SUB_HORIZONTAL * (width - len(title) - 4)}{SUB_TOP_RIGHT}{RESET}")
+    
+    # Add the title in the top border
+    if title:
+        title_part = f" {title} "
+        left_padding = title_part
+        right_padding = SUB_HORIZONTAL * (width - len(title_part))
+    else:
+        left_padding = ""
+        right_padding = SUB_HORIZONTAL * width
+    
+    result.append(f"{TURQUOISE}{SUB_TOP_LEFT}{left_padding}{right_padding}{SUB_TOP_RIGHT}{RESET}")
+    
+    # Add content lines with proper padding
     for line in lines:
-        result.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET}{line}{' ' * (width - len(line) - 1)}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        # Calculate visible content length
+        content = f"{RESET}{line}"
+        visible_content_length = len(line)  # Simplified for more reliable behavior
+        
+        # Calculate padding needed
+        padding = width - visible_content_length
+        result.append(f"{TURQUOISE}{SUB_VERTICAL}{content}{' ' * padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    
+    # Add bottom border
     result.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * width}{SUB_BOTTOM_RIGHT}{RESET}")
+    
     return "\n".join(result)
 
-# Product box for displaying product details
+# Simplified product box with all information in one section
 def product_box(product_num, total, success, item):
-    width = 70
-    max_title_length = 55
+    box_width = 85  # Increased from 75 to 85
     
-    if success:
-        header = f"{GREEN}PRODUCT [{product_num:02}/{total}] ✅{RESET}"
-    else:
+    if not success:
         reason = item.get("filter_reason", "Unknown reason")
-        return f"{RED}PRODUCT [{product_num:02}/{total}] ❌ FILTERED: {reason}{RESET}"
+        
+        # Create a proper box for filtered products, similar to successful products
+        lines = []
+        lines.append(f"{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * (box_width - 2)}{SUB_TOP_RIGHT}{RESET}")
+        
+        # Add header with proper padding
+        header = f"{RED}PRODUCT [{product_num:02}/{total}] ❌ FILTERED{RESET}"
+        header_visible_length = len(f"PRODUCT [{product_num:02}/{total}] ❌ FILTERED")  # Simplified length calculation
+        header_padding = box_width - header_visible_length - 3
+        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {header}{' ' * header_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        
+        # Add filter reason with proper padding
+        reason_line = f"  Reason     : {reason}"
+        reason_padding = box_width - len(reason_line) - 3
+        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {reason_line}{' ' * reason_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        
+        # Add title if available
+        if "title" in item and item["title"]:
+            display_title = shorten_text(item.get("title", "N/A"), 70)
+            title_line = f"  Title      : {display_title}"
+            title_padding = box_width - len(title_line) - 3
+            lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {title_line}{' ' * title_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        
+        # Close the box
+        lines.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * (box_width - 2)}{SUB_BOTTOM_RIGHT}{RESET}")
+        
+        return "\n".join(lines)
     
-    display_title = shorten_text(item.get("title", "N/A"), max_title_length)
+    # Prepare main product info for successful products
+    header = f"{GREEN}PRODUCT [{product_num:02}/{total}] ✅{RESET}"
+    display_title = shorten_text(item.get("title", "N/A"), 70)  # Increased max title length from 60 to 70
     price = item.get('price', 0)
     price_str = f"${price:.2f}" if isinstance(price, float) else "N/A"
     
-    # Main product box
+    # Start the box
     lines = []
-    lines.append(f"{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * (width - 2)}{SUB_TOP_RIGHT}{RESET}")
-    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {header}")
-    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  Title      : {BOLD}{display_title}{RESET}")
-    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  Price      : {BOLD}{price_str}{RESET}")
+    lines.append(f"{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * (box_width - 2)}{SUB_TOP_RIGHT}{RESET}")
     
-    # Listing details sub-box
+    # Add header with proper padding
+    header_visible_length = len(f"PRODUCT [{product_num:02}/{total}] ✅")  # Simplified length calculation
+    header_padding = box_width - header_visible_length - 3
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {header}{' ' * header_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    
+    # Add title with proper padding
+    title_visible_length = len(f"  Title      : {display_title}")  # Simplified length calculation
+    title_padding = box_width - title_visible_length - 3
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {RESET}  Title      : {BOLD}{display_title}{RESET}{' ' * title_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    
+    # Add price with proper padding
+    price_visible_length = len(f"  Price      : {price_str}")  # Simplified length calculation
+    price_padding = box_width - price_visible_length - 3
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {RESET}  Price      : {BOLD}{price_str}{RESET}{' ' * price_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    
+    # Listing details separator line
+    details_line = f"  {TURQUOISE}Listing Details {SUB_HORIZONTAL * (box_width - 18)}{RESET}"
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {details_line}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    
+    # Add all listing details in one section
     details_lines = []
-    details_lines.append(f"  Condition  : {item.get('normalized_condition', 'N/A')}")
-    details_lines.append(f"  Type       : {item.get('listing_type', 'N/A')}")
     
+    # Basic details
+    condition_line = f"  Condition  : {item.get('normalized_condition', 'N/A')}"
+    condition_padding = box_width - len(condition_line) - 3
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {condition_line}{' ' * condition_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    
+    type_line = f"  Type       : {item.get('listing_type', 'N/A')}"
+    type_padding = box_width - len(type_line) - 3
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {type_line}{' ' * type_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    
+    # Add seller username
+    seller_username = shorten_text(item.get('seller_username', 'N/A'), 50)  # Increased max length from 40 to 50
+    seller_line = f"  Seller     : {seller_username}"
+    seller_padding = box_width - len(seller_line) - 3
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {seller_line}{' ' * seller_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    
+    # Add item ID
+    item_id = shorten_text(item.get('item_id', 'N/A'), 50)  # Increased max length from 40 to 50
+    item_id_line = f"  Item ID    : {item_id}"
+    item_id_padding = box_width - len(item_id_line) - 3
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {item_id_line}{' ' * item_id_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    
+    # Add auction-specific details
     if item.get("listing_type") == "Auction":
-        details_lines.append(f"  Bids       : {item.get('bids_count', 0)}")
-        details_lines.append(f"  Time Left  : {item.get('time_remaining', 'N/A')}")
+        bids_line = f"  Bids       : {item.get('bids_count', 0)}"
+        bids_padding = box_width - len(bids_line) - 3
+        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {bids_line}{' ' * bids_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        
+        time_line = f"  Time Left  : {item.get('time_remaining', 'N/A')}"
+        time_padding = box_width - len(time_line) - 3
+        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {time_line}{' ' * time_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    
     elif item.get("listing_type") == "Auction + BIN":
-        bin_price = item.get('buy_it_now_price', 'N/A')
+        bin_price = item.get('buy_it_now_price')
         bin_price_str = f"${bin_price:.2f}" if isinstance(bin_price, float) else "N/A"
-        details_lines.append(f"  BIN Price  : {bin_price_str}")
-        details_lines.append(f"  Bids       : {item.get('bids_count', 0)}")
-        details_lines.append(f"  Time Left  : {item.get('time_remaining', 'N/A')}")
+        bin_line = f"  BIN Price  : {bin_price_str}"
+        bin_padding = box_width - len(bin_line) - 3
+        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {bin_line}{' ' * bin_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        
+        bids_line = f"  Bids       : {item.get('bids_count', 0)}"
+        bids_padding = box_width - len(bids_line) - 3
+        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {bids_line}{' ' * bids_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        
+        time_line = f"  Time Left  : {item.get('time_remaining', 'N/A')}"
+        time_padding = box_width - len(time_line) - 3
+        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {time_line}{' ' * time_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
-    # Seller info sub-box
-    seller_lines = []
-    seller_username = shorten_text(item.get('seller_username', 'N/A'), 20)
-    item_id = shorten_text(item.get('item_id', 'N/A'), 20)
-    seller_lines.append(f"  Username : {seller_username}")
-    seller_lines.append(f"  Item ID  : {item_id}")
+    # Close the box
+    lines.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * (box_width - 2)}{SUB_BOTTOM_RIGHT}{RESET}")
     
-    # Create sub-boxes with 60% / 40% split
-    details_width = 40
-    seller_width = 23
-    
-    details_box = section_box("Listing Details", details_lines, details_width)
-    seller_box = section_box("Seller Info", seller_lines, seller_width)
-    
-    # Split details_box and seller_box into lines
-    details_lines = details_box.split('\n')
-    seller_lines = seller_box.split('\n')
-    
-    # Combine the boxes side by side
-    combined_height = max(len(details_lines), len(seller_lines))
-    for i in range(combined_height):
-        details_line = details_lines[i] if i < len(details_lines) else " " * (details_width + 2)
-        seller_line = seller_lines[i] if i < len(seller_lines) else " " * (seller_width + 2)
-        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  {details_line} {seller_line}  {TURQUOISE}{SUB_VERTICAL}{RESET}")
-
-    lines.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * (width - 2)}{SUB_BOTTOM_RIGHT}{RESET}")
     return "\n".join(lines)
 
 def create_progress_bar(value, total, width=40, char="█"):
@@ -164,9 +239,12 @@ class EbaySpider(scrapy.Spider):
         self.demo_limit = 5
         self.max_products = 30   # For display purposes
         
+        # Store the original keyword for display
+        self.original_keyword = keyword or "Funko Pop Doctor Doom #561"
+        
         # Startup header
         print(main_header_box("PRICETRACKER"), flush=True)
-        print(f"\n{BOLD}🔍 Keyword:{RESET} Funko Pop Doctor Doom #561\n", flush=True)
+        print(f"\n{BOLD}🔍 Keyword:{RESET} {self.original_keyword}\n", flush=True)
         
         # Configuration section
         print(main_header_box("CONFIGURATION"), flush=True)
@@ -182,22 +260,22 @@ class EbaySpider(scrapy.Spider):
         
         # Network settings section
         network_lines = [
-            f"  Download Delay       : {RESET}{config['Download Delay']}s",
-            f"  Proxy Rotation       : {RESET}{config['Proxy Rotation']}",
-            f"  User-Agent Rotation  : {RESET}{config['User-Agent Rotation']}",
-            f"  Anti-blocking Delays : {RESET}{config['Anti-blocking delays']}"
+            f"  Download Delay       : {config['Download Delay']}s",
+            f"  Proxy Rotation       : {config['Proxy Rotation']}",
+            f"  User-Agent Rotation  : {config['User-Agent Rotation']}",
+            f"  Anti-blocking Delays : {config['Anti-blocking delays']}"
         ]
         
         # Throttle control section
         throttle_lines = [
-            f"  AutoThrottle         : {RESET}ON",
-            f"  Initial Delay        : {RESET}{config['AutoThrottle Start Delay']}s",
-            f"  Maximum Delay        : {RESET}{config['AutoThrottle Max Delay']}s"
+            f"  AutoThrottle         : ON",
+            f"  Initial Delay        : {config['AutoThrottle Start Delay']}s",
+            f"  Maximum Delay        : {config['AutoThrottle Max Delay']}s"
         ]
         
         # Mode section
         mode_lines = [
-            f"  Demo Mode            : {RESET}{config['Demo Mode']}  (5 product limit)"
+            f"  Demo Mode            : {config['Demo Mode']}  (5 product limit)"
         ]
         
         print("\n" + section_box("Network Settings", network_lines), flush=True)
@@ -210,7 +288,7 @@ class EbaySpider(scrapy.Spider):
         print("", flush=True)
         
         zip_code = "90210"  # Beverly Hills ZIP code
-        self.keyword = keyword or "Funko Pop Doctor Doom #561"
+        self.keyword = self.original_keyword
         self.start_urls = [
             f"https://www.ebay.com/sch/i.html?_nkw={quote_plus(self.keyword)}&_stpos={zip_code}"
         ]
@@ -282,10 +360,14 @@ class EbaySpider(scrapy.Spider):
                 yield item
 
         page_elapsed = time.time() - page_start
-        # Display page summary
-        print(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  ⏱️  Page processed in {page_elapsed:.2f} seconds{' ' * (65 - len(f'{page_elapsed:.2f}'))}{TURQUOISE}{SUB_VERTICAL}{RESET}", flush=True)
-        print(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  📊 Found {found_this_page} products on this page{' ' * (65 - len(str(found_this_page)))}{TURQUOISE}{SUB_VERTICAL}{RESET}", flush=True)
-        print(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * 68}{SUB_BOTTOM_RIGHT}{RESET}\n", flush=True)
+        
+        # Create page summary box with wider width
+        page_summary_lines = [
+            f"  ⏱️  Page processed in {page_elapsed:.2f} seconds",
+            f"  📊 Found {found_this_page} products on this page"
+        ]
+        print(section_box("Page Summary", page_summary_lines), flush=True)
+        print("", flush=True)
 
         next_page_url = response.xpath("//a[@aria-label='Suivant' or @aria-label='Next']/@href").get()
         if next_page_url:
@@ -492,45 +574,64 @@ class EbaySpider(scrapy.Spider):
         # Display final summary
         print(main_header_box("SCRAPING COMPLETED"), flush=True)
         
-        # Summary section
+        # Summary section with wider box
         summary_lines = [
-            f"  Reason for closure       : {RESET}{reason}",
-            f"  Total products attempted : {RESET}{self.product_count}",
-            f"  Successfully processed   : {RESET}{self.processed_count}",
-            f"  Filtered products        : {RESET}{self.ignored_count}",
-            f"  Total pages crawled      : {RESET}{self.page_count}",
-            f"  Execution time           : {RESET}{elapsed:.2f} seconds",
-            f"  Processing rate          : {RESET}{rate:.2f} products/min"
+            f"  Reason for closure       : {reason}",
+            f"  Total products attempted : {self.product_count}",
+            f"  Successfully processed   : {self.processed_count}",
+            f"  Filtered products        : {self.ignored_count}",
+            f"  Total pages crawled      : {self.page_count}",
+            f"  Execution time           : {elapsed:.2f} seconds",
+            f"  Processing rate          : {rate:.2f} products/min"
         ]
         
         print("\n" + section_box("Summary", summary_lines), flush=True)
         print("", flush=True)
 
-        # Price statistics
-        print(sub_header_box("PRICE STATISTICS"), flush=True)
+        # Price statistics with wider box
+        price_stats_box = sub_header_box("PRICE STATISTICS")
+        print(price_stats_box, flush=True)
         
         if self.prices:
             minimum = min(self.prices)
             maximum = max(self.prices)
             avg = statistics.mean(self.prices)
             
-            print(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  ↓ Minimum price  : ${minimum:.2f}{' ' * (48 - len(f'{minimum:.2f}'))}{TURQUOISE}{SUB_VERTICAL}{RESET}", flush=True)
-            print(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  ↑ Maximum price  : ${maximum:.2f}{' ' * (48 - len(f'{maximum:.2f}'))}{TURQUOISE}{SUB_VERTICAL}{RESET}", flush=True)
-            print(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  ~ Average price  : ${avg:.2f}{' ' * (48 - len(f'{avg:.2f}'))}{TURQUOISE}{SUB_VERTICAL}{RESET}", flush=True)
+            price_lines = [
+                f"  ↓ Minimum price  : ${minimum:.2f}",
+                f"  ↑ Maximum price  : ${maximum:.2f}",
+                f"  ~ Average price  : ${avg:.2f}"
+            ]
+            print(section_box("", price_lines), flush=True)
         else:
-            print(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  No price stats available (no valid prices found){' ' * 13}{TURQUOISE}{SUB_VERTICAL}{RESET}", flush=True)
-        print(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * 68}{SUB_BOTTOM_RIGHT}{RESET}\n", flush=True)
+            no_stats_lines = [
+                f"  No price stats available (no valid prices found)"
+            ]
+            print(section_box("", no_stats_lines), flush=True)
+            
+        print("", flush=True)
 
-        # Condition summary with visual bars
-        print(sub_header_box("CONDITION SUMMARY"), flush=True)
+        # Condition summary with wider box 
+        condition_box = sub_header_box("CONDITION SUMMARY")
+        print(condition_box, flush=True)
         
         total = self.new_count + self.used_count
-        new_percent = (self.new_count / total * 100) if total > 0 else 0
-        used_percent = (self.used_count / total * 100) if total > 0 else 0
-        
-        new_bar = create_progress_bar(self.new_count, total, 30)
-        used_bar = create_progress_bar(self.used_count, total, 30)
-        
-        print(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  New  : {new_bar} {self.new_count} ({new_percent:.1f}%){' ' * (10 - len(f'{new_percent:.1f}'))}{TURQUOISE}{SUB_VERTICAL}{RESET}", flush=True)
-        print(f"{TURQUOISE}{SUB_VERTICAL}{RESET}  Used : {used_bar} {self.used_count} ({used_percent:.1f}%){' ' * (10 - len(f'{used_percent:.1f}'))}{TURQUOISE}{SUB_VERTICAL}{RESET}", flush=True)
-        print(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * 68}{SUB_BOTTOM_RIGHT}{RESET}\n", flush=True)
+        if total > 0:
+            new_percent = (self.new_count / total * 100)
+            used_percent = (self.used_count / total * 100)
+            
+            new_bar = create_progress_bar(self.new_count, total, 40)  # Increased bar width from 30 to 40
+            used_bar = create_progress_bar(self.used_count, total, 40)  # Increased bar width from 30 to 40
+            
+            condition_lines = [
+                f"  New  : {new_bar} {self.new_count} ({new_percent:.1f}%)",
+                f"  Used : {used_bar} {self.used_count} ({used_percent:.1f}%)"
+            ]
+            print(section_box("", condition_lines), flush=True)
+        else:
+            no_condition_lines = [
+                f"  No condition stats available (no items processed)"
+            ]
+            print(section_box("", no_condition_lines), flush=True)
+            
+        print("", flush=True)
