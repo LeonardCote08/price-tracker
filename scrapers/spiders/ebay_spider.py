@@ -39,7 +39,7 @@ class EbaySpider(scrapy.Spider):
         self.new_count = 0
         self.used_count = 0
         self.prices = []
-        self.demo_limit_reached = True  # To stop after a demo limit
+        self.demo_limit_reached = False  # To stop after a demo limit
 
         # Startup header
         print(HEADER_SEPARATOR, flush=True)
@@ -377,16 +377,16 @@ class EbaySpider(scrapy.Spider):
         yield item
 
     def closed(self, reason):
+        reason = reason or "shutdown"
         end_time = datetime.datetime.now()
         elapsed = (end_time - self.start_time).total_seconds()
         rate = self.product_count / (elapsed / 60) if elapsed > 0 else 0
-        # Section finale "Scraping Completed"
 
         print(SUB_SEPARATOR, flush=True)
         print(f"\n{HEADER_SEPARATOR}", flush=True)
         print(f"{BOLD}{BLUE}{'Scraping Completed'.center(60)}", flush=True)
         print(f"{HEADER_SEPARATOR}{RESET}", flush=True)
-        print(f"Reason for closure       : {RESET}shutdown", flush=True)
+        print(f"Reason for closure       : {RESET}{reason}", flush=True)
         print(f"Total products attempted : {RESET}{self.product_count}", flush=True)
         print(f"Successfully processed   : {RESET}{self.processed_count}", flush=True)
         print(f"Ignored products         : {RESET}{self.ignored_count}", flush=True)
@@ -402,3 +402,4 @@ class EbaySpider(scrapy.Spider):
             print(f"Price stats              : {RESET}No price stats available (no valid prices found)", flush=True)
         print(f"Condition summary        : {RESET}New={self.new_count}, Used={self.used_count}", flush=True)
         print(f"{HEADER_SEPARATOR}{RESET}\n", flush=True)
+
