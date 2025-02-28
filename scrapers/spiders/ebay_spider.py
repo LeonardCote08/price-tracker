@@ -16,8 +16,6 @@ BLUE = "\033[38;2;21;149;235m"
 TURQUOISE = "\033[38;2;64;189;191m"
 RED = "\033[38;2;206;71;96m"
 
-
-
 def shorten_url(url, max_length=60):
     """Return the shortened URL if it exceeds max_length characters."""
     return url if len(url) <= max_length else url[:max_length] + "..."
@@ -98,7 +96,7 @@ class EbaySpider(scrapy.Spider):
         self.page_count += 1
         page_start = time.time()
         # En-tête de la page
-        print(f"{BOLD}{TURQUOISE}=== RETRIEVING PRODUCTS (Page {self.page_count}) ==={RESET}", flush=True)
+        print(f"{BOLD}{TURQUOISE}{f'=== RETRIEVING PRODUCTS (Page {self.page_count}) ==='.center(60)}{RESET}", flush=True)
         
         results = response.xpath('//li[contains(@class, "s-item")]')
         found_this_page = 0
