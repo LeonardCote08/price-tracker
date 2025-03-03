@@ -1,41 +1,83 @@
 // frontend/src/components/ProduitCard.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+    faArrowTrendUp,
+    faArrowTrendDown,
+    faChartLine,
+    faClock,
+    faTag
+} from '@fortawesome/free-solid-svg-icons';
 import './ProduitCard.css';
 
 function ProduitCard({ produit }) {
     const price = typeof produit.price === 'number' ? produit.price : 0;
     const buyItNow = typeof produit.buy_it_now_price === 'number' ? produit.buy_it_now_price : null;
-    const [trend, setTrend] = useState('N/A');
-
-    // Auparavant, on affichait {conditionText} et {listingLabel} dans le composant.
-    // Maintenant, on ne s’en sert plus pour l’affichage dans la vignette :
-    const conditionText = produit.normalized_condition?.trim() || 'Not specified';
-    // const listingLabel = (produit.listing_type === 'fixed_price') ? 'Fixed Price' : '';
+    const [trend, setTrend] = useState('stable');
+    const [trendText, setTrendText] = useState('Price Stable');
+    const [priceHistory, setPriceHistory] = useState(null);
+    const sparklineRef = useRef(null);
 
     // Charger la tendance via l'API
     useEffect(() => {
         fetch(`/api/produits/${produit.product_id}/price-trend`)
             .then(response => response.json())
             .then(data => {
-                if (data.trend === 'up') setTrend('↑ Price Rising');
-                else if (data.trend === 'down') setTrend('↓ Price Falling');
-                else setTrend('Price Stable');
+                setTrend(data.trend);
+                if (data.trend === 'up') setTrendText('Price Rising');
+                else if (data.trend === 'down') setTrendText('Price Falling');
+                else setTrendText('Price Stable');
             })
             .catch(err => console.error('Erreur lors de la récupération de la tendance', err));
+
+        // Récupérer un minihistorique pour la sparkline
+        fetch(`/api/produits/${produit.product_id}/historique-prix`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.prices && data.prices.length > 0) {
+                    setPriceHistory(data.prices.slice(-5)); // Juste les 5 derniers points
+                }
+            })
+            .catch(err => console.error('Erreur lors de la récupération de l\'historique', err));
     }, [produit.product_id]);
 
-    // Classes CSS pour la tendance
-    let trendClass = '';
-    if (trend.includes('Rising')) trendClass = 'trend-up';
-    else if (trend.includes('Falling')) trendClass = 'trend-down';
+    // Déterminer l'icône et la classe CSS de tendance
+    const getTrendIcon = () => {
+        if (trend === 'up') return faArrowTrendUp;
+        if (trend === 'down') return faArrowTrendDown;
+        return faChartLine;
+    };
+
+    const getTrendClass = () => {
+        if (trend === 'up') return 'trend-up';
+        if (trend === 'down') return 'trend-down';
+        return 'trend-stable';
+    };
+
+    // Fonction pour tronquer le titre
+    const truncateTitle = (title, length = 35) => {
+        if (title && title.length > length) {
+            return title.substring(0, length) + '...';
+        }
+        return title;
+    };
 
     return (
-        <Link to={`/produits/${produit.product_id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+        <Link to={`/produits/${produit.product_id}`} className="produit-card-link">
             <div className="produit-card">
+                {/* Image du produit et overlay */}
+                <div className="product-image-container">
+                    <img
+                        className="product-image"
+                        src={produit.image_url}
+                        alt={produit.title || 'Product image'}
+                        loading="lazy"
+                    />
+                    <div className="image-overlay"></div>
+                </div>
 
-                {/* Image et badges (Signed, In Box, Condition, etc.) */}
-                <img className="product-image" src={produit.image_url} alt={produit.title || 'No title'} />
+                {/* Badges */}
                 <div className="badges-container">
                     {/* Badge condition */}
                     {produit.normalized_condition === 'New' && (
@@ -56,27 +98,55 @@ function ProduitCard({ produit }) {
                     {produit.ended && <span className="badge badge-ended">Ended</span>}
                 </div>
 
-                {/* Bloc principal d'informations */}
+                {/* Contenu principal */}
                 <div className="product-info">
-                    {/* On retire complètement la ligne "condition + listing type" */}
-                    {/* (ancien code supprimé) */}
+                    {/* Titre du produit */}
+                    <h3 className="product-title">{truncateTitle(produit.title)}</h3>
 
-                    {/* Bloc des prix & stats */}
-                    <div className="price-info">
-                        {/* Comme on n’a que du fixed_price, on affiche juste Price */}
-                        <div className="price-line">
+                    {/* Sparkline (mini graphique de tendance) */}
+                    {priceHistory && priceHistory.length > 1 && (
+                        <div className={`sparkline ${getTrendClass()}`} ref={sparklineRef}>
+                            {/* Simple représentation visuelle de la tendance */}
+                            <div className="sparkline-line">
+                                {priceHistory.map((price, index) => (
+                                    <div
+                                        key={index}
+                                        className="sparkline-dot"
+                                        style={{
+                                            left: `${(index / (priceHistory.length - 1)) * 100}%`,
+                                            bottom: `${((price - Math.min(...priceHistory)) /
+                                                (Math.max(...priceHistory) - Math.min(...priceHistory) || 1)) * 80}%`
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Prix et tendance */}
+                    <div className="price-section">
+                        <div className="price-tag">
+                            <FontAwesomeIcon icon={faTag} className="price-icon" />
                             <span className="price-value">${price.toFixed(2)}</span>
                         </div>
 
-                        {/* Tendance de prix */}
-                        <div className={`price-trend ${trendClass}`}>
-                            {trend}
+                        <div className={`price-trend ${getTrendClass()}`}>
+                            <FontAwesomeIcon icon={getTrendIcon()} className="trend-icon" />
+                            <span className="trend-text">{trendText}</span>
                         </div>
+                    </div>
 
-                        {/* Date de mise à jour */}
-                        <p className="updated-date">
-                            Updated: {produit.last_scraped_date || 'N/A'}
-                        </p>
+                    {/* Infos supplémentaires */}
+                    <div className="card-footer">
+                        <div className="seller-info">
+                            {produit.seller_username && (
+                                <span className="seller">{produit.seller_username}</span>
+                            )}
+                        </div>
+                        <div className="update-info">
+                            <FontAwesomeIcon icon={faClock} className="update-icon" />
+                            <span className="update-date">{produit.last_scraped_date || 'N/A'}</span>
+                        </div>
                     </div>
                 </div>
             </div>
