@@ -44,6 +44,12 @@ SUB_BOTTOM_RIGHT = "┘"
 SUB_HORIZONTAL = "─"
 SUB_VERTICAL = "│"
 
+# Helper function to strip ANSI escape sequences for length calculation
+def strip_ansi(text):
+    """Strip ANSI sequences to get the visible length of text."""
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    return ansi_escape.sub('', text)
+
 # Main header box (85 chars wide - increased from 75)
 def main_header_box(title):
     width = 85
@@ -74,112 +80,130 @@ def section_box(title, lines, width=80):
     
     # Add the title in the top border
     if title:
-        title_part = f" {title} "
-        left_padding = title_part
-        right_padding = SUB_HORIZONTAL * (width - len(title_part))
+        title_with_spaces = f" {title} "
+        visible_len = len(strip_ansi(title_with_spaces))
+        result.append(f"{TURQUOISE}{SUB_TOP_LEFT}{title_with_spaces}{SUB_HORIZONTAL * (width - visible_len)}{SUB_TOP_RIGHT}{RESET}")
     else:
-        left_padding = ""
-        right_padding = SUB_HORIZONTAL * width
-    
-    result.append(f"{TURQUOISE}{SUB_TOP_LEFT}{left_padding}{right_padding}{SUB_TOP_RIGHT}{RESET}")
+        result.append(f"{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * width}{SUB_TOP_RIGHT}{RESET}")
     
     # Add content lines with proper padding
     for line in lines:
-        # Take just the text content for length calculation, no ANSI codes
         content = f"{RESET}{line}"
-        visible_content_length = len(line)
+        visible_len = len(strip_ansi(content))
+        padding = width - visible_len
         
-        # Calculate padding needed
-        padding = width - visible_content_length
-        result.append(f"{TURQUOISE}{SUB_VERTICAL}{content}{' ' * padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        if padding >= 0:
+            result.append(f"{TURQUOISE}{SUB_VERTICAL}{content}{' ' * padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        else:
+            # Handle case where content is too long (should not happen with proper text shortening)
+            result.append(f"{TURQUOISE}{SUB_VERTICAL}{content[:width-3]}...{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Add bottom border
     result.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * width}{SUB_BOTTOM_RIGHT}{RESET}")
     
     return "\n".join(result)
 
-# Product box ONLY for successful products - Fixed version with correct alignment
+# Product box ONLY for successful products
 def product_box(product_num, total, item):
-    box_width = 83  # Adjusted from 85 to ensure proper alignment
+    box_width = 85  # Box width for main display
+    content_width = box_width - 2  # Content area width (excluding borders)
     
     # Prepare main product info for successful products
     header = f"{GREEN}PRODUCT [{product_num:02}/{total}] ✅{RESET}"
-    display_title = shorten_text(item.get("title", "N/A"), 70)
+    display_title = shorten_text(item.get("title", "N/A"), 70)  # Increased max title length from 60 to 70
     price = item.get('price', 0)
     price_str = f"${price:.2f}" if isinstance(price, float) else "N/A"
     
     # Start the box
     lines = []
-    lines.append(f"{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * (box_width - 2)}{SUB_TOP_RIGHT}{RESET}")
+    lines.append(f"{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * content_width}{SUB_TOP_RIGHT}{RESET}")
     
     # Add header with proper padding
-    header_padding = box_width - 22  # Fixed padding for header (PRODUCT [XX/30] ✅)
+    header_visible_length = len(strip_ansi(f" {header}"))
+    header_padding = content_width - header_visible_length - 1
     lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {header}{' ' * header_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Add title with proper padding
     title_line = f"  Title      : {BOLD}{display_title}{RESET}"
-    title_length = len(f"  Title      : {display_title}")
-    title_padding = box_width - title_length - 3
+    title_visible_length = len(strip_ansi(title_line))
+    title_padding = content_width - title_visible_length - 1
     lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {title_line}{' ' * title_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Add price with proper padding
     price_line = f"  Price      : {BOLD}{price_str}{RESET}"
-    price_length = len(f"  Price      : {price_str}")
-    price_padding = box_width - price_length - 3
+    price_visible_length = len(strip_ansi(price_line))
+    price_padding = content_width - price_visible_length - 1
     lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {price_line}{' ' * price_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
-    # Listing details separator line - FIXED to have correct width
-    # Create a fixed-width separator that fits the box
-    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET}   {TURQUOISE}Listing Details {SUB_HORIZONTAL * (box_width - 20)}{RESET}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    # Listing details separator line - Calculate correct padding for the horizontal line
+    details_prefix = "  Listing Details "
+    details_visible_length = len(strip_ansi(details_prefix))
+    details_suffix_length = content_width - details_visible_length - 1
+    
+    if details_suffix_length > 0:
+        details_line = f"{TURQUOISE}{details_prefix}{SUB_HORIZONTAL * details_suffix_length}{RESET}"
+        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {details_line}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    else:
+        # Fallback if calculation is off
+        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {TURQUOISE}Listing Details{RESET}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Basic details
-    condition_line = f"  Condition  : {item.get('normalized_condition', 'N/A')}"
-    condition_padding = box_width - len(condition_line) - 3
-    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {condition_line}{' ' * condition_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    condition_text = f"  Condition  : {item.get('normalized_condition', 'N/A')}"
+    condition_visible_length = len(strip_ansi(condition_text))
+    condition_padding = content_width - condition_visible_length - 1
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {condition_text}{' ' * condition_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
-    type_line = f"  Type       : {item.get('listing_type', 'N/A')}"
-    type_padding = box_width - len(type_line) - 3
-    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {type_line}{' ' * type_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    type_text = f"  Type       : {item.get('listing_type', 'N/A')}"
+    type_visible_length = len(strip_ansi(type_text))
+    type_padding = content_width - type_visible_length - 1
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {type_text}{' ' * type_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Add seller username
-    seller_username = shorten_text(item.get('seller_username', 'N/A'), 50)
-    seller_line = f"  Seller     : {seller_username}"
-    seller_padding = box_width - len(seller_line) - 3
-    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {seller_line}{' ' * seller_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    seller_username = shorten_text(item.get('seller_username', 'N/A'), 50)  # Increased max length from 40 to 50
+    seller_text = f"  Seller     : {seller_username}"
+    seller_visible_length = len(strip_ansi(seller_text))
+    seller_padding = content_width - seller_visible_length - 1
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {seller_text}{' ' * seller_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Add item ID
-    item_id = shorten_text(item.get('item_id', 'N/A'), 50)
-    item_id_line = f"  Item ID    : {item_id}"
-    item_id_padding = box_width - len(item_id_line) - 3
-    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {item_id_line}{' ' * item_id_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+    item_id = shorten_text(item.get('item_id', 'N/A'), 50)  # Increased max length from 40 to 50
+    item_id_text = f"  Item ID    : {item_id}"
+    item_id_visible_length = len(strip_ansi(item_id_text))
+    item_id_padding = content_width - item_id_visible_length - 1
+    lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {item_id_text}{' ' * item_id_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Add auction-specific details
     if item.get("listing_type") == "Auction":
-        bids_line = f"  Bids       : {item.get('bids_count', 0)}"
-        bids_padding = box_width - len(bids_line) - 3
-        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {bids_line}{' ' * bids_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        bids_text = f"  Bids       : {item.get('bids_count', 0)}"
+        bids_visible_length = len(strip_ansi(bids_text))
+        bids_padding = content_width - bids_visible_length - 1
+        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {bids_text}{' ' * bids_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
         
-        time_line = f"  Time Left  : {item.get('time_remaining', 'N/A')}"
-        time_padding = box_width - len(time_line) - 3
-        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {time_line}{' ' * time_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        time_text = f"  Time Left  : {item.get('time_remaining', 'N/A')}"
+        time_visible_length = len(strip_ansi(time_text))
+        time_padding = content_width - time_visible_length - 1
+        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {time_text}{' ' * time_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     elif item.get("listing_type") == "Auction + BIN":
         bin_price = item.get('buy_it_now_price')
         bin_price_str = f"${bin_price:.2f}" if isinstance(bin_price, float) else "N/A"
-        bin_line = f"  BIN Price  : {bin_price_str}"
-        bin_padding = box_width - len(bin_line) - 3
-        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {bin_line}{' ' * bin_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        bin_text = f"  BIN Price  : {bin_price_str}"
+        bin_visible_length = len(strip_ansi(bin_text))
+        bin_padding = content_width - bin_visible_length - 1
+        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {bin_text}{' ' * bin_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
         
-        bids_line = f"  Bids       : {item.get('bids_count', 0)}"
-        bids_padding = box_width - len(bids_line) - 3
-        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {bids_line}{' ' * bids_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        bids_text = f"  Bids       : {item.get('bids_count', 0)}"
+        bids_visible_length = len(strip_ansi(bids_text))
+        bids_padding = content_width - bids_visible_length - 1
+        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {bids_text}{' ' * bids_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
         
-        time_line = f"  Time Left  : {item.get('time_remaining', 'N/A')}"
-        time_padding = box_width - len(time_line) - 3
-        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {time_line}{' ' * time_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+        time_text = f"  Time Left  : {item.get('time_remaining', 'N/A')}"
+        time_visible_length = len(strip_ansi(time_text))
+        time_padding = content_width - time_visible_length - 1
+        lines.append(f"{TURQUOISE}{SUB_VERTICAL}{RESET} {time_text}{' ' * time_padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Close the box
-    lines.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * (box_width - 2)}{SUB_BOTTOM_RIGHT}{RESET}")
+    lines.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * content_width}{SUB_BOTTOM_RIGHT}{RESET}")
     
     return "\n".join(lines)
 
