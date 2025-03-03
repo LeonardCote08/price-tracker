@@ -602,7 +602,7 @@ class EbaySpider(scrapy.Spider):
         print("", flush=True)
         
         if self.product_count >= self.demo_limit and not self.demo_limit_reached:
-            print(alert_box("DEMO LIMIT REACHED: {self.demo_limit} PRODUCTS PROCESSED", "⚠️"), flush=True)
+            print(alert_box(f"DEMO LIMIT REACHED: {self.demo_limit} PRODUCTS PROCESSED", "⚠️"), flush=True)
             print(alert_box("STOPPING THE SCRAPER", "🛑", RED), flush=True)
             print("", flush=True)
             self.demo_limit_reached = True
