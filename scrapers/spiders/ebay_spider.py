@@ -277,7 +277,7 @@ class EbaySpider(scrapy.Spider):
         self.used_count = 0
         self.prices = []
         self.demo_limit_reached = False  # To stop after a demo limit
-        self.demo_limit = 5
+        self.demo_limit = 10
         self.max_products = 30   # For display purposes
         
         # Store the original keyword for display
