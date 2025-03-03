@@ -50,3 +50,13 @@ LOG_LEVEL = "INFO"
 #ITEM_PIPELINES = {
  #   'scrapers.pipelines.MySQLPipeline': 300,
 #}
+
+# ---- Export FEEDS configuration to output a structured JSON file ----
+FEEDS = {
+    'scraped_data.json': {        # Output file name
+         'format': 'json',         # Change to 'csv' for CSV export
+         'encoding': 'utf8',
+         'indent': 4,
+         'overwrite': True,
+    }
+}
