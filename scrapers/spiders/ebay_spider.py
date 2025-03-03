@@ -290,9 +290,9 @@ class EbaySpider(scrapy.Spider):
         # Configuration section
         print(main_header_box("CONFIGURATION"), flush=True)
         config = {
-            "Download Delay": 1.0,
+            "Download Delay": 1.5,
             "AutoThrottle Start Delay": 1.0,
-            "AutoThrottle Max Delay": 3.0,
+            "AutoThrottle Max Delay": 5.0,
             "Proxy Rotation": "Enabled",
             "User-Agent Rotation": "Enabled",
             "Anti-blocking delays": "Enabled",

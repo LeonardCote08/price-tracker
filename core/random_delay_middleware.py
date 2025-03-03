@@ -15,5 +15,5 @@ def shorten_url(url, max_length=60):
 
 class RandomDelayMiddleware:
     def process_request(self, request, spider):
-        delay = random.uniform(2, 5)
+        delay = random.uniform(2, 3)
         time.sleep(delay)
