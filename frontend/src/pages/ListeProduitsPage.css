@@ -6,12 +6,12 @@
     padding: 0 1.5rem 2rem;
 }
 
-/* Grille des produits - Optimisée */
+/* Grille des produits - Corrigée pour afficher plus de cartes par ligne */
 .produits-grid {
     margin: 1.5rem 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 2rem; /* Espacement réduit entre les cartes */
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Réduit de 280px à 250px */
+    gap: 1.5rem; /* Espacement réduit entre les cartes */
     animation: fadeIn 0.5s ease-in-out;
 }
 
@@ -340,11 +340,29 @@
     grid-column: 1 / -1;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* Responsive ajusté pour permettre plus de cartes par ligne */
+@media (min-width: 1400px) {
+    .produits-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+}
+
+@media (min-width: 1024px) and (max-width: 1399px) {
+    .produits-grid {
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
     .produits-grid {
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 1.5rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .produits-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
     }
 
     .stats-banner {
@@ -364,11 +382,17 @@
     }
 
     .button-group-centered {
-        flex-direction: column;
-        align-items: stretch;
+        flex-wrap: wrap;
     }
 
     .pagination {
         flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .produits-grid {
+        grid-template-columns: 1fr 1fr; /* Force 2 colonnes sur mobiles */
+        gap: 0.8rem;
     }
 }

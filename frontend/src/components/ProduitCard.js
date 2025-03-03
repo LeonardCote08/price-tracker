@@ -63,6 +63,56 @@ function ProduitCard({ produit }) {
         return title;
     };
 
+    // Dessiner la sparkline avec SVG au lieu des points absolus
+    const renderSparkline = () => {
+        if (!priceHistory || priceHistory.length < 2) return null;
+
+        const min = Math.min(...priceHistory);
+        const max = Math.max(...priceHistory);
+        const range = max - min || 1; // Éviter division par zéro
+
+        // Calculer les coordonnées pour le polyline SVG
+        const width = 100; // Pourcentage de la largeur
+        const height = 25; // Hauteur en pixels
+
+        // Créer un tableau de points pour le polyline
+        const points = priceHistory.map((price, index) => {
+            const x = (index / (priceHistory.length - 1)) * width;
+            // Inverser Y car SVG commence en haut
+            const y = height - ((price - min) / range) * height;
+            return `${x},${y}`;
+        }).join(' ');
+
+        return (
+            <div className={`sparkline ${getTrendClass()}`}>
+                <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
+                    {/* Ligne reliant les points */}
+                    <polyline
+                        points={points}
+                        fill="none"
+                        stroke={trend === 'up' ? '#3FCCA4' : trend === 'down' ? '#D84C4A' : '#aab8c2'}
+                        strokeWidth="1.5"
+                    />
+
+                    {/* Points sur la ligne */}
+                    {priceHistory.map((price, index) => {
+                        const x = (index / (priceHistory.length - 1)) * width;
+                        const y = height - ((price - min) / range) * height;
+                        return (
+                            <circle
+                                key={index}
+                                cx={x}
+                                cy={y}
+                                r="2"
+                                fill={trend === 'up' ? '#3FCCA4' : trend === 'down' ? '#D84C4A' : '#aab8c2'}
+                            />
+                        );
+                    })}
+                </svg>
+            </div>
+        );
+    };
+
     return (
         <Link to={`/produits/${produit.product_id}`} className="produit-card-link">
             <div className="produit-card">
@@ -104,24 +154,7 @@ function ProduitCard({ produit }) {
                     <h3 className="product-title">{truncateTitle(produit.title)}</h3>
 
                     {/* Sparkline (mini graphique de tendance) */}
-                    {priceHistory && priceHistory.length > 1 && (
-                        <div className={`sparkline ${getTrendClass()}`} ref={sparklineRef}>
-                            {/* Simple représentation visuelle de la tendance */}
-                            <div className="sparkline-line">
-                                {priceHistory.map((price, index) => (
-                                    <div
-                                        key={index}
-                                        className="sparkline-dot"
-                                        style={{
-                                            left: `${(index / (priceHistory.length - 1)) * 100}%`,
-                                            bottom: `${((price - Math.min(...priceHistory)) /
-                                                (Math.max(...priceHistory) - Math.min(...priceHistory) || 1)) * 80}%`
-                                        }}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                    {renderSparkline()}
 
                     {/* Prix et tendance */}
                     <div className="price-section">

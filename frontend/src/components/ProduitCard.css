@@ -35,14 +35,19 @@
     width: 100%;
     height: 200px;
     overflow: hidden;
+    background-color: #1c2f41;
 }
 
 .product-image {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    background-color: #1c2f41;
     transition: transform 0.5s ease;
+    /* Corrigé: Assure un chargement sans problème */
+    transform-origin: center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform;
 }
 
 .produit-card:hover .product-image {
@@ -55,8 +60,13 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to bottom, rgba(36, 55, 72, 0) 50%, rgba(36, 55, 72, 0.9) 100%);
+    background: linear-gradient(to bottom, rgba(36, 55, 72, 0) 60%, rgba(36, 55, 72, 0.8) 100%);
     pointer-events: none;
+    /* Corrigé: Empêche les flashs en forçant la composition GPU */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 /* Badges */
@@ -134,35 +144,34 @@
     -webkit-box-orient: vertical;
 }
 
-/* Mini graphique (sparkline) */
+/* Mini graphique (sparkline) - Révisé avec SVG */
 .sparkline {
     height: 30px;
     width: 100%;
     margin: 6px 0;
     position: relative;
+    /* Corrigé: Stabiliser l'affichage SVG */
+    overflow: visible;
 }
 
-.sparkline-line {
-    height: 100%;
-    width: 100%;
-    position: relative;
-}
+    .sparkline svg {
+        overflow: visible;
+    }
 
-.sparkline-dot {
-    position: absolute;
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background-color: var(--accent-color);
-}
+    .sparkline.trend-up polyline, .sparkline.trend-up circle {
+        stroke: #3FCCA4;
+        fill: #3FCCA4;
+    }
 
-.sparkline.trend-up .sparkline-dot {
-    background-color: #3FCCA4;
-}
+    .sparkline.trend-down polyline, .sparkline.trend-down circle {
+        stroke: #D84C4A;
+        fill: #D84C4A;
+    }
 
-.sparkline.trend-down .sparkline-dot {
-    background-color: #D84C4A;
-}
+    .sparkline.trend-stable polyline, .sparkline.trend-stable circle {
+        stroke: #aab8c2;
+        fill: #aab8c2;
+    }
 
 /* Section prix et tendance */
 .price-section {
