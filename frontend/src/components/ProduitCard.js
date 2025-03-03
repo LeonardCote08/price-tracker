@@ -63,7 +63,7 @@ function ProduitCard({ produit }) {
         return title;
     };
 
-    // Dessiner la sparkline avec SVG au lieu des points absolus
+    // Dessiner la sparkline avec SVG - Version améliorée
     const renderSparkline = () => {
         if (!priceHistory || priceHistory.length < 2) return null;
 
@@ -71,9 +71,32 @@ function ProduitCard({ produit }) {
         const max = Math.max(...priceHistory);
         const range = max - min || 1; // Éviter division par zéro
 
-        // Calculer les coordonnées pour le polyline SVG
+        // Configuration du SVG
         const width = 100; // Pourcentage de la largeur
         const height = 25; // Hauteur en pixels
+        const strokeWidth = 2; // Épaisseur de ligne plus importante
+        const dotRadius = 3; // Taille des points plus grande
+
+        // Couleurs selon la tendance
+        const trendColors = {
+            up: {
+                stroke: '#3FCCA4',
+                fill: 'rgba(63, 204, 164, 0.2)',
+                dot: '#3FCCA4'
+            },
+            down: {
+                stroke: '#D84C4A',
+                fill: 'rgba(216, 76, 74, 0.2)',
+                dot: '#D84C4A'
+            },
+            stable: {
+                stroke: '#1595EB',
+                fill: 'rgba(21, 149, 235, 0.1)',
+                dot: '#1595EB'
+            }
+        };
+
+        const colors = trendColors[trend] || trendColors.stable;
 
         // Créer un tableau de points pour le polyline
         const points = priceHistory.map((price, index) => {
@@ -83,15 +106,34 @@ function ProduitCard({ produit }) {
             return `${x},${y}`;
         }).join(' ');
 
+        // Créer un polygone (pour l'aire remplie sous la courbe)
+        const area = [
+            `0,${height}`, // Point en bas à gauche
+            ...priceHistory.map((price, index) => {
+                const x = (index / (priceHistory.length - 1)) * width;
+                const y = height - ((price - min) / range) * height;
+                return `${x},${y}`;
+            }),
+            `${width},${height}` // Point en bas à droite
+        ].join(' ');
+
         return (
             <div className={`sparkline ${getTrendClass()}`}>
                 <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
+                    {/* Aire sous la courbe */}
+                    <polygon
+                        points={area}
+                        fill={colors.fill}
+                    />
+
                     {/* Ligne reliant les points */}
                     <polyline
                         points={points}
                         fill="none"
-                        stroke={trend === 'up' ? '#3FCCA4' : trend === 'down' ? '#D84C4A' : '#aab8c2'}
-                        strokeWidth="1.5"
+                        stroke={colors.stroke}
+                        strokeWidth={strokeWidth}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                     />
 
                     {/* Points sur la ligne */}
@@ -103,8 +145,10 @@ function ProduitCard({ produit }) {
                                 key={index}
                                 cx={x}
                                 cy={y}
-                                r="2"
-                                fill={trend === 'up' ? '#3FCCA4' : trend === 'down' ? '#D84C4A' : '#aab8c2'}
+                                r={index === 0 || index === priceHistory.length - 1 ? dotRadius : 0}
+                                fill={colors.dot}
+                                stroke="#fff"
+                                strokeWidth="1"
                             />
                         );
                     })}

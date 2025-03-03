@@ -6,12 +6,12 @@
     padding: 0 1.5rem 2rem;
 }
 
-/* Grille des produits - Corrigée pour afficher plus de cartes par ligne */
+/* Grille des produits - Équilibrée pour 3-4 produits par ligne */
 .produits-grid {
     margin: 1.5rem 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Réduit de 280px à 250px */
-    gap: 1.5rem; /* Espacement réduit entre les cartes */
+    grid-template-columns: repeat(3, 1fr); /* Par défaut 3 produits par ligne */
+    gap: 1.5rem;
     animation: fadeIn 0.5s ease-in-out;
 }
 
@@ -340,59 +340,24 @@
     grid-column: 1 / -1;
 }
 
-/* Responsive ajusté pour permettre plus de cartes par ligne */
+/* Responsive pour différentes tailles d'écran */
 @media (min-width: 1400px) {
+    /* Pour les grands écrans, 4 produits par ligne */
     .produits-grid {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    }
-}
-
-@media (min-width: 1024px) and (max-width: 1399px) {
-    .produits-grid {
-        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    }
-}
-
-@media (min-width: 768px) and (max-width: 1023px) {
-    .produits-grid {
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
 @media (max-width: 767px) {
+    /* Pour les tablettes et mobiles, 2 produits par ligne */
     .produits-grid {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 1rem;
-    }
-
-    .stats-banner {
-        flex-wrap: wrap;
-    }
-
-    .controls-container {
-        flex-direction: column;
-    }
-
-    .sort-container {
-        width: 100%;
-    }
-
-    .sort-select {
-        flex: 1;
-    }
-
-    .button-group-centered {
-        flex-wrap: wrap;
-    }
-
-    .pagination {
-        flex-wrap: wrap;
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 479px) {
+    /* Pour petits mobiles, 1 produit par ligne */
     .produits-grid {
-        grid-template-columns: 1fr 1fr; /* Force 2 colonnes sur mobiles */
-        gap: 0.8rem;
+        grid-template-columns: 1fr;
     }
 }
