@@ -465,7 +465,7 @@ class EbaySpider(scrapy.Spider):
         if item["title"].strip().lower() in ["ebay home", "error page"]:
             reason = "Content unavailable (page not found)"
             # Message simple pour les produits filtrés
-            print(f"\n{RED}PRODUCT [{prod_num:02}/{self.max_products}] ❌ FILTERED: {reason}{RESET}", flush=True)
+            print(f"{RED}PRODUCT [{prod_num:02}/{self.max_products}] ❌ FILTERED: {reason}{RESET}\n", flush=True)
             self.ignored_count += 1
             return
 
@@ -475,7 +475,7 @@ class EbaySpider(scrapy.Spider):
         if multi_variation_button:
             reason = "Multi-variation listing excluded"
             # Message simple pour les produits filtrés
-            print(f"\n{RED}PRODUCT [{prod_num:02}/{self.max_products}] ❌ FILTERED: {reason}{RESET}", flush=True)
+            print(f"{RED}PRODUCT [{prod_num:02}/{self.max_products}] ❌ FILTERED: {reason}{RESET}\n", flush=True)
             self.ignored_count += 1
             return
 
@@ -500,14 +500,14 @@ class EbaySpider(scrapy.Spider):
         if item["title"].count("#") > 1:
             reason = "Multi-figure listing excluded"
             # Message simple pour les produits filtrés
-            print(f"\n{RED}PRODUCT [{prod_num:02}/{self.max_products}] ❌ FILTERED: {reason}{RESET}", flush=True)
+            print(f"{RED}PRODUCT [{prod_num:02}/{self.max_products}] ❌ FILTERED: {reason}{RESET}\n", flush=True)
             self.ignored_count += 1
             return
             
         if any(kw in title_lower for kw in ["lot", "bundle", "set"]):
             reason = "Bundle listing excluded"
             # Message simple pour les produits filtrés
-            print(f"\n{RED}PRODUCT [{prod_num:02}/{self.max_products}] ❌ FILTERED: {reason}{RESET}", flush=True)
+            print(f"{RED}PRODUCT [{prod_num:02}/{self.max_products}] ❌ FILTERED: {reason}{RESET}\n", flush=True)
             self.ignored_count += 1
             return
 
