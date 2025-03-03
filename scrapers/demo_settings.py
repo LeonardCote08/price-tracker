@@ -5,9 +5,6 @@ LOG_LEVEL = "INFO"
 LOG_FORMAT = '%(message)s'
 TELNETCONSOLE_ENABLED = False
 
-DOWNLOAD_DELAY = 0.5                   # Réduit de 3 à 0.5 seconde
-CONCURRENT_REQUESTS = 8                # Augmente de 2 à 8 requêtes simultanées
-AUTOTHROTTLE_ENABLED = False           # Désactive l'auto-throttling pour la démo
 
 
 SPIDER_MIDDLEWARES = {
