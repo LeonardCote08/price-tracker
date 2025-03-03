@@ -8,6 +8,7 @@ import json
 import datetime
 import time
 import statistics
+import unicodedata
 
 # ANSI codes for color
 RESET = "\033[38;2;241;241;242m"
@@ -23,6 +24,23 @@ def strip_ansi(text):
     """Strip ANSI sequences to get the visible length of text."""
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     return ansi_escape.sub('', text)
+
+# Helper function to get display width of text including emoji width
+def display_width(text):
+    """
+    Calculate the display width of text accounting for wide characters like emojis.
+    Some characters like emojis take up 2 spaces in terminal displays.
+    """
+    text = strip_ansi(text)
+    width = 0
+    for char in text:
+        # East Asian Width property: 'W' (Wide) or 'F' (Fullwidth) count as 2 display cells
+        # Also handle emoji characters which are not correctly categorized by east_asian_width
+        if unicodedata.east_asian_width(char) in ('W', 'F') or ord(char) > 0x1F000:
+            width += 2
+        else:
+            width += 1
+    return width
 
 def shorten_url(url, max_length=60):
     """Return the shortened URL if it exceeds max_length characters."""
@@ -113,19 +131,20 @@ def section_box(title, lines, width=80):
     else:
         result.append(f"{TURQUOISE}{SUB_TOP_LEFT}{SUB_HORIZONTAL * width}{SUB_TOP_RIGHT}{RESET}")
     
-    # Add content lines with proper padding
+    # Add content lines with proper padding, accounting for wide characters
     for line in lines:
         content = f"{RESET}{line}"
-        visible_len = len(strip_ansi(content))
-        padding = width - visible_len
+        # Calculate display width including emoji width
+        content_display_width = display_width(content)
+        padding = width - content_display_width
         
         if padding >= 0:
             result.append(f"{TURQUOISE}{SUB_VERTICAL}{content}{' ' * padding}{TURQUOISE}{SUB_VERTICAL}{RESET}")
         else:
             # Handle case where content is too long
-            visible_content = strip_ansi(content)
-            shortened_content = f"{content[:len(content) - len(visible_content) + width - 3]}..."
-            result.append(f"{TURQUOISE}{SUB_VERTICAL}{shortened_content}{TURQUOISE}{SUB_VERTICAL}{RESET}")
+            # Simplified approach: just cut the line at a safe length
+            shortened_content = shorten_text(content, width - 5)
+            result.append(f"{TURQUOISE}{SUB_VERTICAL}{shortened_content}{' ' * 2}{TURQUOISE}{SUB_VERTICAL}{RESET}")
     
     # Add bottom border
     result.append(f"{TURQUOISE}{SUB_BOTTOM_LEFT}{SUB_HORIZONTAL * width}{SUB_BOTTOM_RIGHT}{RESET}")
@@ -383,10 +402,10 @@ class EbaySpider(scrapy.Spider):
 
         page_elapsed = time.time() - page_start
         
-        # Create page summary box with fixed width
+        # Create page summary box with fixed width - Removed emojis to fix alignment issues
         page_summary_lines = [
-            f"  ⏱️  Page processed in {page_elapsed:.2f} seconds",
-            f"  📊 Found {found_this_page} products on this page"
+            f"  Page processed in {page_elapsed:.2f} seconds",
+            f"  Found {found_this_page} products on this page"
         ]
         print(section_box("Page Summary", page_summary_lines), flush=True)
         print("", flush=True)
@@ -625,9 +644,9 @@ class EbaySpider(scrapy.Spider):
             avg = statistics.mean(self.prices)
             
             price_lines = [
-                f"  ↓ Minimum price  : ${minimum:.2f}",
-                f"  ↑ Maximum price  : ${maximum:.2f}",
-                f"  ~ Average price  : ${avg:.2f}"
+                f"  Minimum price  : ${minimum:.2f}",
+                f"  Maximum price  : ${maximum:.2f}",
+                f"  Average price  : ${avg:.2f}"
             ]
             print(section_box("", price_lines), flush=True)
         else:
