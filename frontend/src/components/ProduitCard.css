@@ -144,100 +144,48 @@
     -webkit-box-orient: vertical;
 }
 
-/* Style du nouveau graphique amélioré */
-.enhanced-chart {
-    position: relative;
-    height: 50px;
-    margin: 15px 0;
-    padding: 5px;
-    background: linear-gradient(to bottom, rgba(36, 55, 72, 0.2) 0%, rgba(36, 55, 72, 0.6) 100%);
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+/* NOUVEAU STYLE POUR LE GRAPHIQUE ET INDICATEUR DE VARIATION */
+.sparkline-container {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    margin: 10px 0;
+    background-color: rgba(36, 55, 72, 0.4);
+    border-radius: 6px;
     overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-.chart-container {
-    position: relative;
-    width: 100%;
+.sparkline {
+    flex: 1;
+    height: 100%;
+    padding: 5px;
+}
+
+.change-indicator {
+    width: 60px;
     height: 100%;
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* Modifié: aligner à gauche pour laisser de la place au pourcentage */
-}
-
-    .chart-container svg {
-        width: 80%; /* Modifié: réduit pour laisser de la place au pourcentage */
-        height: 100%;
-    }
-
-/* Pourcentage de variation - MODIFIÉ */
-.percent-change {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    right: 5px; /* Modifié: ajusté pour mieux positionner */
-    font-size: 0.8rem; /* Modifié: réduit pour prendre moins de place */
+    justify-content: center;
     font-weight: 700;
-    z-index: 5;
-    padding: 2px 5px; /* Modifié: compact */
-    border-radius: 4px;
-    background-color: rgba(36, 55, 72, 0.85); /* Modifié: fond plus opaque */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    width: 55px; /* Modifié: Largeur fixe */
-    text-align: center; /* Modifié: Centrer le texte */
+    font-size: 0.9rem;
+    padding: 0 8px;
+    background-color: rgba(0, 0, 0, 0.2);
+    text-align: center;
 }
 
-    .percent-change.positive {
+    .change-indicator.positive {
         color: #3FCCA4;
     }
 
-    .percent-change.negative {
+    .change-indicator.negative {
         color: #D84C4A;
     }
 
-    .percent-change.neutral {
+    .change-indicator.neutral {
         color: #1595EB;
     }
-
-/* Thèmes de couleur selon la tendance */
-.enhanced-chart.trend-up polyline {
-    stroke: #3FCCA4;
-}
-
-.enhanced-chart.trend-down polyline {
-    stroke: #D84C4A;
-}
-
-.enhanced-chart.trend-stable polyline {
-    stroke: #1595EB;
-}
-
-/* Animations des points */
-.enhanced-chart circle {
-    transition: r 0.3s ease, opacity 0.3s ease;
-}
-
-.produit-card:hover .enhanced-chart circle {
-    r: 3;
-    opacity: 1;
-}
-
-/* Animations pour les keyframes existantes qui sont encore utilisées */
-@keyframes pulse {
-    from {
-        r: 4;
-        opacity: 0.7;
-    }
-
-    to {
-        r: 5;
-        opacity: 1;
-    }
-}
-
-.min-point-group circle, .max-point-group circle {
-    animation: pulse 1.5s infinite alternate ease-in-out;
-}
 
 /* Section prix et tendance */
 .price-section {
@@ -374,13 +322,13 @@
         font-size: 1.4rem;
     }
 
-    .enhanced-chart {
-        height: 45px;
+    .sparkline-container {
+        height: 35px;
     }
 
-    .percent-change {
-        font-size: 0.75rem; /* Modifié: plus petit sur mobile */
-        width: 50px; /* Modifié: plus étroit sur mobile */
+    .change-indicator {
+        width: 55px;
+        font-size: 0.85rem;
     }
 }
 
@@ -399,7 +347,12 @@
         font-size: 0.65rem;
     }
 
-    .enhanced-chart {
-        height: 40px;
+    .sparkline-container {
+        height: 30px;
+    }
+
+    .change-indicator {
+        width: 50px;
+        font-size: 0.8rem;
     }
 }

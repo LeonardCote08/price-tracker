@@ -18,6 +18,7 @@ function ProduitCard({ produit }) {
     const [trend, setTrend] = useState('stable');
     const [trendText, setTrendText] = useState('Price Stable');
     const [priceHistory, setPriceHistory] = useState(null);
+    const [percentChange, setPercentChange] = useState(null);
     const sparklineRef = useRef(null);
     const [isHovered, setIsHovered] = useState(false);
 
@@ -39,6 +40,14 @@ function ProduitCard({ produit }) {
             .then(data => {
                 if (data.prices && data.prices.length > 0) {
                     setPriceHistory(data.prices.slice(-10)); // On prend les 10 derniers points pour plus de détail
+
+                    // Calculer le pourcentage de variation
+                    if (data.prices.length >= 2) {
+                        const firstPrice = data.prices[0];
+                        const lastPrice = data.prices[data.prices.length - 1];
+                        const change = ((lastPrice - firstPrice) / firstPrice * 100).toFixed(1);
+                        setPercentChange(change);
+                    }
                 }
             })
             .catch(err => console.error('Erreur lors de la récupération de l\'historique', err));
@@ -65,128 +74,78 @@ function ProduitCard({ produit }) {
         return title;
     };
 
-
     // Fonction entièrement repensée pour les graphiques
     const renderSparkline = () => {
         if (!priceHistory || priceHistory.length < 2) return null;
 
         // Simplifions les données pour un graphique plus clair
-        // Nous allons prendre moins de points mais les rendre plus significatifs
         let displayPoints = [];
 
         // Toujours inclure le premier et le dernier point
-        // Et quelques points intermédiaires significatifs
         if (priceHistory.length <= 5) {
             displayPoints = [...priceHistory];
         } else {
-            // Prendre le premier, dernier, point le plus haut, point le plus bas, et quelques points intermédiaires
-            const first = priceHistory[0];
-            const last = priceHistory[priceHistory.length - 1];
-            const max = Math.max(...priceHistory);
-            const min = Math.min(...priceHistory);
-
-            // Toujours inclure le premier et le dernier
-            displayPoints.push(first);
-
-            // Trouver un ou deux points intermédiaires intéressants
-            const midPoint = priceHistory[Math.floor(priceHistory.length / 2)];
-            displayPoints.push(midPoint);
-
-            // Ajouter le min et max s'ils ne sont pas déjà inclus
-            if (min !== first && min !== last && min !== midPoint) {
-                const minIndex = priceHistory.indexOf(min);
-                displayPoints.push({ value: min, index: minIndex });
-            }
-
-            if (max !== first && max !== last && max !== midPoint) {
-                const maxIndex = priceHistory.indexOf(max);
-                displayPoints.push({ value: max, index: maxIndex });
-            }
-
-            displayPoints.push(last);
-
-            // Trier les points par ordre d'index
-            displayPoints = displayPoints
-                .map((point, i) => typeof point === 'number' ? { value: point, index: i === 0 ? 0 : i === 1 ? Math.floor(priceHistory.length / 2) : priceHistory.length - 1 } : point)
-                .sort((a, b) => a.index - b.index)
-                .map(p => p.value);
+            // Prendre quelques points clés seulement
+            displayPoints = [
+                priceHistory[0],
+                priceHistory[Math.floor(priceHistory.length / 2)],
+                priceHistory[priceHistory.length - 1]
+            ];
         }
 
         // Couleurs selon tendance
         const trendColors = {
-            up: {
-                main: '#3FCCA4',
-                secondary: '#2EAA83',
-                gradient: ['rgba(63, 204, 164, 0.8)', 'rgba(63, 204, 164, 0)']
-            },
-            down: {
-                main: '#D84C4A',
-                secondary: '#B43A38',
-                gradient: ['rgba(216, 76, 74, 0.8)', 'rgba(216, 76, 74, 0)']
-            },
-            stable: {
-                main: '#1595EB',
-                secondary: '#1276C0',
-                gradient: ['rgba(21, 149, 235, 0.8)', 'rgba(21, 149, 235, 0)']
-            }
+            up: '#3FCCA4',
+            down: '#D84C4A',
+            stable: '#1595EB'
         };
 
-        const colors = trendColors[trend] || trendColors.stable;
+        const strokeColor = trendColors[trend] || trendColors.stable;
 
-        // Convertir les valeurs en pourcentages pour un affichage plus cohérent
+        // Dimensions et configuration du graphique
+        const width = 100;  // Largeur totale plus petite
+        const height = 30;  // Hauteur réduite
+        const padding = 5;  // Marge intérieure
+
+        // Calcul des valeurs min/max pour l'échelle
         const min = Math.min(...displayPoints) * 0.95;
         const max = Math.max(...displayPoints) * 1.05;
         const range = max - min || 1;
 
-        // Dimensions du graphique - MODIFIÉ
-        const width = 120;
-        const height = 40;
-        const graphHeight = 30; // Hauteur effective du graphique (pour laisser de la place aux labels)
-
-        // Calculer les positions des points
+        // Calculer les coordonnées des points
         const pointCoordinates = displayPoints.map((value, index) => {
-            // MODIFIÉ: Réduire la largeur pour laisser de l'espace pour le pourcentage
-            const x = (index / (displayPoints.length - 1)) * (width * 0.75);
+            const x = padding + ((index / (displayPoints.length - 1)) * (width - 2 * padding));
             const normalizedValue = (value - min) / range;
-            const y = graphHeight - (normalizedValue * graphHeight);
+            const y = height - padding - (normalizedValue * (height - 2 * padding));
             return { x, y, value };
         });
 
-        // Calculer la tendance en pourcentage
-        const percentChange = displayPoints.length >= 2
-            ? ((displayPoints[displayPoints.length - 1] - displayPoints[0]) / displayPoints[0] * 100).toFixed(1)
-            : "0.0";
+        // Format du pourcentage avec signe
+        const changeValue = percentChange !== null ? percentChange :
+            ((displayPoints[displayPoints.length - 1] - displayPoints[0]) / displayPoints[0] * 100).toFixed(1);
 
-        const isPositive = percentChange > 0;
-        const isNegative = percentChange < 0;
+        const formattedChange = (changeValue > 0 ? '+' : '') + changeValue;
+        const changeClass = changeValue > 0 ? 'positive' : changeValue < 0 ? 'negative' : 'neutral';
 
         return (
-            <div className={`enhanced-chart ${getTrendClass()}`}>
-                <div className="chart-container">
-                    {/* Pourcentage de variation - MODIFIÉ: position ajustée */}
-                    <div className={`percent-change ${isPositive ? 'positive' : isNegative ? 'negative' : 'neutral'}`}>
-                        {isPositive ? '+' : ''}{percentChange}%
-                    </div>
-
+            <div className="sparkline-container">
+                <div className="sparkline">
                     <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
-                        {/* Définitions de gradient et effets */}
-                        <defs>
-                            <linearGradient id={`line-gradient-${produit.product_id}`} x1="0%" y1="0%" x2="100%" y1="0%">
-                                <stop offset="0%" stopColor={colors.secondary} />
-                                <stop offset="100%" stopColor={colors.main} />
-                            </linearGradient>
-
-                            <filter id={`glow-${produit.product_id}`}>
-                                <feGaussianBlur stdDeviation="1.5" result="blur" />
-                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                            </filter>
-                        </defs>
+                        {/* Ligne de base */}
+                        <line
+                            x1={padding}
+                            y1={height - padding}
+                            x2={width - padding}
+                            y2={height - padding}
+                            stroke="#2a3f55"
+                            strokeWidth="1"
+                        />
 
                         {/* Tracer la ligne entre les points */}
                         <polyline
                             points={pointCoordinates.map(pt => `${pt.x},${pt.y}`).join(' ')}
                             fill="none"
-                            stroke={`url(#line-gradient-${produit.product_id})`}
+                            stroke={strokeColor}
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -194,30 +153,24 @@ function ProduitCard({ produit }) {
 
                         {/* Points */}
                         {pointCoordinates.map((pt, i) => (
-                            <g key={i}>
-                                {/* Point extérieur */}
-                                <circle
-                                    cx={pt.x}
-                                    cy={pt.y}
-                                    r={i === 0 || i === pointCoordinates.length - 1 ? 3.5 : 3}
-                                    fill="#243748"
-                                />
-                                {/* Point intérieur */}
-                                <circle
-                                    cx={pt.x}
-                                    cy={pt.y}
-                                    r={i === 0 || i === pointCoordinates.length - 1 ? 2.5 : 2}
-                                    fill={colors.main}
-                                    filter={`url(#glow-${produit.product_id})`}
-                                />
-                            </g>
+                            <circle
+                                key={i}
+                                cx={pt.x}
+                                cy={pt.y}
+                                r={i === 0 || i === pointCoordinates.length - 1 ? 3 : 2}
+                                fill={strokeColor}
+                            />
                         ))}
                     </svg>
+                </div>
+
+                {/* Pourcentage de variation déplacé à côté du graphique */}
+                <div className={`change-indicator ${changeClass}`}>
+                    {formattedChange}%
                 </div>
             </div>
         );
     };
-
 
     return (
         <Link to={`/produits/${produit.product_id}`} className="produit-card-link">
