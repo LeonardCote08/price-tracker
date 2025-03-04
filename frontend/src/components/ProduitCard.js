@@ -25,42 +25,42 @@ function ProduitCard({ produit }) {
     useEffect(() => {
         const fetchPriceHistory = async () => {
             try {
+                // URL API conforme au format de votre backend
                 const response = await fetch(`/api/produits/${produit.product_id}/historique-prix`);
+
+                // Vérifier que la réponse est OK
+                if (!response.ok) {
+                    throw new Error(`API a répondu avec le statut ${response.status}`);
+                }
+
                 const data = await response.json();
+                console.log(`Données pour produit ID ${produit.product_id}:`, data);
 
-                // Débogage pour voir la structure exacte des données
-                console.log(`Données historique pour produit ${produit.product_id}:`, data);
-
-                // Vérifier que nous avons des données dans data.prices ET data.dates
-                if (data && data.prices && data.prices.length > 0 && data.dates && data.dates.length > 0) {
-                    // Stocker les deux tableaux pour l'affichage
+                // CORRECTION ICI: Les données sont directement sous data, pas dans data.prices
+                if (data && Array.isArray(data.prices) && data.prices.length >= 2) {
+                    console.log(`Historique prix trouvé: ${data.prices.length} points`);
                     setPriceHistory(data.prices);
-                    setHistoryDates(data.dates);
 
-                    // Calculer le pourcentage de variation entre le premier et dernier point
-                    if (data.prices.length >= 2) {
-                        const firstPrice = data.prices[0];
-                        const lastPrice = data.prices[data.prices.length - 1];
-                        const change = ((lastPrice - firstPrice) / firstPrice * 100).toFixed(1);
-                        setPercentChange(change);
+                    // Calculer variation
+                    const firstPrice = data.prices[0];
+                    const lastPrice = data.prices[data.prices.length - 1];
+                    const change = ((lastPrice - firstPrice) / firstPrice * 100).toFixed(1);
+                    setPercentChange(change);
 
-                        // Déterminer la tendance basée sur le pourcentage de variation
-                        const changeValue = parseFloat(change);
-
-                        // Utiliser un seuil de ±3% pour considérer une variation comme significative
-                        if (changeValue > 3) {
-                            setTrend('up');
-                            setTrendText('Price Rising');
-                        } else if (changeValue < -3) {
-                            setTrend('down');
-                            setTrendText('Price Falling');
-                        } else {
-                            setTrend('stable');
-                            setTrendText('Price Stable');
-                        }
+                    // Déterminer tendance
+                    const changeValue = parseFloat(change);
+                    if (changeValue > 3) {
+                        setTrend('up');
+                        setTrendText('Price Rising');
+                    } else if (changeValue < -3) {
+                        setTrend('down');
+                        setTrendText('Price Falling');
+                    } else {
+                        setTrend('stable');
+                        setTrendText('Price Stable');
                     }
 
-                    // Si les stats de l'API incluent already une tendance, l'utiliser
+                    // Si l'API renvoie une tendance, utiliser celle-ci
                     if (data.trend) {
                         setTrend(data.trend);
                         if (data.trend === 'up') setTrendText('Price Rising');
@@ -68,35 +68,30 @@ function ProduitCard({ produit }) {
                         else setTrendText('Price Stable');
                     }
                 } else {
-                    console.warn(`Données historique incomplètes pour produit ${produit.product_id}`);
-                    // Utiliser l'API de tendance comme fallback
-                    try {
-                        const trendResponse = await fetch(`/api/produits/${produit.product_id}/price-trend`);
-                        const trendData = await trendResponse.json();
-
-                        setTrend(trendData.trend);
-                        if (trendData.trend === 'up') setTrendText('Price Rising');
-                        else if (trendData.trend === 'down') setTrendText('Price Falling');
-                        else setTrendText('Price Stable');
-                    } catch (errFallback) {
-                        console.error('Erreur lors de la récupération de la tendance (fallback)', errFallback);
-                    }
+                    // Cas où l'API renvoie des données mais pas d'historique valide
+                    console.warn(`Pas d'historique valide pour produit ${produit.product_id}`);
+                    fallbackToTrendAPI();
                 }
             } catch (err) {
-                console.error('Erreur lors de la récupération de l\'historique', err);
+                console.error(`Erreur API pour produit ${produit.product_id}:`, err);
+                fallbackToTrendAPI();
+            }
+        };
 
-                // En cas d'erreur, on utilise l'API de tendance comme fallback
-                try {
-                    const trendResponse = await fetch(`/api/produits/${produit.product_id}/price-trend`);
-                    const trendData = await trendResponse.json();
-
-                    setTrend(trendData.trend);
-                    if (trendData.trend === 'up') setTrendText('Price Rising');
-                    else if (trendData.trend === 'down') setTrendText('Price Falling');
-                    else setTrendText('Price Stable');
-                } catch (errFallback) {
-                    console.error('Erreur lors de la récupération de la tendance (fallback)', errFallback);
+        // Fonction de repli en cas d'échec
+        const fallbackToTrendAPI = async () => {
+            try {
+                const trendResponse = await fetch(`/api/produits/${produit.product_id}/price-trend`);
+                if (!trendResponse.ok) {
+                    throw new Error(`API tendance a répondu avec le statut ${trendResponse.status}`);
                 }
+                const trendData = await trendResponse.json();
+                setTrend(trendData.trend);
+                if (trendData.trend === 'up') setTrendText('Price Rising');
+                else if (trendData.trend === 'down') setTrendText('Price Falling');
+                else setTrendText('Price Stable');
+            } catch (errFallback) {
+                console.error('Erreur lors de la récupération de la tendance (fallback)', errFallback);
             }
         };
 
@@ -128,13 +123,13 @@ function ProduitCard({ produit }) {
 
     // Rendu du graphique de tendance amélioré avec courbe de Bézier
     const renderSparkline = () => {
+        // Au début de la fonction renderSparkline()
         if (!priceHistory || priceHistory.length < 2) {
-            // Retourner un graphique par défaut si pas d'historique
-            console.log(`Utilisation du graphique par défaut pour produit ${produit.product_id}`);
+            console.log(`[GRAPHIQUE] Produit ${produit.product_id}: utilisation du graphique par défaut (pas de données)`);
             return renderDefaultSparkline();
         }
 
-        console.log(`Rendu du graphique avec données pour produit ${produit.product_id}, ${priceHistory.length} points`);
+        console.log(`[GRAPHIQUE] Produit ${produit.product_id}: rendu avec ${priceHistory.length} points de données`);
 
         // Nous utilisons le premier et le dernier point pour la tendance
         const firstPrice = priceHistory[0];
@@ -333,7 +328,9 @@ function ProduitCard({ produit }) {
         // Valeurs par défaut pour un graphique stable
         const startX = padding;
         const endX = graphWidth - 70;
-        const middleY = height / 2;
+        // Dans renderDefaultSparkline(), remplacer les valeurs du middleY:
+        const randomOffset = (produit.product_id % 10) - 5;  // -5 à +4
+        const middleY = height / 2 + randomOffset;
 
         // Points pour un graphique simple avec variabilité
         let linePath, areaPath;
