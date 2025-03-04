@@ -162,27 +162,29 @@
     height: 100%;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start; /* Modifié: aligner à gauche pour laisser de la place au pourcentage */
 }
 
     .chart-container svg {
-        width: 100%;
+        width: 80%; /* Modifié: réduit pour laisser de la place au pourcentage */
         height: 100%;
     }
 
-/* Pourcentage de variation */
+/* Pourcentage de variation - MODIFIÉ */
 .percent-change {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    right: 10px;
-    font-size: 0.85rem;
+    right: 5px; /* Modifié: ajusté pour mieux positionner */
+    font-size: 0.8rem; /* Modifié: réduit pour prendre moins de place */
     font-weight: 700;
     z-index: 5;
-    padding: 2px 6px;
+    padding: 2px 5px; /* Modifié: compact */
     border-radius: 4px;
-    background-color: rgba(36, 55, 72, 0.7);
+    background-color: rgba(36, 55, 72, 0.85); /* Modifié: fond plus opaque */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    width: 55px; /* Modifié: Largeur fixe */
+    text-align: center; /* Modifié: Centrer le texte */
 }
 
     .percent-change.positive {
@@ -377,7 +379,8 @@
     }
 
     .percent-change {
-        font-size: 0.8rem;
+        font-size: 0.75rem; /* Modifié: plus petit sur mobile */
+        width: 50px; /* Modifié: plus étroit sur mobile */
     }
 }
 

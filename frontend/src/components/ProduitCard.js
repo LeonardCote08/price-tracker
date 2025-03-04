@@ -138,14 +138,15 @@ function ProduitCard({ produit }) {
         const max = Math.max(...displayPoints) * 1.05;
         const range = max - min || 1;
 
-        // Dimensions du graphique
-        const width = 90;
+        // Dimensions du graphique - MODIFIÉ
+        const width = 120;
         const height = 40;
         const graphHeight = 30; // Hauteur effective du graphique (pour laisser de la place aux labels)
 
         // Calculer les positions des points
         const pointCoordinates = displayPoints.map((value, index) => {
-            const x = (index / (displayPoints.length - 1)) * width;
+            // MODIFIÉ: Réduire la largeur pour laisser de l'espace pour le pourcentage
+            const x = (index / (displayPoints.length - 1)) * (width * 0.75);
             const normalizedValue = (value - min) / range;
             const y = graphHeight - (normalizedValue * graphHeight);
             return { x, y, value };
@@ -162,7 +163,7 @@ function ProduitCard({ produit }) {
         return (
             <div className={`enhanced-chart ${getTrendClass()}`}>
                 <div className="chart-container">
-                    {/* Pourcentage de variation */}
+                    {/* Pourcentage de variation - MODIFIÉ: position ajustée */}
                     <div className={`percent-change ${isPositive ? 'positive' : isNegative ? 'negative' : 'neutral'}`}>
                         {isPositive ? '+' : ''}{percentChange}%
                     </div>
