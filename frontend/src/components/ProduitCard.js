@@ -108,20 +108,22 @@ function ProduitCard({ produit }) {
         const strokeColor = trendColors[trend] || trendColors.stable;
 
         // Dimensions et configuration du graphique
-        const width = 160;   // Largeur totale du SVG augmentée
-        const height = 34;   // Hauteur du SVG augmentée pour meilleure lisibilité
-        const graphWidth = 138; // Largeur effective du graphique ajustée
-        const padding = 4;    // Marge intérieure réduite
+        const width = 190;   // Largeur totale du SVG augmentée
+        const height = 40;   // Hauteur du SVG augmentée pour meilleure lisibilité
+        const graphWidth = 190; // Largeur effective du graphique ajustée
+        const percentageWidth = 55; // Largeur fixe pour le pourcentage
+        const graphAreaWidth = graphWidth - percentageWidth; // Largeur disponible pour le graphique
+        const padding = 4;    // Marge intérieure
 
         // Valeurs minimale et maximale pour l'échelle
-        const valuesSpread = Math.abs(lastPrice - firstPrice) * 0.2; // Augmenter l'amplitude 
+        const valuesSpread = Math.abs(lastPrice - firstPrice) * 0.25; // Augmenter l'amplitude 
         const min = Math.min(firstPrice, lastPrice) - valuesSpread;
         const max = Math.max(firstPrice, lastPrice) + valuesSpread;
         const range = max - min || 1;
 
         // Coordonnées pour le début et la fin
         const startX = padding;
-        const endX = graphWidth - 62; // Ajusté pour l'indicateur de pourcentage
+        const endX = graphAreaWidth - padding; // Ajusté pour l'indicateur de pourcentage
 
         // Calculer les coordonnées Y en fonction des prix
         const startY = height - padding - ((firstPrice - min) / range * (height - 2 * padding));
@@ -138,7 +140,7 @@ function ProduitCard({ produit }) {
         if (trend === 'up') {
             // Courbe montante avec meilleure forme
             controlPoint1X = startX + (endX - startX) * 0.3;
-            controlPoint1Y = startY - curveIntensity * 0.2;
+            controlPoint1Y = startY - curveIntensity * 0.3;
             controlPoint2X = startX + (endX - startX) * 0.7;
             controlPoint2Y = endY - curveIntensity;
         } else if (trend === 'down') {
@@ -146,13 +148,13 @@ function ProduitCard({ produit }) {
             controlPoint1X = startX + (endX - startX) * 0.3;
             controlPoint1Y = startY + curveIntensity;
             controlPoint2X = startX + (endX - startX) * 0.7;
-            controlPoint2Y = endY + curveIntensity * 0.2;
+            controlPoint2Y = endY + curveIntensity * 0.3;
         } else {
             // Tendance stable: ondulation plus visible
             controlPoint1X = startX + (endX - startX) * 0.33;
-            controlPoint1Y = Math.min(startY, endY) - height * 0.07;
+            controlPoint1Y = Math.min(startY, endY) - height * 0.09;
             controlPoint2X = startX + (endX - startX) * 0.67;
-            controlPoint2Y = Math.min(startY, endY) - height * 0.07;
+            controlPoint2Y = Math.min(startY, endY) - height * 0.09;
         }
 
         // Format du pourcentage avec signe
@@ -180,7 +182,7 @@ function ProduitCard({ produit }) {
         return (
             <div className="sparkline-container">
                 <div className="sparkline">
-                    <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet">
+                    <svg width="100%" height="100%" viewBox={`0 0 ${graphWidth} ${height}`} preserveAspectRatio="xMidYMid meet">
                         {/* Zone ombrée sous la courbe */}
                         <path
                             d={areaPath}
@@ -211,12 +213,19 @@ function ProduitCard({ produit }) {
                             r={3} // Augmenté pour plus de visibilité
                             fill={strokeColor}
                         />
-                    </svg>
-                </div>
 
-                {/* Pourcentage de variation */}
-                <div className={`change-indicator ${changeClass}`}>
-                    {formattedChange}%
+                        {/* Pourcentage de variation */}
+                        <g className="percentage-indicator" transform={`translate(${graphAreaWidth}, 0)`}>
+                            <rect x="0" y="0" width={percentageWidth} height={height}
+                                className={`percentage-bg ${changeClass}`}
+                                rx="4" ry="4" />
+                            <text x={percentageWidth / 2} y={height / 2}
+                                dy=".3em" textAnchor="middle"
+                                className={`percentage-text ${changeClass}`}>
+                                {formattedChange}%
+                            </text>
+                        </g>
+                    </svg>
                 </div>
             </div>
         );

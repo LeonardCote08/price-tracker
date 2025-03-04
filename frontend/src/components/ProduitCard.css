@@ -161,50 +161,51 @@
 .sparkline {
     width: 100%;
     height: 100%;
-    padding: 3px 0 3px 8px; /* Ajustement du padding pour centrer */
     position: relative;
 }
 
+    /* SVG styles pour les graphiques intégrés */
+    .sparkline svg {
+        overflow: visible;
+    }
+
 /* Badge de pourcentage */
-.change-indicator {
-    position: absolute;
-    right: 0;
-    top: 0;
-    height: 100%;
-    width: 62px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(0, 0, 0, 0.25);
-    font-weight: 700;
-    font-size: 0.9rem;
-    text-align: center;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-    border-radius: 0 8px 8px 0;
-    z-index: 2;
+.percentage-bg {
+    fill: rgba(0, 0, 0, 0.25);
 }
 
-    .change-indicator.positive {
-        color: #3FCCA4;
-        background-color: rgba(63, 204, 164, 0.1);
+    .percentage-bg.positive {
+        fill: rgba(63, 204, 164, 0.15);
     }
 
-    .change-indicator.negative {
-        color: #D84C4A;
-        background-color: rgba(216, 76, 74, 0.1);
+    .percentage-bg.negative {
+        fill: rgba(216, 76, 74, 0.15);
     }
 
-    .change-indicator.neutral {
-        color: #1595EB;
-        background-color: rgba(21, 149, 235, 0.1);
+    .percentage-bg.neutral {
+        fill: rgba(21, 149, 235, 0.15);
+    }
+
+.percentage-text {
+    font-size: 0.85rem;
+    font-weight: 700;
+    fill: #1595EB;
+}
+
+    .percentage-text.positive {
+        fill: #3FCCA4;
+    }
+
+    .percentage-text.negative {
+        fill: #D84C4A;
     }
 
 /* Section prix et tendance */
 .price-section {
-    margin: 10px 0;
+    margin: 16px 0 10px 0;
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    justify-content: space-between;
+    align-items: flex-end;
 }
 
 .price-tag {
@@ -232,7 +233,9 @@
     gap: 6px;
     font-size: 0.85rem;
     font-weight: 600;
-    padding: 4px 0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.15);
 }
 
 .trend-icon {
@@ -241,14 +244,17 @@
 
 .trend-up {
     color: #3FCCA4;
+    background-color: rgba(63, 204, 164, 0.1);
 }
 
 .trend-down {
     color: #D84C4A;
+    background-color: rgba(216, 76, 74, 0.1);
 }
 
 .trend-stable {
-    color: #aab8c2;
+    color: #1595EB;
+    background-color: rgba(21, 149, 235, 0.1);
 }
 
 /* Effets d'animation pour les tendances */
@@ -337,11 +343,6 @@
     .sparkline-container {
         height: 36px;
     }
-
-    .change-indicator {
-        font-size: 0.85rem;
-        width: 58px;
-    }
 }
 
 @media (max-width: 480px) {
@@ -361,10 +362,5 @@
 
     .sparkline-container {
         height: 34px;
-    }
-
-    .change-indicator {
-        font-size: 0.8rem;
-        width: 52px;
     }
 }
