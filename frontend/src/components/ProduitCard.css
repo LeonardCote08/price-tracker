@@ -326,7 +326,7 @@
     font-size: 0.7rem;
 }
 
-/* Responsive */
+/* Responsive  */
 @media (max-width: 768px) {
     .product-image-container {
         height: 180px;
