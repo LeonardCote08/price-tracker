@@ -112,14 +112,14 @@ function ProduitCard({ produit }) {
         const strokeColor = trendColors[trend] || trendColors.stable;
 
         // Dimensions et configuration du graphique
-        const width = 120;  // Largeur totale du SVG
-        const height = 30;  // Hauteur du SVG
-        const graphWidth = 60; // Largeur effective du graphique, réduite pour un graphique plus compact
-        const padding = 5;  // Marge intérieure
+        const width = 130;    // Largeur totale du SVG augmentée
+        const height = 30;    // Hauteur du SVG
+        const graphWidth = 110; // Largeur effective du graphique augmentée
+        const padding = 8;    // Marge intérieure augmentée
 
         // Valeurs minimale et maximale pour l'échelle
-        // Utiliser une marge de 5% pour éviter que les points ne touchent les bords
-        const valuesSpread = Math.abs(displayPoints[1] - displayPoints[0]) * 0.05;
+        // Utiliser une marge plus grande pour éviter que les points ne touchent les bords
+        const valuesSpread = Math.abs(displayPoints[1] - displayPoints[0]) * 0.1;
         const min = Math.min(...displayPoints) - valuesSpread;
         const max = Math.max(...displayPoints) + valuesSpread;
         const range = max - min || 1;
@@ -150,7 +150,7 @@ function ProduitCard({ produit }) {
         return (
             <div className="sparkline-container">
                 <div className="sparkline">
-                    <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
+                    <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet">
                         {/* Tracer la ligne entre les points */}
                         <polyline
                             points={pointCoordinates.map(pt => `${pt.x},${pt.y}`).join(' ')}
@@ -167,7 +167,7 @@ function ProduitCard({ produit }) {
                                 key={i}
                                 cx={pt.x}
                                 cy={pt.y}
-                                r={i === 0 || i === pointCoordinates.length - 1 ? 3 : 2}
+                                r={3}
                                 fill={strokeColor}
                             />
                         ))}

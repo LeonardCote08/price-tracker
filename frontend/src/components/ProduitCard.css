@@ -156,35 +156,35 @@
 }
 
 .sparkline {
-    flex: 0 0 50%; /* Alloue 50% de l'espace au graphique */
+    flex: 0 0 70%; /* Alloue 70% de l'espace au graphique */
     height: 100%;
-    padding: 4px;
+    padding: 4px 8px;
     position: relative;
 }
 
-    /* Label "then" et "now" pour contexte temporel */
+    /* Labels plus subtils */
     .sparkline:before,
     .sparkline:after {
         content: "";
         position: absolute;
-        bottom: 3px;
-        font-size: 9px;
-        color: rgba(255, 255, 255, 0.5);
+        bottom: 2px;
+        font-size: 7px;
+        color: rgba(255, 255, 255, 0.3);
         text-transform: uppercase;
     }
 
     .sparkline:before {
-        content: "initial";
-        left: 6px;
+        content: "init";
+        left: 4px;
     }
 
     .sparkline:after {
         content: "now";
-        right: 6px;
+        right: 4px;
     }
 
 .change-indicator {
-    flex: 0 0 50%; /* Alloue 50% de l'espace à l'indicateur */
+    flex: 0 0 30%; /* Alloue 30% de l'espace à l'indicateur */
     height: 100%;
     display: flex;
     align-items: center;
