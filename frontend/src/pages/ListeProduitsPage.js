@@ -16,10 +16,12 @@ import {
     faChartLine,
     faFilter,
     faTag,
-    faSpinner
+    faSpinner,
+    faSliders,
+    faTimes
 } from '@fortawesome/free-solid-svg-icons';
 
-// Nombre initial de produits à afficher (beaucoup plus qu'avant)
+// Nombre initial de produits à afficher
 const INITIAL_ITEMS_COUNT = 24;
 // Nombre de produits à ajouter à chaque chargement
 const ITEMS_INCREMENT = 12;
@@ -41,6 +43,10 @@ function ListeProduitsPage() {
     const [allDisplayed, setAllDisplayed] = useState(false);
     // Indique si on est en train de charger plus de produits
     const [loadingMore, setLoadingMore] = useState(false);
+    // État pour afficher/masquer le dropdown de tri
+    const [showSortOptions, setShowSortOptions] = useState(false);
+    // État pour le panneau de filtres avancés
+    const [showFilters, setShowFilters] = useState(false);
 
     // États de chargement / erreur
     const [loading, setLoading] = useState(true);
@@ -57,10 +63,25 @@ function ListeProduitsPage() {
         stableCount: 0
     });
 
-    // Référence pour la détection du scrolling
+    // Références pour les éléments DOM
     const loaderRef = useRef(null);
+    const sortDropdownRef = useRef(null);
 
     useScrollRestoration(!loading);
+
+    // Fermer le dropdown quand on clique ailleurs
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target)) {
+                setShowSortOptions(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     // 1) Charger tous les produits (sans filtre "active"/"ended")
     useEffect(() => {
@@ -152,6 +173,22 @@ function ListeProduitsPage() {
         }
     };
 
+    // Fonction pour afficher le label du tri sélectionné
+    const getSortLabel = (option) => {
+        switch (option) {
+            case 'price-asc':
+                return 'Price: Low to High';
+            case 'price-desc':
+                return 'Price: High to Low';
+            case 'date-desc':
+                return 'Recently Updated';
+            case 'date-asc':
+                return 'Oldest First';
+            default:
+                return 'Default';
+        }
+    };
+
     // 3) Filtrer et trier les produits
     const filteredAndSortedProducts = useMemo(() => {
         // D'abord appliquer le filtre de tendance
@@ -212,7 +249,7 @@ function ListeProduitsPage() {
                 return newCount;
             });
             setLoadingMore(false);
-        }, 500);
+        }, 300);
     };
 
     // Réinitialiser l'état de l'affichage lors d'un changement de filtre ou de recherche
@@ -220,6 +257,16 @@ function ListeProduitsPage() {
         setDisplayCount(INITIAL_ITEMS_COUNT);
         setAllDisplayed(filteredAndSortedProducts.length <= INITIAL_ITEMS_COUNT);
     }, [filteredAndSortedProducts.length]);
+
+    // Effacer la recherche
+    const clearSearch = () => {
+        setSearchTerm('');
+    };
+
+    // Toggle des filtres avancés
+    const toggleFilters = () => {
+        setShowFilters(!showFilters);
+    };
 
     if (loading) return (
         <div className="loading-container">
@@ -283,95 +330,160 @@ function ListeProduitsPage() {
                 </div>
             </div>
 
-            {/* Filtres, recherche et tri */}
-            <div className="controls-container">
-                <div className="search-container">
-                    <FontAwesomeIcon icon={faSearch} className="search-icon" />
-                    <input
-                        type="text"
-                        placeholder="Search by title or seller..."
-                        value={searchTerm}
-                        onChange={(e) => {
-                            setSearchTerm(e.target.value);
-                            setDisplayCount(INITIAL_ITEMS_COUNT);
-                            setAllDisplayed(false);
-                        }}
-                        className="search-input"
-                    />
-                </div>
-
-                <div className="sort-container">
-                    <label htmlFor="sort-select">
-                        <FontAwesomeIcon
-                            icon={sortOption.includes('desc') ? faSortAmountDown : faSortAmountUp}
-                            className="sort-icon"
+            {/* Nouvelle UI pour la recherche et les filtres */}
+            <div className="enhanced-search-section">
+                <div className="search-filters-container">
+                    {/* Barre de recherche améliorée */}
+                    <div className="enhanced-search-container">
+                        <FontAwesomeIcon icon={faSearch} className="enhanced-search-icon" />
+                        <input
+                            type="text"
+                            placeholder="Search by title or seller..."
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setDisplayCount(INITIAL_ITEMS_COUNT);
+                                setAllDisplayed(false);
+                            }}
+                            className="enhanced-search-input"
                         />
-                    </label>
-                    <select
-                        id="sort-select"
-                        value={sortOption}
-                        onChange={(e) => setSortOption(e.target.value)}
-                        className="sort-select"
-                    >
-                        <option value="default">Default</option>
-                        <option value="price-asc">Price: Low to High</option>
-                        <option value="price-desc">Price: High to Low</option>
-                        <option value="date-desc">Recently Updated</option>
-                        <option value="date-asc">Oldest First</option>
-                    </select>
-                </div>
-            </div>
+                        {searchTerm && (
+                            <button className="clear-search-btn" onClick={clearSearch}>
+                                <FontAwesomeIcon icon={faTimes} />
+                            </button>
+                        )}
+                    </div>
 
-            {/* Boutons de filtre par tendance */}
-            <div className="filter-container">
-                <FontAwesomeIcon icon={faFilter} className="filter-label-icon" />
-                <span className="filter-label">Filter by trend:</span>
-                <div className="button-group-centered">
+                    {/* Dropdown de tri amélioré */}
+                    <div className="enhanced-sort-container" ref={sortDropdownRef}>
+                        <button
+                            className="sort-button"
+                            onClick={() => setShowSortOptions(!showSortOptions)}
+                        >
+                            <FontAwesomeIcon
+                                icon={sortOption.includes('desc') ? faSortAmountDown : faSortAmountUp}
+                                className="sort-icon"
+                            />
+                            <span>{getSortLabel(sortOption)}</span>
+                        </button>
+
+                        {showSortOptions && (
+                            <div className="sort-options-dropdown">
+                                <div
+                                    className={`sort-option ${sortOption === 'default' ? 'selected' : ''}`}
+                                    onClick={() => {
+                                        setSortOption('default');
+                                        setShowSortOptions(false);
+                                    }}
+                                >
+                                    Default
+                                </div>
+                                <div
+                                    className={`sort-option ${sortOption === 'price-asc' ? 'selected' : ''}`}
+                                    onClick={() => {
+                                        setSortOption('price-asc');
+                                        setShowSortOptions(false);
+                                    }}
+                                >
+                                    Price: Low to High
+                                </div>
+                                <div
+                                    className={`sort-option ${sortOption === 'price-desc' ? 'selected' : ''}`}
+                                    onClick={() => {
+                                        setSortOption('price-desc');
+                                        setShowSortOptions(false);
+                                    }}
+                                >
+                                    Price: High to Low
+                                </div>
+                                <div
+                                    className={`sort-option ${sortOption === 'date-desc' ? 'selected' : ''}`}
+                                    onClick={() => {
+                                        setSortOption('date-desc');
+                                        setShowSortOptions(false);
+                                    }}
+                                >
+                                    Recently Updated
+                                </div>
+                                <div
+                                    className={`sort-option ${sortOption === 'date-asc' ? 'selected' : ''}`}
+                                    onClick={() => {
+                                        setSortOption('date-asc');
+                                        setShowSortOptions(false);
+                                    }}
+                                >
+                                    Oldest First
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Bouton pour filtres avancés */}
                     <button
-                        className={`filter-button ${trendFilter === 'all' ? 'selected' : ''}`}
-                        onClick={() => {
-                            setTrendFilter('all');
-                            setDisplayCount(INITIAL_ITEMS_COUNT);
-                            setAllDisplayed(false);
-                        }}
+                        className={`filter-advanced-button ${showFilters ? 'active' : ''}`}
+                        onClick={toggleFilters}
                     >
-                        <FontAwesomeIcon icon={faCircleCheck} className="button-icon" />
-                        All
-                    </button>
-                    <button
-                        className={`filter-button ${trendFilter === 'up' ? 'selected' : ''}`}
-                        onClick={() => {
-                            setTrendFilter('up');
-                            setDisplayCount(INITIAL_ITEMS_COUNT);
-                            setAllDisplayed(false);
-                        }}
-                    >
-                        <FontAwesomeIcon icon={faArrowUp} className="button-icon" />
-                        Price Rising
-                    </button>
-                    <button
-                        className={`filter-button ${trendFilter === 'down' ? 'selected' : ''}`}
-                        onClick={() => {
-                            setTrendFilter('down');
-                            setDisplayCount(INITIAL_ITEMS_COUNT);
-                            setAllDisplayed(false);
-                        }}
-                    >
-                        <FontAwesomeIcon icon={faArrowDown} className="button-icon" />
-                        Price Falling
-                    </button>
-                    <button
-                        className={`filter-button ${trendFilter === 'stable' ? 'selected' : ''}`}
-                        onClick={() => {
-                            setTrendFilter('stable');
-                            setDisplayCount(INITIAL_ITEMS_COUNT);
-                            setAllDisplayed(false);
-                        }}
-                    >
-                        <FontAwesomeIcon icon={faChartLine} className="button-icon" />
-                        Price Stable
+                        <FontAwesomeIcon icon={faSliders} className="filter-icon" />
+                        <span>Filters</span>
                     </button>
                 </div>
+
+                {/* Nouvelle section de filtres */}
+                {showFilters && (
+                    <div className="enhanced-filter-panel">
+                        <div className="filter-header">
+                            <FontAwesomeIcon icon={faFilter} className="filter-panel-icon" />
+                            <h3>Filter by trend</h3>
+                        </div>
+
+                        <div className="trend-filter-buttons">
+                            <button
+                                className={`enhanced-filter-button ${trendFilter === 'all' ? 'selected' : ''}`}
+                                onClick={() => {
+                                    setTrendFilter('all');
+                                    setDisplayCount(INITIAL_ITEMS_COUNT);
+                                    setAllDisplayed(false);
+                                }}
+                            >
+                                <FontAwesomeIcon icon={faCircleCheck} className="filter-button-icon" />
+                                <span>All</span>
+                            </button>
+                            <button
+                                className={`enhanced-filter-button ${trendFilter === 'up' ? 'selected' : ''}`}
+                                onClick={() => {
+                                    setTrendFilter('up');
+                                    setDisplayCount(INITIAL_ITEMS_COUNT);
+                                    setAllDisplayed(false);
+                                }}
+                            >
+                                <FontAwesomeIcon icon={faArrowUp} className="filter-button-icon up" />
+                                <span>Price Rising</span>
+                            </button>
+                            <button
+                                className={`enhanced-filter-button ${trendFilter === 'down' ? 'selected' : ''}`}
+                                onClick={() => {
+                                    setTrendFilter('down');
+                                    setDisplayCount(INITIAL_ITEMS_COUNT);
+                                    setAllDisplayed(false);
+                                }}
+                            >
+                                <FontAwesomeIcon icon={faArrowDown} className="filter-button-icon down" />
+                                <span>Price Falling</span>
+                            </button>
+                            <button
+                                className={`enhanced-filter-button ${trendFilter === 'stable' ? 'selected' : ''}`}
+                                onClick={() => {
+                                    setTrendFilter('stable');
+                                    setDisplayCount(INITIAL_ITEMS_COUNT);
+                                    setAllDisplayed(false);
+                                }}
+                            >
+                                <FontAwesomeIcon icon={faChartLine} className="filter-button-icon" />
+                                <span>Price Stable</span>
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Résultats de la recherche et message sur le nombre de résultats */}

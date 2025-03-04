@@ -69,16 +69,16 @@ function ProduitCard({ produit }) {
     const renderSparkline = () => {
         if (!priceHistory || priceHistory.length < 2) return null;
 
-        const min = Math.min(...priceHistory) * 0.95; // Légère marge pour éviter que la courbe touche le bord
-        const max = Math.max(...priceHistory) * 1.05;
+        const min = Math.min(...priceHistory) * 0.85; // Augmenté la marge pour éviter l'effet écrasé 
+        const max = Math.max(...priceHistory) * 1.15; // Augmenté la marge pour obtenir plus de hauteur
         const range = max - min || 1; // Éviter division par zéro
 
         // Configuration du SVG améliorée pour éviter l'effet "écrasé"
         const width = 100;
-        const height = 48; // Augmenté pour une meilleure proportion visuelle
+        const height = 70; // Considérablement augmenté pour un graphique plus haut
         const strokeWidth = isHovered ? 3.5 : 2.8;
         const dotRadius = isHovered ? 4 : 3;
-        const padding = 5; // Padding pour éviter que les courbes touchent les bords
+        const padding = 8; // Padding augmenté pour plus d'espace
 
         // Couleurs selon la tendance avec opacité améliorée pour le remplissage
         const trendColors = {
@@ -122,7 +122,7 @@ function ProduitCard({ produit }) {
                 const currentPoint = points[i];
                 const nextPoint = points[i + 1];
 
-                // Améliorer la courbe de Bézier pour un rendu plus fluide
+                // Améliorer la courbe de Bézier pour un rendu plus fluide et naturel
                 const controlX1 = currentPoint.x + (nextPoint.x - currentPoint.x) / 3;
                 const controlY1 = currentPoint.y;
                 const controlX2 = nextPoint.x - (nextPoint.x - currentPoint.x) / 3;
@@ -143,6 +143,68 @@ function ProduitCard({ produit }) {
         const animationProps = isHovered ? {
             style: { animation: 'pulsePath 1.5s infinite alternate ease-in-out' }
         } : {};
+
+        // Ajoutons une grille légère pour donner plus de profondeur
+        const gridLines = [];
+        const numGridLinesY = 4; // Nombre de lignes horizontales
+
+        for (let i = 1; i < numGridLinesY; i++) {
+            const y = padding + ((height - 2 * padding) * i / numGridLinesY);
+            gridLines.push(
+                <line
+                    key={`grid-y-${i}`}
+                    x1={padding}
+                    y1={y}
+                    x2={width - padding}
+                    y2={y}
+                    stroke="rgba(255, 255, 255, 0.05)"
+                    strokeWidth="1"
+                />
+            );
+        }
+
+        // Points pour indiquer le min et max
+        const minMaxPoints = [];
+        const minPrice = Math.min(...priceHistory);
+        const maxPrice = Math.max(...priceHistory);
+
+        // Trouver les indices des valeurs min et max
+        const minIndex = priceHistory.indexOf(minPrice);
+        const maxIndex = priceHistory.indexOf(maxPrice);
+
+        if (minIndex !== -1) {
+            const minPoint = points[minIndex];
+            minMaxPoints.push(
+                <g key="min-indicator" className="min-point-group">
+                    <circle
+                        cx={minPoint.x}
+                        cy={minPoint.y}
+                        r={dotRadius + 2}
+                        fill="transparent"
+                        stroke="rgba(216, 76, 74, 0.5)"
+                        strokeWidth="1"
+                        opacity={isHovered ? 1 : 0.5}
+                    />
+                </g>
+            );
+        }
+
+        if (maxIndex !== -1) {
+            const maxPoint = points[maxIndex];
+            minMaxPoints.push(
+                <g key="max-indicator" className="max-point-group">
+                    <circle
+                        cx={maxPoint.x}
+                        cy={maxPoint.y}
+                        r={dotRadius + 2}
+                        fill="transparent"
+                        stroke="rgba(63, 204, 164, 0.5)"
+                        strokeWidth="1"
+                        opacity={isHovered ? 1 : 0.5}
+                    />
+                </g>
+            );
+        }
 
         return (
             <div className={`sparkline ${getTrendClass()} ${isHovered ? 'hovered' : ''}`}>
@@ -173,15 +235,20 @@ function ProduitCard({ produit }) {
                         </linearGradient>
                     </defs>
 
-                    {/* Fond très subtil pour rendre la zone du graphique visible */}
+                    {/* Zone de fond avec bordure */}
                     <rect
-                        x={padding}
-                        y={padding}
-                        width={width - 2 * padding}
-                        height={height - 2 * padding}
-                        fill="rgba(255, 255, 255, 0.02)"
-                        rx="2"
+                        x={padding / 2}
+                        y={padding / 2}
+                        width={width - padding}
+                        height={height - padding}
+                        fill="rgba(45, 69, 92, 0.3)"
+                        stroke="rgba(255, 255, 255, 0.05)"
+                        strokeWidth="1"
+                        rx="4"
                     />
+
+                    {/* Lignes de grille */}
+                    {gridLines}
 
                     {/* Effet de lueur sous la courbe */}
                     {isHovered && (
@@ -222,19 +289,23 @@ function ProduitCard({ produit }) {
                         }}
                     />
 
+                    {/* Indicateurs min-max */}
+                    {isHovered && minMaxPoints}
+
                     {/* Points sur la courbe - seulement quelques points stratégiques */}
                     {points.map((point, index) => {
                         // N'afficher que les points stratégiques pour un look plus propre
                         if (index === 0 || index === points.length - 1 ||
-                            (isHovered && index % Math.ceil(points.length / 5) === 0)) {
+                            (isHovered && (index % Math.ceil(points.length / 4) === 0 || index === minIndex || index === maxIndex))) {
                             const isEndPoint = index === 0 || index === points.length - 1;
+                            const isSpecialPoint = index === minIndex || index === maxIndex;
 
                             return (
                                 <circle
                                     key={index}
                                     cx={point.x}
                                     cy={point.y}
-                                    r={isEndPoint ? dotRadius + 0.5 : dotRadius - 0.5}
+                                    r={isSpecialPoint ? dotRadius + 1 : isEndPoint ? dotRadius + 0.5 : dotRadius - 0.5}
                                     fill={colors.dot}
                                     stroke="#fff"
                                     strokeWidth="1"

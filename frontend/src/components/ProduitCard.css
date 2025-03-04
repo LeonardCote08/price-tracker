@@ -144,19 +144,20 @@
     -webkit-box-orient: vertical;
 }
 
-/* Mini graphique (sparkline) - Amélioré */
+/* Mini graphique (sparkline) - Considérablement amélioré */
 .sparkline {
-    height: 50px; /* Augmenté pour donner plus d'espace au graphique et éviter l'effet écrasé */
+    height: 70px; /* Augmenté considérablement pour un graphique plus proportionné */
     width: 100%;
-    margin: 10px 0;
+    margin: 12px 0; /* Augmenté pour donner plus d'espace */
     position: relative;
     overflow: visible; /* Pour permettre des effets qui dépassent les limites */
-    border-radius: 4px;
+    border-radius: 6px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1); /* Ombre interne pour donner de la profondeur */
 }
 
     .sparkline svg {
         overflow: visible;
-        filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.2));
+        filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.3));
     }
 
 /* Nouvelle animation de pulse pour les chemins et les cercles */
@@ -167,21 +168,38 @@
     }
 
     to {
-        stroke-width: 3.5px;
+        stroke-width: 3.8px;
         filter: brightness(1.3);
     }
 }
 
 @keyframes pulseGlow {
     from {
-        opacity: 0.4;
+        opacity: 0.3;
         transform: scaleY(1);
     }
 
     to {
-        opacity: 0.7;
-        transform: scaleY(1.05);
+        opacity: 0.6;
+        transform: scaleY(1.08);
     }
+}
+
+/* Animation pour les indicateurs min/max */
+@keyframes pulse {
+    from {
+        r: 4;
+        opacity: 0.7;
+    }
+
+    to {
+        r: 5;
+        opacity: 1;
+    }
+}
+
+.min-point-group circle, .max-point-group circle {
+    animation: pulse 1.5s infinite alternate ease-in-out;
 }
 
 /* Application des animations au survol */
@@ -325,7 +343,7 @@
 /* Responsive */
 @media (max-width: 768px) {
     .product-image-container {
-        height: 180px;
+        height: 60px;
     }
 
     .product-title {
@@ -357,6 +375,6 @@
     }
 
     .sparkline {
-        height: 30px;
+        height: 50px;
     }
 }
