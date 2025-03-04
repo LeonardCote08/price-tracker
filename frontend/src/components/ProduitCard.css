@@ -157,22 +157,23 @@
 }
 
 .sparkline {
-    flex: 1;
+    flex: 0 0 65%; /* Alloue 65% de l'espace au graphique */
     height: 100%;
     padding: 5px;
 }
 
 .change-indicator {
-    width: 60px;
+    flex: 0 0 35%; /* Alloue 35% de l'espace à l'indicateur */
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
     font-size: 0.9rem;
-    padding: 0 8px;
+    padding: 0 5px;
     background-color: rgba(0, 0, 0, 0.2);
     text-align: center;
+    min-width: 46px; /* Largeur minimale pour éviter des problèmes sur petits écrans */
 }
 
     .change-indicator.positive {

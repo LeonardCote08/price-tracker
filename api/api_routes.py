@@ -205,17 +205,19 @@ def get_produit(product_id):
 @api_bp.route('/produits/<int:product_id>/price-trend', methods=['GET'])
 def get_price_trend(product_id):
     """
-    Retourne la tendance de prix d'un produit en comparant les 3 derniers prix.
+    Retourne la tendance de prix d'un produit en comparant le premier et dernier prix.
     """
     conn = get_connection()
     cursor = conn.cursor()
+    
+    # Récupérer tous les prix triés par date
     cursor.execute("""
         SELECT price 
         FROM price_history 
         WHERE product_id = %s 
-        ORDER BY date_scraped DESC 
-        LIMIT 3
+        ORDER BY date_scraped ASC
     """, (product_id,))
+    
     prices = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -223,17 +225,28 @@ def get_price_trend(product_id):
     if len(prices) < 2:
         return jsonify({"trend": "stable"})  # Pas assez de données, on assume stable
 
-    latest_price = prices[0][0]
-    second_latest_price = prices[1][0]
-    trend = "stable"
-    if latest_price > second_latest_price:
+    first_price = prices[0][0]
+    last_price = prices[-1][0]
+    
+    # Calculer le pourcentage de variation
+    if first_price > 0:
+        variation = ((last_price - first_price) / first_price) * 100
+    else:
+        variation = 0
+    
+    # Utiliser un seuil de ±3% pour considérer une variation comme significative
+    if variation > 3:
         trend = "up"
-    elif latest_price < second_latest_price:
+    elif variation < -3:
         trend = "down"
-    return jsonify({"trend": trend})
+    else:
+        trend = "stable"
+        
+    return jsonify({
+        "trend": trend,
+        "variation": variation
+    })
 
-# api/api_routes.py
-@api_bp.route('/produits/<int:product_id>/historique-prix', methods=['GET'])
 @api_bp.route('/produits/<int:product_id>/historique-prix', methods=['GET'])
 def get_historique_prix(product_id):
     conn = get_connection()
@@ -257,15 +270,19 @@ def get_historique_prix(product_id):
     avg_price = sum(prices) / len(prices)
     min_price = min(prices)
     max_price = max(prices)
+    
+    # Calculer la variation en pourcentage entre le premier et le dernier prix
     variation = ((prices[-1] - prices[0]) / prices[0] * 100) if prices[0] != 0 else 0
+    
     seven_day_avg = sum(prices[-7:]) / min(len(prices), 7) if prices else 0
-    trend = "stable"
-    if len(prices) > 1:
-        change = prices[-1] - prices[-2]
-        if change > 0.5:  # Seuil arbitraire
-            trend = "up"
-        elif change < -0.5:
-            trend = "down"
+    
+    # Déterminer la tendance en fonction de la variation
+    if variation > 3:
+        trend = "up"
+    elif variation < -3:
+        trend = "down"
+    else:
+        trend = "stable"
 
     data = {
         "dates": dates,

@@ -14,22 +14,19 @@ import './ProduitCard.css';
 
 function ProduitCard({ produit }) {
     const price = typeof produit.price === 'number' ? produit.price : 0;
-    const buyItNow = typeof produit.buy_it_now_price === 'number' ? produit.buy_it_now_price : null;
-    const [trend, setTrend] = useState('stable');
-    const [trendText, setTrendText] = useState('Price Stable');
     const [priceHistory, setPriceHistory] = useState(null);
     const [percentChange, setPercentChange] = useState(null);
-    const sparklineRef = useRef(null);
+    const [trend, setTrend] = useState('stable');
+    const [trendText, setTrendText] = useState('Price Stable');
     const [isHovered, setIsHovered] = useState(false);
 
-    // Charger la tendance et l'historique de prix
+    // Charger l'historique de prix et déterminer la tendance
     useEffect(() => {
-        // Récupérer un minihistorique pour la sparkline
         fetch(`/api/produits/${produit.product_id}/historique-prix`)
             .then(response => response.json())
             .then(data => {
                 if (data.prices && data.prices.length > 0) {
-                    setPriceHistory(data.prices.slice(-10)); // On prend les 10 derniers points pour plus de détail
+                    setPriceHistory(data.prices.slice(-10)); // On prend les 10 derniers points pour le graphique
 
                     // Calculer le pourcentage de variation
                     if (data.prices.length >= 2) {
@@ -39,8 +36,9 @@ function ProduitCard({ produit }) {
                         setPercentChange(change);
 
                         // Déterminer la tendance basée sur le pourcentage de variation
-                        // Utiliser un seuil de ±3% pour considérer une variation comme significative
                         const changeValue = parseFloat(change);
+
+                        // Utiliser un seuil de ±3% pour considérer une variation comme significative
                         if (changeValue > 3) {
                             setTrend('up');
                             setTrendText('Price Rising');
@@ -56,7 +54,6 @@ function ProduitCard({ produit }) {
             })
             .catch(err => {
                 console.error('Erreur lors de la récupération de l\'historique', err);
-
                 // En cas d'erreur, on utilise l'API de tendance comme fallback
                 fetch(`/api/produits/${produit.product_id}/price-trend`)
                     .then(response => response.json())
@@ -91,18 +88,19 @@ function ProduitCard({ produit }) {
         return title;
     };
 
-    // Fonction entièrement repensée pour les graphiques
+    // Rendu du graphique de tendance
     const renderSparkline = () => {
         if (!priceHistory || priceHistory.length < 2) return null;
 
-        // Simplifions les données pour un graphique plus clair
+        // Sélectionner les points clés pour un graphique plus clair
         let displayPoints = [];
 
         // Toujours inclure le premier et le dernier point
         if (priceHistory.length <= 5) {
             displayPoints = [...priceHistory];
         } else {
-            // Prendre quelques points clés seulement
+            // Prendre quelques points clés pour représenter la tendance
+            // Premier, milieu et dernier point pour une ligne claire
             displayPoints = [
                 priceHistory[0],
                 priceHistory[Math.floor(priceHistory.length / 2)],
@@ -120,8 +118,9 @@ function ProduitCard({ produit }) {
         const strokeColor = trendColors[trend] || trendColors.stable;
 
         // Dimensions et configuration du graphique
-        const width = 100;  // Largeur totale plus petite
-        const height = 30;  // Hauteur réduite
+        const width = 120;  // Largeur totale du SVG
+        const height = 30;  // Hauteur du SVG
+        const graphWidth = 80; // Largeur effective du graphique
         const padding = 5;  // Marge intérieure
 
         // Calcul des valeurs min/max pour l'échelle
@@ -131,7 +130,7 @@ function ProduitCard({ produit }) {
 
         // Calculer les coordonnées des points
         const pointCoordinates = displayPoints.map((value, index) => {
-            const x = padding + ((index / (displayPoints.length - 1)) * (width - 2 * padding));
+            const x = padding + ((index / (displayPoints.length - 1)) * (graphWidth - 2 * padding));
             const normalizedValue = (value - min) / range;
             const y = height - padding - (normalizedValue * (height - 2 * padding));
             return { x, y, value };
@@ -141,23 +140,13 @@ function ProduitCard({ produit }) {
         const changeValue = percentChange !== null ? percentChange :
             ((displayPoints[displayPoints.length - 1] - displayPoints[0]) / displayPoints[0] * 100).toFixed(1);
 
-        const formattedChange = (changeValue > 0 ? '+' : '') + changeValue;
-        const changeClass = changeValue > 0 ? 'positive' : changeValue < 0 ? 'negative' : 'neutral';
+        const formattedChange = (parseFloat(changeValue) > 0 ? '+' : '') + changeValue;
+        const changeClass = parseFloat(changeValue) > 0 ? 'positive' : parseFloat(changeValue) < 0 ? 'negative' : 'neutral';
 
         return (
             <div className="sparkline-container">
                 <div className="sparkline">
                     <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
-                        {/* Ligne de base */}
-                        <line
-                            x1={padding}
-                            y1={height - padding}
-                            x2={width - padding}
-                            y2={height - padding}
-                            stroke="#2a3f55"
-                            strokeWidth="1"
-                        />
-
                         {/* Tracer la ligne entre les points */}
                         <polyline
                             points={pointCoordinates.map(pt => `${pt.x},${pt.y}`).join(' ')}
@@ -181,7 +170,7 @@ function ProduitCard({ produit }) {
                     </svg>
                 </div>
 
-                {/* Pourcentage de variation déplacé à côté du graphique */}
+                {/* Pourcentage de variation */}
                 <div className={`change-indicator ${changeClass}`}>
                     {formattedChange}%
                 </div>
