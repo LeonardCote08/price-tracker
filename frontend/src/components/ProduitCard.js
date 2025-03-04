@@ -98,30 +98,30 @@ function ProduitCard({ produit }) {
         const firstPrice = priceHistory[0];
         const lastPrice = priceHistory[priceHistory.length - 1];
 
-        // Couleurs selon tendance
+        // Couleurs selon tendance (mises à jour pour correspondre aux changements CSS)
         const trendColors = {
-            up: '#3FCCA4',
-            down: '#D84C4A',
-            stable: '#1595EB'
+            up: '#3FCCA4',    // Vert plus vif
+            down: '#FF6B6B',  // Rouge plus vif
+            stable: '#5CB0FF' // Bleu plus vif
         };
 
         const strokeColor = trendColors[trend] || trendColors.stable;
 
         // Dimensions et configuration du graphique
-        const width = 160;   // Largeur totale du SVG augmentée
-        const height = 34;   // Hauteur du SVG augmentée pour meilleure lisibilité
-        const graphWidth = 138; // Largeur effective du graphique ajustée
-        const padding = 4;    // Marge intérieure réduite
+        const width = 180;    // Largeur totale du SVG augmentée
+        const height = 38;    // Hauteur du SVG adaptée au conteneur
+        const graphWidth = 158; // Largeur effective du graphique ajustée
+        const padding = 4;    // Marge intérieure
 
-        // Valeurs minimale et maximale pour l'échelle
-        const valuesSpread = Math.abs(lastPrice - firstPrice) * 0.2; // Augmenter l'amplitude 
+        // Valeurs minimale et maximale pour l'échelle avec amplitude augmentée
+        const valuesSpread = Math.abs(lastPrice - firstPrice) * 0.25; // Amplitude augmentée
         const min = Math.min(firstPrice, lastPrice) - valuesSpread;
         const max = Math.max(firstPrice, lastPrice) + valuesSpread;
         const range = max - min || 1;
 
         // Coordonnées pour le début et la fin
         const startX = padding;
-        const endX = graphWidth - 62; // Ajusté pour l'indicateur de pourcentage
+        const endX = graphWidth - 70; // Ajusté pour l'indicateur de pourcentage plus large
 
         // Calculer les coordonnées Y en fonction des prix
         const startY = height - padding - ((firstPrice - min) / range * (height - 2 * padding));
@@ -129,7 +129,7 @@ function ProduitCard({ produit }) {
 
         // Amélioration de l'intensité de la courbe pour une meilleure visualisation
         const variationPercent = Math.abs((lastPrice - firstPrice) / firstPrice);
-        const curveIntensity = Math.min(height * 0.5, Math.max(height * 0.15, height * variationPercent * 0.8));
+        const curveIntensity = Math.min(height * 0.6, Math.max(height * 0.2, height * variationPercent));
 
         // Points de contrôle pour la courbe de Bézier
         let controlPoint1X, controlPoint1Y, controlPoint2X, controlPoint2Y;
@@ -138,7 +138,7 @@ function ProduitCard({ produit }) {
         if (trend === 'up') {
             // Courbe montante avec meilleure forme
             controlPoint1X = startX + (endX - startX) * 0.3;
-            controlPoint1Y = startY - curveIntensity * 0.2;
+            controlPoint1Y = startY - curveIntensity * 0.3;
             controlPoint2X = startX + (endX - startX) * 0.7;
             controlPoint2Y = endY - curveIntensity;
         } else if (trend === 'down') {
@@ -146,13 +146,13 @@ function ProduitCard({ produit }) {
             controlPoint1X = startX + (endX - startX) * 0.3;
             controlPoint1Y = startY + curveIntensity;
             controlPoint2X = startX + (endX - startX) * 0.7;
-            controlPoint2Y = endY + curveIntensity * 0.2;
+            controlPoint2Y = endY + curveIntensity * 0.3;
         } else {
             // Tendance stable: ondulation plus visible
             controlPoint1X = startX + (endX - startX) * 0.33;
-            controlPoint1Y = Math.min(startY, endY) - height * 0.07;
+            controlPoint1Y = Math.min(startY, endY) - height * 0.1;
             controlPoint2X = startX + (endX - startX) * 0.67;
-            controlPoint2Y = Math.min(startY, endY) - height * 0.07;
+            controlPoint2Y = Math.min(startY, endY) - height * 0.1;
         }
 
         // Format du pourcentage avec signe
@@ -181,11 +181,54 @@ function ProduitCard({ produit }) {
             <div className="sparkline-container">
                 <div className="sparkline">
                     <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet">
-                        {/* Zone ombrée sous la courbe */}
+                        {/* Points de données intermédiaires pour texture (facultatif) */}
+                        {trend !== 'stable' && (
+                            <g className="data-points">
+                                {[0.2, 0.4, 0.6, 0.8].map((fraction) => {
+                                    const t = fraction;
+                                    // Formule de Bézier cubique
+                                    const pointX = Math.pow(1 - t, 3) * startX +
+                                        3 * Math.pow(1 - t, 2) * t * controlPoint1X +
+                                        3 * (1 - t) * Math.pow(t, 2) * controlPoint2X +
+                                        Math.pow(t, 3) * endX;
+                                    const pointY = Math.pow(1 - t, 3) * startY +
+                                        3 * Math.pow(1 - t, 2) * t * controlPoint1Y +
+                                        3 * (1 - t) * Math.pow(t, 2) * controlPoint2Y +
+                                        Math.pow(t, 3) * endY;
+                                    return (
+                                        <circle
+                                            key={fraction}
+                                            cx={pointX}
+                                            cy={pointY}
+                                            r={1.5}
+                                            fill={strokeColor}
+                                            fillOpacity={0.8}
+                                        />
+                                    );
+                                })}
+                            </g>
+                        )}
+
+                        {/* Zone ombrée sous la courbe avec dégradé */}
+                        <defs>
+                            <linearGradient id={`gradient-${produit.product_id}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor={strokeColor} stopOpacity="0.3" />
+                                <stop offset="100%" stopColor={strokeColor} stopOpacity="0.05" />
+                            </linearGradient>
+                        </defs>
                         <path
                             d={areaPath}
-                            fill={strokeColor}
-                            fillOpacity="0.15" // Augmenté pour plus de visibilité
+                            fill={`url(#gradient-${produit.product_id})`}
+                        />
+
+                        {/* Ligne d'axe horizontal subtile */}
+                        <line
+                            x1={startX}
+                            y1={height - padding}
+                            x2={endX}
+                            y2={height - padding}
+                            stroke="rgba(255, 255, 255, 0.1)"
+                            strokeWidth="1"
                         />
 
                         {/* Courbe de Bézier */}
@@ -193,7 +236,7 @@ function ProduitCard({ produit }) {
                             d={linePath}
                             fill="none"
                             stroke={strokeColor}
-                            strokeWidth="2.5" // Augmenté pour plus de visibilité
+                            strokeWidth="2.5"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                         />
@@ -202,14 +245,16 @@ function ProduitCard({ produit }) {
                         <circle
                             cx={startX}
                             cy={startY}
-                            r={3} // Augmenté pour plus de visibilité
+                            r={3.5}
                             fill={strokeColor}
                         />
                         <circle
                             cx={endX}
                             cy={endY}
-                            r={3} // Augmenté pour plus de visibilité
+                            r={3.5}
                             fill={strokeColor}
+                            strokeWidth="1.5"
+                            stroke="rgba(0,0,0,0.2)"
                         />
                     </svg>
                 </div>
@@ -220,6 +265,18 @@ function ProduitCard({ produit }) {
                 </div>
             </div>
         );
+    };
+
+    // Format de date pour l'affichage
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString();
+        } catch (e) {
+            return dateString;
+        }
     };
 
     return (
@@ -291,7 +348,7 @@ function ProduitCard({ produit }) {
                         </div>
                         <div className="update-info">
                             <FontAwesomeIcon icon={faClock} className="update-icon" />
-                            <span className="update-date">{produit.last_scraped_date || 'N/A'}</span>
+                            <span className="update-date">{formatDate(produit.last_scraped_date)}</span>
                         </div>
                     </div>
                 </div>
