@@ -65,264 +65,158 @@ function ProduitCard({ produit }) {
         return title;
     };
 
-    // Fonction améliorée pour dessiner la sparkline avec SVG
+
+    // Fonction entièrement repensée pour les graphiques
     const renderSparkline = () => {
         if (!priceHistory || priceHistory.length < 2) return null;
 
-        const min = Math.min(...priceHistory) * 0.85; // Augmenté la marge pour éviter l'effet écrasé 
-        const max = Math.max(...priceHistory) * 1.15; // Augmenté la marge pour obtenir plus de hauteur
-        const range = max - min || 1; // Éviter division par zéro
+        // Simplifions les données pour un graphique plus clair
+        // Nous allons prendre moins de points mais les rendre plus significatifs
+        let displayPoints = [];
 
-        // Configuration du SVG améliorée pour éviter l'effet "écrasé"
-        const width = 100;
-        const height = 70; // Considérablement augmenté pour un graphique plus haut
-        const strokeWidth = isHovered ? 3.5 : 2.8;
-        const dotRadius = isHovered ? 4 : 3;
-        const padding = 8; // Padding augmenté pour plus d'espace
+        // Toujours inclure le premier et le dernier point
+        // Et quelques points intermédiaires significatifs
+        if (priceHistory.length <= 5) {
+            displayPoints = [...priceHistory];
+        } else {
+            // Prendre le premier, dernier, point le plus haut, point le plus bas, et quelques points intermédiaires
+            const first = priceHistory[0];
+            const last = priceHistory[priceHistory.length - 1];
+            const max = Math.max(...priceHistory);
+            const min = Math.min(...priceHistory);
 
-        // Couleurs selon la tendance avec opacité améliorée pour le remplissage
+            // Toujours inclure le premier et le dernier
+            displayPoints.push(first);
+
+            // Trouver un ou deux points intermédiaires intéressants
+            const midPoint = priceHistory[Math.floor(priceHistory.length / 2)];
+            displayPoints.push(midPoint);
+
+            // Ajouter le min et max s'ils ne sont pas déjà inclus
+            if (min !== first && min !== last && min !== midPoint) {
+                const minIndex = priceHistory.indexOf(min);
+                displayPoints.push({ value: min, index: minIndex });
+            }
+
+            if (max !== first && max !== last && max !== midPoint) {
+                const maxIndex = priceHistory.indexOf(max);
+                displayPoints.push({ value: max, index: maxIndex });
+            }
+
+            displayPoints.push(last);
+
+            // Trier les points par ordre d'index
+            displayPoints = displayPoints
+                .map((point, i) => typeof point === 'number' ? { value: point, index: i === 0 ? 0 : i === 1 ? Math.floor(priceHistory.length / 2) : priceHistory.length - 1 } : point)
+                .sort((a, b) => a.index - b.index)
+                .map(p => p.value);
+        }
+
+        // Couleurs selon tendance
         const trendColors = {
             up: {
-                stroke: '#3FCCA4',
-                fill: 'rgba(63, 204, 164, 0.3)',
-                dot: '#3FCCA4',
-                glow: 'rgba(63, 204, 164, 0.7)'
+                main: '#3FCCA4',
+                secondary: '#2EAA83',
+                gradient: ['rgba(63, 204, 164, 0.8)', 'rgba(63, 204, 164, 0)']
             },
             down: {
-                stroke: '#D84C4A',
-                fill: 'rgba(216, 76, 74, 0.3)',
-                dot: '#D84C4A',
-                glow: 'rgba(216, 76, 74, 0.7)'
+                main: '#D84C4A',
+                secondary: '#B43A38',
+                gradient: ['rgba(216, 76, 74, 0.8)', 'rgba(216, 76, 74, 0)']
             },
             stable: {
-                stroke: '#1595EB',
-                fill: 'rgba(21, 149, 235, 0.2)',
-                dot: '#1595EB',
-                glow: 'rgba(21, 149, 235, 0.7)'
+                main: '#1595EB',
+                secondary: '#1276C0',
+                gradient: ['rgba(21, 149, 235, 0.8)', 'rgba(21, 149, 235, 0)']
             }
         };
 
         const colors = trendColors[trend] || trendColors.stable;
 
-        // Créer les points pour le tracé avec une courbe lissée
-        const points = priceHistory.map((price, index) => {
-            // Ajuster les coordonnées avec padding pour éviter l'effet écrasé
-            const x = padding + ((index / (priceHistory.length - 1)) * (width - 2 * padding));
-            // Inverser Y avec padding et ajuster la hauteur pour avoir une meilleure courbe
-            const y = padding + ((height - 2 * padding) - ((price - min) / range) * (height - 2 * padding));
-            return { x, y };
+        // Convertir les valeurs en pourcentages pour un affichage plus cohérent
+        const min = Math.min(...displayPoints) * 0.95;
+        const max = Math.max(...displayPoints) * 1.05;
+        const range = max - min || 1;
+
+        // Dimensions du graphique
+        const width = 90;
+        const height = 40;
+        const graphHeight = 30; // Hauteur effective du graphique (pour laisser de la place aux labels)
+
+        // Calculer les positions des points
+        const pointCoordinates = displayPoints.map((value, index) => {
+            const x = (index / (displayPoints.length - 1)) * width;
+            const normalizedValue = (value - min) / range;
+            const y = graphHeight - (normalizedValue * graphHeight);
+            return { x, y, value };
         });
 
-        // Générer un chemin SVG lissé
-        let pathD = '';
-        if (points.length > 0) {
-            pathD = `M ${points[0].x},${points[0].y}`;
+        // Calculer la tendance en pourcentage
+        const percentChange = displayPoints.length >= 2
+            ? ((displayPoints[displayPoints.length - 1] - displayPoints[0]) / displayPoints[0] * 100).toFixed(1)
+            : "0.0";
 
-            for (let i = 0; i < points.length - 1; i++) {
-                const currentPoint = points[i];
-                const nextPoint = points[i + 1];
-
-                // Améliorer la courbe de Bézier pour un rendu plus fluide et naturel
-                const controlX1 = currentPoint.x + (nextPoint.x - currentPoint.x) / 3;
-                const controlY1 = currentPoint.y;
-                const controlX2 = nextPoint.x - (nextPoint.x - currentPoint.x) / 3;
-                const controlY2 = nextPoint.y;
-
-                pathD += ` C ${controlX1},${controlY1} ${controlX2},${controlY2} ${nextPoint.x},${nextPoint.y}`;
-            }
-        }
-
-        // Créer l'aire sous la courbe
-        let areaPathD = pathD;
-        if (points.length > 0) {
-            // Ajouter les points pour fermer le chemin et créer l'aire
-            areaPathD += ` L ${points[points.length - 1].x},${height - padding} L ${points[0].x},${height - padding} Z`;
-        }
-
-        // Animation pour le chemin (dépend du hover)
-        const animationProps = isHovered ? {
-            style: { animation: 'pulsePath 1.5s infinite alternate ease-in-out' }
-        } : {};
-
-        // Ajoutons une grille légère pour donner plus de profondeur
-        const gridLines = [];
-        const numGridLinesY = 4; // Nombre de lignes horizontales
-
-        for (let i = 1; i < numGridLinesY; i++) {
-            const y = padding + ((height - 2 * padding) * i / numGridLinesY);
-            gridLines.push(
-                <line
-                    key={`grid-y-${i}`}
-                    x1={padding}
-                    y1={y}
-                    x2={width - padding}
-                    y2={y}
-                    stroke="rgba(255, 255, 255, 0.05)"
-                    strokeWidth="1"
-                />
-            );
-        }
-
-        // Points pour indiquer le min et max
-        const minMaxPoints = [];
-        const minPrice = Math.min(...priceHistory);
-        const maxPrice = Math.max(...priceHistory);
-
-        // Trouver les indices des valeurs min et max
-        const minIndex = priceHistory.indexOf(minPrice);
-        const maxIndex = priceHistory.indexOf(maxPrice);
-
-        if (minIndex !== -1) {
-            const minPoint = points[minIndex];
-            minMaxPoints.push(
-                <g key="min-indicator" className="min-point-group">
-                    <circle
-                        cx={minPoint.x}
-                        cy={minPoint.y}
-                        r={dotRadius + 2}
-                        fill="transparent"
-                        stroke="rgba(216, 76, 74, 0.5)"
-                        strokeWidth="1"
-                        opacity={isHovered ? 1 : 0.5}
-                    />
-                </g>
-            );
-        }
-
-        if (maxIndex !== -1) {
-            const maxPoint = points[maxIndex];
-            minMaxPoints.push(
-                <g key="max-indicator" className="max-point-group">
-                    <circle
-                        cx={maxPoint.x}
-                        cy={maxPoint.y}
-                        r={dotRadius + 2}
-                        fill="transparent"
-                        stroke="rgba(63, 204, 164, 0.5)"
-                        strokeWidth="1"
-                        opacity={isHovered ? 1 : 0.5}
-                    />
-                </g>
-            );
-        }
+        const isPositive = percentChange > 0;
+        const isNegative = percentChange < 0;
 
         return (
-            <div className={`sparkline ${getTrendClass()} ${isHovered ? 'hovered' : ''}`}>
-                <svg
-                    width="100%"
-                    height="100%"
-                    viewBox={`0 0 ${width} ${height}`}
-                    preserveAspectRatio="none"
-                    style={{ overflow: 'visible' }}
-                >
-                    {/* Effet de glow pour la courbe */}
-                    <filter id={`glow-${produit.product_id}`} x="-20%" y="-20%" width="140%" height="140%">
-                        <feGaussianBlur stdDeviation={isHovered ? "2" : "1"} result="blur" />
-                        <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                    </filter>
+            <div className={`enhanced-chart ${getTrendClass()}`}>
+                <div className="chart-container">
+                    {/* Pourcentage de variation */}
+                    <div className={`percent-change ${isPositive ? 'positive' : isNegative ? 'negative' : 'neutral'}`}>
+                        {isPositive ? '+' : ''}{percentChange}%
+                    </div>
 
-                    {/* Dégradé amélioré */}
-                    <defs>
-                        <linearGradient id={`gradient-${produit.product_id}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor={colors.fill} stopOpacity="0.7" />
-                            <stop offset="100%" stopColor={colors.fill} stopOpacity="0.1" />
-                        </linearGradient>
+                    <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
+                        {/* Définitions de gradient et effets */}
+                        <defs>
+                            <linearGradient id={`line-gradient-${produit.product_id}`} x1="0%" y1="0%" x2="100%" y1="0%">
+                                <stop offset="0%" stopColor={colors.secondary} />
+                                <stop offset="100%" stopColor={colors.main} />
+                            </linearGradient>
 
-                        {/* Dégradé pour l'effet de lueur */}
-                        <linearGradient id={`glow-gradient-${produit.product_id}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor={colors.glow} stopOpacity="0.5" />
-                            <stop offset="100%" stopColor={colors.glow} stopOpacity="0" />
-                        </linearGradient>
-                    </defs>
+                            <filter id={`glow-${produit.product_id}`}>
+                                <feGaussianBlur stdDeviation="1.5" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
 
-                    {/* Zone de fond avec bordure */}
-                    <rect
-                        x={padding / 2}
-                        y={padding / 2}
-                        width={width - padding}
-                        height={height - padding}
-                        fill="rgba(45, 69, 92, 0.3)"
-                        stroke="rgba(255, 255, 255, 0.05)"
-                        strokeWidth="1"
-                        rx="4"
-                    />
-
-                    {/* Lignes de grille */}
-                    {gridLines}
-
-                    {/* Effet de lueur sous la courbe */}
-                    {isHovered && (
-                        <path
-                            d={areaPathD}
-                            fill={`url(#glow-gradient-${produit.product_id})`}
-                            stroke="none"
-                            style={{
-                                animation: 'pulseGlow 1.5s infinite alternate ease-in-out',
-                                transformOrigin: 'center'
-                            }}
+                        {/* Tracer la ligne entre les points */}
+                        <polyline
+                            points={pointCoordinates.map(pt => `${pt.x},${pt.y}`).join(' ')}
+                            fill="none"
+                            stroke={`url(#line-gradient-${produit.product_id})`}
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
                         />
-                    )}
 
-                    {/* Aire sous la courbe avec dégradé */}
-                    <path
-                        d={areaPathD}
-                        fill={`url(#gradient-${produit.product_id})`}
-                        stroke="none"
-                        style={{
-                            transition: 'all 0.3s ease'
-                        }}
-                    />
-
-                    {/* Ligne de courbe lissée */}
-                    <path
-                        d={pathD}
-                        fill="none"
-                        stroke={colors.stroke}
-                        strokeWidth={strokeWidth}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        filter={`url(#glow-${produit.product_id})`}
-                        {...animationProps}
-                        style={{
-                            transition: 'stroke-width 0.3s ease',
-                            ...animationProps.style
-                        }}
-                    />
-
-                    {/* Indicateurs min-max */}
-                    {isHovered && minMaxPoints}
-
-                    {/* Points sur la courbe - seulement quelques points stratégiques */}
-                    {points.map((point, index) => {
-                        // N'afficher que les points stratégiques pour un look plus propre
-                        if (index === 0 || index === points.length - 1 ||
-                            (isHovered && (index % Math.ceil(points.length / 4) === 0 || index === minIndex || index === maxIndex))) {
-                            const isEndPoint = index === 0 || index === points.length - 1;
-                            const isSpecialPoint = index === minIndex || index === maxIndex;
-
-                            return (
+                        {/* Points */}
+                        {pointCoordinates.map((pt, i) => (
+                            <g key={i}>
+                                {/* Point extérieur */}
                                 <circle
-                                    key={index}
-                                    cx={point.x}
-                                    cy={point.y}
-                                    r={isSpecialPoint ? dotRadius + 1 : isEndPoint ? dotRadius + 0.5 : dotRadius - 0.5}
-                                    fill={colors.dot}
-                                    stroke="#fff"
-                                    strokeWidth="1"
-                                    filter={`url(#glow-${produit.product_id})`}
-                                    style={{
-                                        transition: 'r 0.3s ease, opacity 0.3s ease',
-                                        opacity: isHovered || isEndPoint ? 1 : 0.7
-                                    }}
+                                    cx={pt.x}
+                                    cy={pt.y}
+                                    r={i === 0 || i === pointCoordinates.length - 1 ? 3.5 : 3}
+                                    fill="#243748"
                                 />
-                            );
-                        }
-                        return null;
-                    })}
-                </svg>
+                                {/* Point intérieur */}
+                                <circle
+                                    cx={pt.x}
+                                    cy={pt.y}
+                                    r={i === 0 || i === pointCoordinates.length - 1 ? 2.5 : 2}
+                                    fill={colors.main}
+                                    filter={`url(#glow-${produit.product_id})`}
+                                />
+                            </g>
+                        ))}
+                    </svg>
+                </div>
             </div>
         );
     };
+
 
     return (
         <Link to={`/produits/${produit.product_id}`} className="produit-card-link">
