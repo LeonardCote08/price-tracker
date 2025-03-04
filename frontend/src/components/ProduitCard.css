@@ -144,12 +144,11 @@
     -webkit-box-orient: vertical;
 }
 
-/* NOUVEAU STYLE POUR LE GRAPHIQUE ET INDICATEUR DE VARIATION */
+/* NOUVEAU STYLE POUR LE GRAPHIQUE SIMPLIFIÉ */
 .sparkline-container {
     display: flex;
-    align-items: center;
-    height: 40px;
-    margin: 10px 0;
+    height: 38px;
+    margin: 8px 0;
     background-color: rgba(36, 55, 72, 0.4);
     border-radius: 6px;
     overflow: hidden;
@@ -157,23 +156,44 @@
 }
 
 .sparkline {
-    flex: 0 0 65%; /* Alloue 65% de l'espace au graphique */
+    flex: 0 0 50%; /* Alloue 50% de l'espace au graphique */
     height: 100%;
-    padding: 5px;
+    padding: 4px;
+    position: relative;
 }
 
+    /* Label "then" et "now" pour contexte temporel */
+    .sparkline:before,
+    .sparkline:after {
+        content: "";
+        position: absolute;
+        bottom: 3px;
+        font-size: 9px;
+        color: rgba(255, 255, 255, 0.5);
+        text-transform: uppercase;
+    }
+
+    .sparkline:before {
+        content: "initial";
+        left: 6px;
+    }
+
+    .sparkline:after {
+        content: "now";
+        right: 6px;
+    }
+
 .change-indicator {
-    flex: 0 0 35%; /* Alloue 35% de l'espace à l'indicateur */
+    flex: 0 0 50%; /* Alloue 50% de l'espace à l'indicateur */
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    font-size: 0.9rem;
-    padding: 0 5px;
+    font-size: 1.1rem;
     background-color: rgba(0, 0, 0, 0.2);
     text-align: center;
-    min-width: 46px; /* Largeur minimale pour éviter des problèmes sur petits écrans */
+    box-shadow: inset 1px 0 0 rgba(255, 255, 255, 0.05);
 }
 
     .change-indicator.positive {
@@ -328,8 +348,7 @@
     }
 
     .change-indicator {
-        width: 55px;
-        font-size: 0.85rem;
+        font-size: 1rem;
     }
 }
 
@@ -353,7 +372,6 @@
     }
 
     .change-indicator {
-        width: 50px;
-        font-size: 0.8rem;
+        font-size: 0.9rem;
     }
 }

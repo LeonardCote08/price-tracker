@@ -90,54 +90,17 @@ function ProduitCard({ produit }) {
         return title;
     };
 
-    // Rendu du graphique de tendance
+    // Rendu du graphique de tendance simplifié
     const renderSparkline = () => {
         if (!priceHistory || priceHistory.length < 2) return null;
 
-        // Sélectionner les points clés pour un graphique plus représentatif
-        let displayPoints = [];
+        // Utiliser seulement le premier et le dernier point pour une tendance claire
+        // Cela montre simplement si le prix a augmenté ou diminué sur la période
+        const firstPrice = priceHistory[0];
+        const lastPrice = priceHistory[priceHistory.length - 1];
 
-        // Toujours inclure le premier et le dernier point
-        if (priceHistory.length <= 5) {
-            displayPoints = [...priceHistory];
-        } else {
-            // Pour un graphique plus représentatif, sélectionnons des points stratégiques
-            // 1. Premier point (toujours)
-            // 2. Point minimum (si différent du premier/dernier)
-            // 3. Point maximum (si différent du premier/dernier)
-            // 4. Dernier point (toujours)
-
-            const prices = [...priceHistory];
-            const firstPrice = prices[0];
-            const lastPrice = prices[prices.length - 1];
-
-            // Ajouter le premier point
-            displayPoints.push(firstPrice);
-
-            // Trouver les indices des valeurs min et max
-            const minPrice = Math.min(...prices);
-            const maxPrice = Math.max(...prices);
-            const minIndex = prices.indexOf(minPrice);
-            const maxIndex = prices.indexOf(maxPrice);
-
-            // Ajouter min et max si différents de premier/dernier
-            if (minPrice !== firstPrice && minPrice !== lastPrice) {
-                // Sélectionner un point significatif avec son indice pour préserver l'ordre
-                displayPoints.push({ value: minPrice, index: minIndex });
-            }
-
-            if (maxPrice !== firstPrice && maxPrice !== lastPrice && maxPrice !== minPrice) {
-                displayPoints.push({ value: maxPrice, index: maxIndex });
-            }
-
-            // Ajouter le dernier point
-            displayPoints.push(lastPrice);
-
-            // Trier les points par index pour maintenir l'ordre chronologique
-            displayPoints = displayPoints.map((point, i) =>
-                typeof point === 'number' ? { value: point, index: i === 0 ? 0 : prices.length - 1 } : point
-            ).sort((a, b) => a.index - b.index).map(p => p.value);
-        }
+        // Points à afficher : juste le début et la fin
+        const displayPoints = [firstPrice, lastPrice];
 
         // Couleurs selon tendance
         const trendColors = {
@@ -151,21 +114,31 @@ function ProduitCard({ produit }) {
         // Dimensions et configuration du graphique
         const width = 120;  // Largeur totale du SVG
         const height = 30;  // Hauteur du SVG
-        const graphWidth = 80; // Largeur effective du graphique
+        const graphWidth = 60; // Largeur effective du graphique, réduite pour un graphique plus compact
         const padding = 5;  // Marge intérieure
 
-        // Calcul des valeurs min/max pour l'échelle
-        const min = Math.min(...displayPoints) * 0.95;
-        const max = Math.max(...displayPoints) * 1.05;
+        // Valeurs minimale et maximale pour l'échelle
+        // Utiliser une marge de 5% pour éviter que les points ne touchent les bords
+        const valuesSpread = Math.abs(displayPoints[1] - displayPoints[0]) * 0.05;
+        const min = Math.min(...displayPoints) - valuesSpread;
+        const max = Math.max(...displayPoints) + valuesSpread;
         const range = max - min || 1;
 
-        // Calculer les coordonnées des points
-        const pointCoordinates = displayPoints.map((value, index) => {
-            const x = padding + ((index / (displayPoints.length - 1)) * (graphWidth - 2 * padding));
-            const normalizedValue = (value - min) / range;
-            const y = height - padding - (normalizedValue * (height - 2 * padding));
-            return { x, y, value };
-        });
+        // Calculer les coordonnées de seulement deux points : le premier et le dernier
+        const pointCoordinates = [
+            // Premier point (à gauche)
+            {
+                x: padding,
+                y: height - padding - ((displayPoints[0] - min) / range * (height - 2 * padding)),
+                value: displayPoints[0]
+            },
+            // Dernier point (à droite)
+            {
+                x: graphWidth - padding,
+                y: height - padding - ((displayPoints[1] - min) / range * (height - 2 * padding)),
+                value: displayPoints[1]
+            }
+        ];
 
         // Format du pourcentage avec signe
         const changeValue = percentChange !== null ? percentChange :
