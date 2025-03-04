@@ -1,6 +1,6 @@
 /* frontend/src/components/ProduitCard.css */
 
-/* Variables pour les couleurs */
+/* Variables pour les couleurs et dimensions */
 :root {
     --color-new: #1ED17E;
     --color-used: #FF5252;
@@ -14,8 +14,12 @@
     --card-bg-color: #1a2c3d;
     --accent-color: #3AA0FE;
     --card-height: 465px;
+    --card-width: 100%;
+    --card-max-width: 300px; /* Largeur maximale des cartes */
+    --card-min-width: 230px; /* Largeur minimale des cartes */
     --card-image-height: 200px;
     --sparkline-height: 38px;
+    --change-indicator-width: 60px;
 }
 
 /* Lien conteneur pour la carte */
@@ -24,6 +28,9 @@
     color: inherit;
     display: block;
     transition: transform 0.3s ease;
+    width: var(--card-width);
+    min-width: var(--card-min-width);
+    max-width: var(--card-max-width);
 }
 
 /* Carte produit principale */
@@ -56,6 +63,7 @@
     max-height: var(--card-image-height);
     overflow: hidden;
     background-color: #1c2f41;
+    flex-shrink: 0; /* Empêche le conteneur de rétrécir */
 }
 
 .product-image {
@@ -191,7 +199,7 @@
     overflow: hidden;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    /* Forcer une largeur constante */
+    /* Dimensions forcées */
     width: 100%;
     flex-shrink: 0; /* Empêcher le conteneur de rétrécir */
 }
@@ -200,7 +208,7 @@
 .sparkline {
     width: 100%;
     height: 100%;
-    padding: 3px 60px 3px 3px; /* Espace à droite pour le badge */
+    padding: 3px var(--change-indicator-width) 3px 3px; /* Espace exact à droite pour le badge */
     position: relative;
 }
 
@@ -210,7 +218,7 @@
     right: 0;
     top: 0;
     height: 100%;
-    width: 60px;
+    width: var(--change-indicator-width);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -245,6 +253,10 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    /* Hauteur fixe pour éviter les variations */
+    height: 70px;
+    min-height: 70px;
+    max-height: 70px;
 }
 
 .price-tag {
@@ -322,7 +334,7 @@
 
 /* Pied de carte avec infos supplémentaires */
 .card-footer {
-    margin-top: 14px;
+    margin-top: auto; /* Pousse le footer vers le bas */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -330,6 +342,9 @@
     color: #aab8c2;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
     padding-top: 14px;
+    height: 30px; /* Hauteur fixe */
+    min-height: 30px;
+    max-height: 30px;
 }
 
 .seller-info {
@@ -360,12 +375,22 @@
     font-size: 0.7rem;
 }
 
+/* Conteneur de grille pour les cartes produit */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
+    gap: 20px;
+    width: 100%;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     :root {
         --card-height: 450px;
         --card-image-height: 180px;
         --sparkline-height: 36px;
+        --change-indicator-width: 55px;
+        --card-min-width: 200px;
     }
 
     .product-title {
@@ -378,7 +403,6 @@
 
     .change-indicator {
         font-size: 0.8rem;
-        width: 55px;
     }
 }
 
@@ -387,6 +411,8 @@
         --card-height: 420px;
         --card-image-height: 160px;
         --sparkline-height: 34px;
+        --change-indicator-width: 50px;
+        --card-min-width: 180px;
     }
 
     .badges-container {
@@ -399,12 +425,7 @@
         font-size: 0.65rem;
     }
 
-    .sparkline {
-        padding-right: 50px;
-    }
-
     .change-indicator {
         font-size: 0.75rem;
-        width: 50px;
     }
 }

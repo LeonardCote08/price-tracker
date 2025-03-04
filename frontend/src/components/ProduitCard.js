@@ -111,9 +111,9 @@ function ProduitCard({ produit }) {
 
         // Couleurs selon tendance (uniformisées avec les variables CSS)
         const trendColors = {
-            up: '#1ED17E',    // Vert vif
-            down: '#FF5252',  // Rouge vif 
-            stable: '#3AA0FE' // Bleu vif
+            up: 'var(--trend-up)',
+            down: 'var(--trend-down)',
+            stable: 'var(--trend-stable)'
         };
 
         const strokeColor = trendColors[trend] || trendColors.stable;
@@ -282,9 +282,9 @@ function ProduitCard({ produit }) {
     const renderDefaultSparkline = () => {
         // Couleurs selon tendance (uniformisées avec les variables CSS)
         const trendColors = {
-            up: '#1ED17E',
-            down: '#FF5252',
-            stable: '#3AA0FE'
+            up: 'var(--trend-up)',
+            down: 'var(--trend-down)',
+            stable: 'var(--trend-stable)'
         };
 
         const strokeColor = trendColors[trend];
