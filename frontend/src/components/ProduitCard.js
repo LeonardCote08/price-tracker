@@ -26,9 +26,11 @@ function ProduitCard({ produit }) {
             .then(response => response.json())
             .then(data => {
                 if (data.prices && data.prices.length > 0) {
-                    setPriceHistory(data.prices.slice(-10)); // On prend les 10 derniers points pour le graphique
+                    // Utiliser tous les points d'historique, pas juste les 10 derniers
+                    setPriceHistory(data.prices);
 
-                    // Calculer le pourcentage de variation
+                    // Calculer le pourcentage de variation entre le premier et dernier point
+                    // de l'historique complet (ce qui correspond aux données de la page détail)
                     if (data.prices.length >= 2) {
                         const firstPrice = data.prices[0];
                         const lastPrice = data.prices[data.prices.length - 1];
@@ -92,20 +94,49 @@ function ProduitCard({ produit }) {
     const renderSparkline = () => {
         if (!priceHistory || priceHistory.length < 2) return null;
 
-        // Sélectionner les points clés pour un graphique plus clair
+        // Sélectionner les points clés pour un graphique plus représentatif
         let displayPoints = [];
 
         // Toujours inclure le premier et le dernier point
         if (priceHistory.length <= 5) {
             displayPoints = [...priceHistory];
         } else {
-            // Prendre quelques points clés pour représenter la tendance
-            // Premier, milieu et dernier point pour une ligne claire
-            displayPoints = [
-                priceHistory[0],
-                priceHistory[Math.floor(priceHistory.length / 2)],
-                priceHistory[priceHistory.length - 1]
-            ];
+            // Pour un graphique plus représentatif, sélectionnons des points stratégiques
+            // 1. Premier point (toujours)
+            // 2. Point minimum (si différent du premier/dernier)
+            // 3. Point maximum (si différent du premier/dernier)
+            // 4. Dernier point (toujours)
+
+            const prices = [...priceHistory];
+            const firstPrice = prices[0];
+            const lastPrice = prices[prices.length - 1];
+
+            // Ajouter le premier point
+            displayPoints.push(firstPrice);
+
+            // Trouver les indices des valeurs min et max
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+            const minIndex = prices.indexOf(minPrice);
+            const maxIndex = prices.indexOf(maxPrice);
+
+            // Ajouter min et max si différents de premier/dernier
+            if (minPrice !== firstPrice && minPrice !== lastPrice) {
+                // Sélectionner un point significatif avec son indice pour préserver l'ordre
+                displayPoints.push({ value: minPrice, index: minIndex });
+            }
+
+            if (maxPrice !== firstPrice && maxPrice !== lastPrice && maxPrice !== minPrice) {
+                displayPoints.push({ value: maxPrice, index: maxIndex });
+            }
+
+            // Ajouter le dernier point
+            displayPoints.push(lastPrice);
+
+            // Trier les points par index pour maintenir l'ordre chronologique
+            displayPoints = displayPoints.map((point, i) =>
+                typeof point === 'number' ? { value: point, index: i === 0 ? 0 : prices.length - 1 } : point
+            ).sort((a, b) => a.index - b.index).map(p => p.value);
         }
 
         // Couleurs selon tendance
