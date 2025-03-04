@@ -67,6 +67,14 @@ const HistoriquePrixChart = ({ dates, prices, trend }) => {
         }
     }, [hasData, trend, chartRef]);
 
+    // Calculer les données pour un aspect ratio plus équilibré
+    const getOptimalAspectRatio = () => {
+        // Plus de points = graphique plus large
+        if (dates.length > 20) return 2;
+        if (dates.length > 10) return 1.8;
+        return 1.5; // Valeur par défaut pour moins de points
+    };
+
     const data = {
         labels: dates,
         datasets: [
@@ -104,7 +112,8 @@ const HistoriquePrixChart = ({ dates, prices, trend }) => {
 
     const options = {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: true,
+        aspectRatio: getOptimalAspectRatio(), // Aspect ratio amélioré pour éviter l'effet écrasé
         plugins: {
             legend: {
                 position: 'top',
@@ -118,7 +127,7 @@ const HistoriquePrixChart = ({ dates, prices, trend }) => {
                 }
             },
             title: {
-                display: false, // Supprimé car vous avez déjà un titre séparé
+                display: false,
                 text: 'Price History',
                 color: '#F5F5F5',
                 font: {
@@ -148,11 +157,9 @@ const HistoriquePrixChart = ({ dates, prices, trend }) => {
                         return `Price: $${context.parsed.y.toFixed(2)}`;
                     }
                 },
-                // Animation du tooltip
                 animation: {
                     duration: 150
                 },
-                // Ombre portée pour le tooltip
                 boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)'
             },
         },
@@ -216,10 +223,20 @@ const HistoriquePrixChart = ({ dates, prices, trend }) => {
                     color: 'rgba(245, 245, 245, 0.1)',
                     tickLength: 8
                 },
-                beginAtZero: false, // Pour un meilleur zoom sur les données
-                // Suggestion d'adaptation de l'axe Y pour mieux montrer les tendances
-                suggestedMin: Math.min(...prices) * 0.95,
-                suggestedMax: Math.max(...prices) * 1.05
+                beginAtZero: false,
+                // Calculer automatiquement les min/max pour avoir un meilleur aspect ratio vertical
+                suggestedMin: function () {
+                    if (!prices || prices.length === 0) return 0;
+                    const min = Math.min(...prices);
+                    // Ajouter 10-15% de marge en bas pour éviter l'effet écrasé
+                    return min * 0.85;
+                }(),
+                suggestedMax: function () {
+                    if (!prices || prices.length === 0) return 100;
+                    const max = Math.max(...prices);
+                    // Ajouter 10-15% de marge en haut pour éviter l'effet écrasé
+                    return max * 1.15;
+                }()
             },
         },
         interaction: {
@@ -239,14 +256,12 @@ const HistoriquePrixChart = ({ dates, prices, trend }) => {
         },
         elements: {
             line: {
-                // Effet d'ombre portée sur la ligne
                 borderShadowColor: 'rgba(0, 0, 0, 0.5)',
                 borderShadowBlur: 10,
                 borderCapStyle: 'round',
                 borderJoinStyle: 'round'
             },
             point: {
-                // Animation de l'apparition des points
                 radius: 0,
                 hitRadius: 10,
                 hoverRadius: 8,
@@ -283,7 +298,7 @@ const HistoriquePrixChart = ({ dates, prices, trend }) => {
     }
 
     return (
-        <div style={{ width: '100%', height: '300px', position: 'relative' }}>
+        <div style={{ width: '100%', height: '350px', position: 'relative' }}> {/* Hauteur augmentée */}
             <Line data={data} options={options} ref={chartRef} />
         </div>
     );

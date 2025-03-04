@@ -65,51 +65,101 @@
     }
 
 /* Bannière des statistiques */
-.stats-banner {
-    display: flex;
-    justify-content: space-around;
-    background: rgba(45, 69, 92, 0.5);
-    border-radius: 8px;
-    padding: 1rem;
+.stats-dashboard {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
     margin-top: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-    .stats-banner .stat-item {
-        display: flex;
-        align-items: center;
-        padding: 0.5rem 1rem;
+.stat-card {
+    background: linear-gradient(135deg, rgba(36, 55, 72, 0.8) 0%, rgba(45, 69, 92, 0.9) 100%);
+    border-radius: 10px;
+    padding: 1.2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(21, 149, 235, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        border-color: rgba(21, 149, 235, 0.3);
     }
 
-    .stats-banner .stat-icon {
-        font-size: 1.5rem;
-        margin-right: 0.8rem;
-        color: var(--accent-color);
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent 70%);
+        opacity: 0.5;
+        z-index: 1;
     }
 
-        .stats-banner .stat-icon.up {
-            color: #3FCCA4;
-        }
+.stat-icon-container {
+    background: rgba(21, 149, 235, 0.2);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    position: relative;
+    z-index: 2;
+}
 
-        .stats-banner .stat-icon.down {
-            color: #D84C4A;
-        }
+.stat-card.trend-up .stat-icon-container {
+    background: rgba(63, 204, 164, 0.2);
+}
 
-    .stats-banner .stat-content {
-        text-align: left;
-    }
+.stat-card.trend-down .stat-icon-container {
+    background: rgba(216, 76, 74, 0.2);
+}
 
-    .stats-banner .stat-value {
-        font-size: 1.2rem;
-        font-weight: bold;
-        color: #fff;
-    }
+.stat-icon {
+    font-size: 1.4rem;
+    color: var(--accent-color);
+}
 
-    .stats-banner .stat-label {
-        font-size: 0.8rem;
-        color: #bbb;
-        text-transform: uppercase;
-    }
+.stat-card.trend-up .stat-icon {
+    color: #3FCCA4;
+    animation: floatUp 2s infinite alternate ease-in-out;
+}
+
+.stat-card.trend-down .stat-icon {
+    color: #D84C4A;
+    animation: floatDown 2s infinite alternate ease-in-out;
+}
+
+.stat-content {
+    flex: 1;
+    position: relative;
+    z-index: 2;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.2rem;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    font-family: 'Montserrat', sans-serif;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #bbb;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
 
 /* Barre de recherche et contrôles */
 .controls-container {
@@ -324,6 +374,20 @@
 }
 
 /* Responsive pour différentes tailles d'écran */
+
+/* Responsive design pour la section statistiques */
+@media (max-width: 1023px) {
+    .stats-dashboard {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-dashboard {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (min-width: 1400px) {
     /* Pour les grands écrans, 5 produits par ligne */
     .produits-grid {

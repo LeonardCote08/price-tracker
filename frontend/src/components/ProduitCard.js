@@ -1,4 +1,5 @@
 // frontend/src/components/ProduitCard.js
+
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -72,29 +73,30 @@ function ProduitCard({ produit }) {
         const max = Math.max(...priceHistory) * 1.05;
         const range = max - min || 1; // Éviter division par zéro
 
-        // Configuration du SVG
-        const width = 100; // Pourcentage de la largeur
-        const height = 35; // Hauteur en pixels augmentée pour plus de clarté
-        const strokeWidth = isHovered ? 3.5 : 2.8; // Épaisseur de ligne plus importante et qui change au survol
-        const dotRadius = isHovered ? 3.5 : 3; // Taille des points qui change au survol
+        // Configuration du SVG améliorée pour éviter l'effet "écrasé"
+        const width = 100;
+        const height = 48; // Augmenté pour une meilleure proportion visuelle
+        const strokeWidth = isHovered ? 3.5 : 2.8;
+        const dotRadius = isHovered ? 4 : 3;
+        const padding = 5; // Padding pour éviter que les courbes touchent les bords
 
         // Couleurs selon la tendance avec opacité améliorée pour le remplissage
         const trendColors = {
             up: {
                 stroke: '#3FCCA4',
-                fill: 'rgba(63, 204, 164, 0.4)',
+                fill: 'rgba(63, 204, 164, 0.3)',
                 dot: '#3FCCA4',
                 glow: 'rgba(63, 204, 164, 0.7)'
             },
             down: {
                 stroke: '#D84C4A',
-                fill: 'rgba(216, 76, 74, 0.4)',
+                fill: 'rgba(216, 76, 74, 0.3)',
                 dot: '#D84C4A',
                 glow: 'rgba(216, 76, 74, 0.7)'
             },
             stable: {
                 stroke: '#1595EB',
-                fill: 'rgba(21, 149, 235, 0.3)',
+                fill: 'rgba(21, 149, 235, 0.2)',
                 dot: '#1595EB',
                 glow: 'rgba(21, 149, 235, 0.7)'
             }
@@ -103,16 +105,16 @@ function ProduitCard({ produit }) {
         const colors = trendColors[trend] || trendColors.stable;
 
         // Créer les points pour le tracé avec une courbe lissée
-        // Utilisation de courbes de Bézier pour un rendu plus fluide
-        let pathD = '';
         const points = priceHistory.map((price, index) => {
-            const x = (index / (priceHistory.length - 1)) * width;
-            // Inverser Y car SVG commence en haut
-            const y = height - ((price - min) / range) * height;
+            // Ajuster les coordonnées avec padding pour éviter l'effet écrasé
+            const x = padding + ((index / (priceHistory.length - 1)) * (width - 2 * padding));
+            // Inverser Y avec padding et ajuster la hauteur pour avoir une meilleure courbe
+            const y = padding + ((height - 2 * padding) - ((price - min) / range) * (height - 2 * padding));
             return { x, y };
         });
 
         // Générer un chemin SVG lissé
+        let pathD = '';
         if (points.length > 0) {
             pathD = `M ${points[0].x},${points[0].y}`;
 
@@ -120,7 +122,7 @@ function ProduitCard({ produit }) {
                 const currentPoint = points[i];
                 const nextPoint = points[i + 1];
 
-                // Calculer les points de contrôle pour une courbe douce
+                // Améliorer la courbe de Bézier pour un rendu plus fluide
                 const controlX1 = currentPoint.x + (nextPoint.x - currentPoint.x) / 3;
                 const controlY1 = currentPoint.y;
                 const controlX2 = nextPoint.x - (nextPoint.x - currentPoint.x) / 3;
@@ -134,7 +136,7 @@ function ProduitCard({ produit }) {
         let areaPathD = pathD;
         if (points.length > 0) {
             // Ajouter les points pour fermer le chemin et créer l'aire
-            areaPathD += ` L ${points[points.length - 1].x},${height} L ${points[0].x},${height} Z`;
+            areaPathD += ` L ${points[points.length - 1].x},${height - padding} L ${points[0].x},${height - padding} Z`;
         }
 
         // Animation pour le chemin (dépend du hover)
@@ -153,23 +155,33 @@ function ProduitCard({ produit }) {
                 >
                     {/* Effet de glow pour la courbe */}
                     <filter id={`glow-${produit.product_id}`} x="-20%" y="-20%" width="140%" height="140%">
-                        <feGaussianBlur stdDeviation={isHovered ? "2.5" : "1.5"} result="blur" />
+                        <feGaussianBlur stdDeviation={isHovered ? "2" : "1"} result="blur" />
                         <feComposite in="SourceGraphic" in2="blur" operator="over" />
                     </filter>
 
                     {/* Dégradé amélioré */}
                     <defs>
                         <linearGradient id={`gradient-${produit.product_id}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor={colors.fill} stopOpacity="0.8" />
-                            <stop offset="100%" stopColor={colors.fill} stopOpacity="0.2" />
+                            <stop offset="0%" stopColor={colors.fill} stopOpacity="0.7" />
+                            <stop offset="100%" stopColor={colors.fill} stopOpacity="0.1" />
                         </linearGradient>
 
                         {/* Dégradé pour l'effet de lueur */}
                         <linearGradient id={`glow-gradient-${produit.product_id}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor={colors.glow} stopOpacity="0.6" />
+                            <stop offset="0%" stopColor={colors.glow} stopOpacity="0.5" />
                             <stop offset="100%" stopColor={colors.glow} stopOpacity="0" />
                         </linearGradient>
                     </defs>
+
+                    {/* Fond très subtil pour rendre la zone du graphique visible */}
+                    <rect
+                        x={padding}
+                        y={padding}
+                        width={width - 2 * padding}
+                        height={height - 2 * padding}
+                        fill="rgba(255, 255, 255, 0.02)"
+                        rx="2"
+                    />
 
                     {/* Effet de lueur sous la courbe */}
                     {isHovered && (

@@ -239,30 +239,42 @@ function ListeProduitsPage() {
                     <p>Currently tracking Funko Pop Doctor Doom #561 on eBay. More items to come soon!</p>
                 </div>
 
-                <div className="stats-banner">
-                    <div className="stat-item">
-                        <FontAwesomeIcon icon={faTag} className="stat-icon" />
+                {/* Section des statistiques améliorée */}
+                <div className="stats-dashboard">
+                    <div className="stat-card">
+                        <div className="stat-icon-container">
+                            <FontAwesomeIcon icon={faTag} className="stat-icon" />
+                        </div>
                         <div className="stat-content">
                             <div className="stat-value">{stats.count}</div>
                             <div className="stat-label">Products</div>
                         </div>
                     </div>
-                    <div className="stat-item">
-                        <FontAwesomeIcon icon={faArrowUp} className="stat-icon up" />
+
+                    <div className="stat-card trend-up">
+                        <div className="stat-icon-container">
+                            <FontAwesomeIcon icon={faArrowUp} className="stat-icon" />
+                        </div>
                         <div className="stat-content">
                             <div className="stat-value">{stats.risingCount}</div>
                             <div className="stat-label">Rising</div>
                         </div>
                     </div>
-                    <div className="stat-item">
-                        <FontAwesomeIcon icon={faArrowDown} className="stat-icon down" />
+
+                    <div className="stat-card trend-down">
+                        <div className="stat-icon-container">
+                            <FontAwesomeIcon icon={faArrowDown} className="stat-icon" />
+                        </div>
                         <div className="stat-content">
                             <div className="stat-value">{stats.fallingCount}</div>
                             <div className="stat-label">Falling</div>
                         </div>
                     </div>
-                    <div className="stat-item">
-                        <FontAwesomeIcon icon={faChartLine} className="stat-icon" />
+
+                    <div className="stat-card">
+                        <div className="stat-icon-container">
+                            <FontAwesomeIcon icon={faChartLine} className="stat-icon" />
+                        </div>
                         <div className="stat-content">
                             <div className="stat-value">${stats.avgPrice.toFixed(2)}</div>
                             <div className="stat-label">Avg Price</div>
