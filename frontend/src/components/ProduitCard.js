@@ -270,7 +270,7 @@ function ProduitCard({ produit }) {
                     {produit.ended && <span className="badge badge-ended">Ended</span>}
                 </div>
                 
-                {/* Contenu principal  */}
+                {/* Contenu principal */}
                 <div className="product-info">
                     {/* Titre du produit */}
                     <h3 className="product-title">{truncateTitle(produit.title)}</h3>
