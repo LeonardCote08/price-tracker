@@ -155,24 +155,6 @@
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* Étiquettes de période */
-.period-label {
-    position: absolute;
-    bottom: 2px;
-    font-size: 7px;
-    color: rgba(255, 255, 255, 0.4);
-    z-index: 1;
-    text-transform: uppercase;
-}
-
-    .period-label.start {
-        left: 5px;
-    }
-
-    .period-label.end {
-        right: 65px;
-    }
-
 /* Graphique */
 .sparkline {
     width: 100%;

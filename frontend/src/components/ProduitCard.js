@@ -90,17 +90,13 @@ function ProduitCard({ produit }) {
         return title;
     };
 
-    // Rendu du graphique de tendance simplifié
+    // Rendu du graphique de tendance amélioré avec courbe de Bézier
     const renderSparkline = () => {
         if (!priceHistory || priceHistory.length < 2) return null;
 
-        // Utiliser seulement le premier et le dernier point pour une tendance claire
-        // Cela montre simplement si le prix a augmenté ou diminué sur la période
+        // Nous utilisons le premier et le dernier point pour la tendance
         const firstPrice = priceHistory[0];
         const lastPrice = priceHistory[priceHistory.length - 1];
-
-        // Points à afficher : juste le début et la fin
-        const displayPoints = [firstPrice, lastPrice];
 
         // Couleurs selon tendance
         const trendColors = {
@@ -112,48 +108,90 @@ function ProduitCard({ produit }) {
         const strokeColor = trendColors[trend] || trendColors.stable;
 
         // Dimensions et configuration du graphique
-        const width = 130;    // Largeur totale du SVG augmentée
+        const width = 140;    // Largeur totale du SVG
         const height = 30;    // Hauteur du SVG
-        const graphWidth = 110; // Largeur effective du graphique augmentée
-        const padding = 8;    // Marge intérieure augmentée
+        const graphWidth = 110; // Largeur effective du graphique
+        const padding = 5;    // Marge intérieure
 
         // Valeurs minimale et maximale pour l'échelle
-        // Utiliser une marge plus grande pour éviter que les points ne touchent les bords
-        const valuesSpread = Math.abs(displayPoints[1] - displayPoints[0]) * 0.1;
-        const min = Math.min(...displayPoints) - valuesSpread;
-        const max = Math.max(...displayPoints) + valuesSpread;
+        const valuesSpread = Math.abs(lastPrice - firstPrice) * 0.1;
+        const min = Math.min(firstPrice, lastPrice) - valuesSpread;
+        const max = Math.max(firstPrice, lastPrice) + valuesSpread;
         const range = max - min || 1;
 
-        // Calculer les coordonnées de seulement deux points : le premier et le dernier
-        const pointCoordinates = [
-            // Premier point (à gauche)
-            {
-                x: padding,
-                y: height - padding - ((displayPoints[0] - min) / range * (height - 2 * padding)),
-                value: displayPoints[0]
-            },
-            // Dernier point (à droite)
-            {
-                x: graphWidth - padding,
-                y: height - padding - ((displayPoints[1] - min) / range * (height - 2 * padding)),
-                value: displayPoints[1]
-            }
-        ];
+        // Coordonnées pour le début et la fin
+        const startX = padding;
+        const endX = graphWidth - padding;
+
+        // Calculer les coordonnées Y en fonction des prix
+        const startY = height - padding - ((firstPrice - min) / range * (height - 2 * padding));
+        const endY = height - padding - ((lastPrice - min) / range * (height - 2 * padding));
+
+        // Calculer l'intensité de la courbe en fonction de la variation
+        // Plus la variation est grande, plus la courbe sera prononcée
+        const variationPercent = Math.abs((lastPrice - firstPrice) / firstPrice);
+        const curveIntensity = Math.min(height * 0.4, Math.max(height * 0.1, height * variationPercent * 0.5));
+
+        // Points de contrôle pour la courbe de Bézier
+        let controlPoint1X, controlPoint1Y, controlPoint2X, controlPoint2Y;
+
+        // Ajuster les points de contrôle selon la tendance
+        if (trend === 'up') {
+            // Courbe montante: points de contrôle pour une courbe élégante vers le haut
+            controlPoint1X = startX + (endX - startX) * 0.25;
+            controlPoint1Y = startY;
+            controlPoint2X = startX + (endX - startX) * 0.75;
+            controlPoint2Y = endY - curveIntensity;
+        } else if (trend === 'down') {
+            // Courbe descendante: points de contrôle pour une courbe élégante vers le bas
+            controlPoint1X = startX + (endX - startX) * 0.25;
+            controlPoint1Y = startY + curveIntensity;
+            controlPoint2X = startX + (endX - startX) * 0.75;
+            controlPoint2Y = endY;
+        } else {
+            // Tendance stable: légère ondulation
+            controlPoint1X = startX + (endX - startX) * 0.25;
+            controlPoint1Y = Math.min(startY, endY) - height * 0.05;
+            controlPoint2X = startX + (endX - startX) * 0.75;
+            controlPoint2Y = Math.min(startY, endY) - height * 0.05;
+        }
 
         // Format du pourcentage avec signe
         const changeValue = percentChange !== null ? percentChange :
-            ((displayPoints[displayPoints.length - 1] - displayPoints[0]) / displayPoints[0] * 100).toFixed(1);
+            ((lastPrice - firstPrice) / firstPrice * 100).toFixed(1);
 
         const formattedChange = (parseFloat(changeValue) > 0 ? '+' : '') + changeValue;
         const changeClass = parseFloat(changeValue) > 0 ? 'positive' : parseFloat(changeValue) < 0 ? 'negative' : 'neutral';
+
+        // Générer le chemin pour la zone ombrée sous la courbe (area fill)
+        const areaPath = `
+            M ${startX},${startY}
+            C ${controlPoint1X},${controlPoint1Y} ${controlPoint2X},${controlPoint2Y} ${endX},${endY}
+            L ${endX},${height - padding}
+            L ${startX},${height - padding}
+            Z
+        `;
+
+        // Générer le chemin pour la ligne de la courbe
+        const linePath = `
+            M ${startX},${startY}
+            C ${controlPoint1X},${controlPoint1Y} ${controlPoint2X},${controlPoint2Y} ${endX},${endY}
+        `;
 
         return (
             <div className="sparkline-container">
                 <div className="sparkline">
                     <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet">
-                        {/* Tracer la ligne entre les points */}
-                        <polyline
-                            points={pointCoordinates.map(pt => `${pt.x},${pt.y}`).join(' ')}
+                        {/* Zone ombrée sous la courbe */}
+                        <path
+                            d={areaPath}
+                            fill={strokeColor}
+                            fillOpacity="0.1"
+                        />
+
+                        {/* Courbe de Bézier */}
+                        <path
+                            d={linePath}
                             fill="none"
                             stroke={strokeColor}
                             strokeWidth="2"
@@ -161,16 +199,19 @@ function ProduitCard({ produit }) {
                             strokeLinejoin="round"
                         />
 
-                        {/* Points */}
-                        {pointCoordinates.map((pt, i) => (
-                            <circle
-                                key={i}
-                                cx={pt.x}
-                                cy={pt.y}
-                                r={3}
-                                fill={strokeColor}
-                            />
-                        ))}
+                        {/* Points de début et de fin */}
+                        <circle
+                            cx={startX}
+                            cy={startY}
+                            r={2.5}
+                            fill={strokeColor}
+                        />
+                        <circle
+                            cx={endX}
+                            cy={endY}
+                            r={2.5}
+                            fill={strokeColor}
+                        />
                     </svg>
                 </div>
 
