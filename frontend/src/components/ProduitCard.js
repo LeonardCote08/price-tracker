@@ -19,11 +19,11 @@ function ProduitCard({ produit }) {
     const [trend, setTrend] = useState('stable');
     const [trendText, setTrendText] = useState('Price Stable');
     const [isHovered, setIsHovered] = useState(false);
-    const [historyDates, setHistoryDates] = useState([]);
 
     // Charger l'historique de prix et déterminer la tendance
     useEffect(() => {
         const fetchPriceHistory = async () => {
+            console.log(`⏳ Récupération des données pour produit ${produit.product_id}...`);
             try {
                 // URL API conforme au format de votre backend
                 const response = await fetch(`/api/produits/${produit.product_id}/historique-prix`);
@@ -34,64 +34,78 @@ function ProduitCard({ produit }) {
                 }
 
                 const data = await response.json();
-                console.log(`Données pour produit ID ${produit.product_id}:`, data);
+                console.log(`📊 Données pour produit ${produit.product_id}:`, data);
 
-                // CORRECTION ICI: Les données sont directement sous data, pas dans data.prices
+                // ICI EST LA CORRECTION: Vérifier d'abord si nous avons un tableau de prix
                 if (data && Array.isArray(data.prices) && data.prices.length >= 2) {
-                    console.log(`Historique prix trouvé: ${data.prices.length} points`);
+                    console.log(`✅ Historique prix trouvé: ${data.prices.length} points`);
                     setPriceHistory(data.prices);
 
-                    // Calculer variation
+                    // Calculer variation entre premier et dernier point
                     const firstPrice = data.prices[0];
                     const lastPrice = data.prices[data.prices.length - 1];
-                    const change = ((lastPrice - firstPrice) / firstPrice * 100).toFixed(1);
-                    setPercentChange(change);
 
-                    // Déterminer tendance
-                    const changeValue = parseFloat(change);
-                    if (changeValue > 3) {
-                        setTrend('up');
-                        setTrendText('Price Rising');
-                    } else if (changeValue < -3) {
-                        setTrend('down');
-                        setTrendText('Price Falling');
-                    } else {
-                        setTrend('stable');
-                        setTrendText('Price Stable');
+                    // Vérifier que les prix sont valides
+                    if (typeof firstPrice === 'number' && typeof lastPrice === 'number' && firstPrice !== 0) {
+                        const change = ((lastPrice - firstPrice) / firstPrice * 100).toFixed(1);
+                        console.log(`📈 Variation calculée: ${change}%`);
+                        setPercentChange(change);
+
+                        // Déterminer tendance
+                        const changeValue = parseFloat(change);
+                        if (changeValue > 3) {
+                            setTrend('up');
+                            setTrendText('Price Rising');
+                        } else if (changeValue < -3) {
+                            setTrend('down');
+                            setTrendText('Price Falling');
+                        } else {
+                            setTrend('stable');
+                            setTrendText('Price Stable');
+                        }
                     }
 
-                    // Si l'API renvoie une tendance, utiliser celle-ci
+                    // Si l'API renvoie déjà une tendance, l'utiliser
                     if (data.trend) {
+                        console.log(`🔄 Tendance fournie par API: ${data.trend}`);
                         setTrend(data.trend);
                         if (data.trend === 'up') setTrendText('Price Rising');
                         else if (data.trend === 'down') setTrendText('Price Falling');
                         else setTrendText('Price Stable');
                     }
+
+                    // Si l'API fournit des stats avec variation, l'utiliser pour le pourcentage
+                    if (data.stats && typeof data.stats.variation === 'number') {
+                        const apiChange = data.stats.variation.toFixed(1);
+                        console.log(`🔢 Variation depuis API: ${apiChange}%`);
+                        setPercentChange(apiChange);
+                    }
                 } else {
-                    // Cas où l'API renvoie des données mais pas d'historique valide
-                    console.warn(`Pas d'historique valide pour produit ${produit.product_id}`);
+                    console.warn(`⚠️ Pas d'historique valid pour produit ${produit.product_id}`);
                     fallbackToTrendAPI();
                 }
             } catch (err) {
-                console.error(`Erreur API pour produit ${produit.product_id}:`, err);
+                console.error(`❌ Erreur API pour produit ${produit.product_id}:`, err);
                 fallbackToTrendAPI();
             }
         };
 
         // Fonction de repli en cas d'échec
         const fallbackToTrendAPI = async () => {
+            console.log(`🔍 Tentative de récupération tendance via API secondaire...`);
             try {
                 const trendResponse = await fetch(`/api/produits/${produit.product_id}/price-trend`);
                 if (!trendResponse.ok) {
                     throw new Error(`API tendance a répondu avec le statut ${trendResponse.status}`);
                 }
                 const trendData = await trendResponse.json();
+                console.log(`👍 Tendance récupérée via API secondaire: ${trendData.trend}`);
                 setTrend(trendData.trend);
                 if (trendData.trend === 'up') setTrendText('Price Rising');
                 else if (trendData.trend === 'down') setTrendText('Price Falling');
                 else setTrendText('Price Stable');
             } catch (errFallback) {
-                console.error('Erreur lors de la récupération de la tendance (fallback)', errFallback);
+                console.error('❌ Erreur lors de la récupération de la tendance (fallback)', errFallback);
             }
         };
 
@@ -125,13 +139,13 @@ function ProduitCard({ produit }) {
     const renderSparkline = () => {
         // Au début de la fonction renderSparkline()
         if (!priceHistory || priceHistory.length < 2) {
-            console.log(`[GRAPHIQUE] Produit ${produit.product_id}: utilisation du graphique par défaut (pas de données)`);
+            console.log(`🔴 Produit ${produit.product_id}: graphique par défaut (pas de données)`);
             return renderDefaultSparkline();
         }
 
-        console.log(`[GRAPHIQUE] Produit ${produit.product_id}: rendu avec ${priceHistory.length} points de données`);
+        console.log(`🟢 Produit ${produit.product_id}: graphique avec ${priceHistory.length} points`);
 
-        // Nous utilisons le premier et le dernier point pour la tendance
+        // Nous utilisons le premier et le dernier point pour la tendance principale
         const firstPrice = priceHistory[0];
         const lastPrice = priceHistory[priceHistory.length - 1];
 
@@ -151,9 +165,8 @@ function ProduitCard({ produit }) {
         const padding = 4;    // Marge intérieure
 
         // Valeurs minimale et maximale pour l'échelle avec amplitude augmentée
-        const valuesSpread = Math.abs(lastPrice - firstPrice) * 0.25; // Amplitude augmentée
-        const min = Math.min(...priceHistory) - valuesSpread;
-        const max = Math.max(...priceHistory) + valuesSpread;
+        const min = Math.min(...priceHistory) * 0.9; // 10% en dessous du minimum
+        const max = Math.max(...priceHistory) * 1.1; // 10% au-dessus du maximum
         const range = max - min || 1;
 
         // Coordonnées pour le début et la fin
@@ -171,25 +184,50 @@ function ProduitCard({ produit }) {
         // Points de contrôle pour la courbe de Bézier
         let controlPoint1X, controlPoint1Y, controlPoint2X, controlPoint2Y;
 
-        // Ajuster les points de contrôle selon la tendance pour des courbes plus marquées
-        if (trend === 'up') {
-            // Courbe montante avec meilleure forme
-            controlPoint1X = startX + (endX - startX) * 0.3;
-            controlPoint1Y = startY - curveIntensity * 0.3;
-            controlPoint2X = startX + (endX - startX) * 0.7;
-            controlPoint2Y = endY - curveIntensity;
-        } else if (trend === 'down') {
-            // Courbe descendante avec meilleure forme
-            controlPoint1X = startX + (endX - startX) * 0.3;
-            controlPoint1Y = startY + curveIntensity;
-            controlPoint2X = startX + (endX - startX) * 0.7;
-            controlPoint2Y = endY + curveIntensity * 0.3;
+        // Si nous avons plus de 2 points, créer une courbe plus complexe
+        if (priceHistory.length > 2) {
+            const midIndex = Math.floor(priceHistory.length / 2);
+            const midPrice = priceHistory[midIndex];
+            const midX = startX + (endX - startX) * (midIndex / (priceHistory.length - 1));
+            const midY = height - padding - ((midPrice - min) / range * (height - 2 * padding));
+
+            if (trend === 'up') {
+                // Courbe montante avec un point intermédiaire
+                controlPoint1X = midX - (midX - startX) * 0.3;
+                controlPoint1Y = midY + (startY - midY) * 0.3;
+                controlPoint2X = midX + (endX - midX) * 0.3;
+                controlPoint2Y = midY + (endY - midY) * 0.3;
+            } else if (trend === 'down') {
+                // Courbe descendante avec un point intermédiaire
+                controlPoint1X = midX - (midX - startX) * 0.3;
+                controlPoint1Y = midY + (startY - midY) * 0.3;
+                controlPoint2X = midX + (endX - midX) * 0.3;
+                controlPoint2Y = midY + (endY - midY) * 0.3;
+            } else {
+                // Tendance stable: ondulation plus visible
+                controlPoint1X = midX - (midX - startX) * 0.5;
+                controlPoint1Y = midY - height * 0.1;
+                controlPoint2X = midX + (endX - midX) * 0.5;
+                controlPoint2Y = midY + height * 0.1;
+            }
         } else {
-            // Tendance stable: ondulation plus visible
-            controlPoint1X = startX + (endX - startX) * 0.33;
-            controlPoint1Y = Math.min(startY, endY) - height * 0.1;
-            controlPoint2X = startX + (endX - startX) * 0.67;
-            controlPoint2Y = Math.min(startY, endY) - height * 0.1;
+            // Courbe simple avec 2 points
+            if (trend === 'up') {
+                controlPoint1X = startX + (endX - startX) * 0.3;
+                controlPoint1Y = startY - curveIntensity * 0.3;
+                controlPoint2X = startX + (endX - startX) * 0.7;
+                controlPoint2Y = endY - curveIntensity;
+            } else if (trend === 'down') {
+                controlPoint1X = startX + (endX - startX) * 0.3;
+                controlPoint1Y = startY + curveIntensity;
+                controlPoint2X = startX + (endX - startX) * 0.7;
+                controlPoint2Y = endY + curveIntensity * 0.3;
+            } else {
+                controlPoint1X = startX + (endX - startX) * 0.33;
+                controlPoint1Y = Math.min(startY, endY) - height * 0.1;
+                controlPoint2X = startX + (endX - startX) * 0.67;
+                controlPoint2Y = Math.min(startY, endY) - height * 0.1;
+            }
         }
 
         // Format du pourcentage avec signe
@@ -240,6 +278,27 @@ function ProduitCard({ produit }) {
                                             r={1.5}
                                             fill={strokeColor}
                                             fillOpacity={0.8}
+                                        />
+                                    );
+                                })}
+                            </g>
+                        )}
+
+                        {/* Points de données réels (en plus petits) */}
+                        {priceHistory.length > 2 && (
+                            <g className="real-data-points">
+                                {priceHistory.map((price, index) => {
+                                    if (index === 0 || index === priceHistory.length - 1) return null;
+                                    const pointX = startX + (endX - startX) * (index / (priceHistory.length - 1));
+                                    const pointY = height - padding - ((price - min) / range * (height - 2 * padding));
+                                    return (
+                                        <circle
+                                            key={index}
+                                            cx={pointX}
+                                            cy={pointY}
+                                            r={1}
+                                            fill={strokeColor}
+                                            fillOpacity={0.6}
                                         />
                                     );
                                 })}
@@ -321,52 +380,67 @@ function ProduitCard({ produit }) {
         const graphWidth = 158;
         const padding = 4;
 
-        // Introduire de la variabilité basée sur l'ID du produit
-        const seed = (produit.product_id % 100) / 100; // Valeur entre 0 et 0.99
-        const variability = seed * 8 - 4; // Valeur entre -4 et 4
+        // AUGMENTER LA VARIABILITÉ pour distinguer facilement les graphiques par défaut
+        // Utiliser l'ID du produit pour créer une "empreinte" unique
+        const productSeed = produit.product_id;
+
+        // Créer des coefficients variés basés sur l'ID (modulo pour éviter les trop grands nombres)
+        const offsetX = (productSeed % 7) - 3; // -3 à +3
+        const offsetY = (productSeed % 5) - 2; // -2 à +2 
+        const variance = ((productSeed % 10) + 1) / 5; // 0.2 à 2.0
+
+        // Variation de hauteur encore plus prononcée
+        const heightVariance = ((productSeed % 8) - 4) * 2; // -8 à +6
 
         // Valeurs par défaut pour un graphique stable
-        const startX = padding;
-        const endX = graphWidth - 70;
-        // Dans renderDefaultSparkline(), remplacer les valeurs du middleY:
-        const randomOffset = (produit.product_id % 10) - 5;  // -5 à +4
-        const middleY = height / 2 + randomOffset;
+        const startX = padding + offsetX;
+        const endX = graphWidth - 70 - offsetX;
+        const middleY = height / 2 + heightVariance;
 
-        // Points pour un graphique simple avec variabilité
+        // Points pour un graphique simple avec FORTE variabilité
         let linePath, areaPath;
 
         if (trend === 'up') {
+            // Courbe montante variée
             linePath = `
-                M ${startX},${middleY + 5 + variability}
-                C ${startX + 30},${middleY + 2 - variability} ${endX - 30},${middleY - 2 + variability} ${endX},${middleY - 5 - variability}
+                M ${startX},${middleY + 5 * variance}
+                C ${startX + 30 + offsetX},${middleY + 2 * variance} ${endX - 30 - offsetX},${middleY - 2 * variance} ${endX},${middleY - 5 * variance}
             `;
             areaPath = `
-                M ${startX},${middleY + 5 + variability}
-                C ${startX + 30},${middleY + 2 - variability} ${endX - 30},${middleY - 2 + variability} ${endX},${middleY - 5 - variability}
+                M ${startX},${middleY + 5 * variance}
+                C ${startX + 30 + offsetX},${middleY + 2 * variance} ${endX - 30 - offsetX},${middleY - 2 * variance} ${endX},${middleY - 5 * variance}
                 L ${endX},${height - padding}
                 L ${startX},${height - padding}
                 Z
             `;
         } else if (trend === 'down') {
+            // Courbe descendante variée
             linePath = `
-                M ${startX},${middleY - 5 - variability}
-                C ${startX + 30},${middleY - 2 + variability} ${endX - 30},${middleY + 2 - variability} ${endX},${middleY + 5 + variability}
+                M ${startX},${middleY - 5 * variance}
+                C ${startX + 30 + offsetX},${middleY - 2 * variance} ${endX - 30 - offsetX},${middleY + 2 * variance} ${endX},${middleY + 5 * variance}
             `;
             areaPath = `
-                M ${startX},${middleY - 5 - variability}
-                C ${startX + 30},${middleY - 2 + variability} ${endX - 30},${middleY + 2 - variability} ${endX},${middleY + 5 + variability}
+                M ${startX},${middleY - 5 * variance}
+                C ${startX + 30 + offsetX},${middleY - 2 * variance} ${endX - 30 - offsetX},${middleY + 2 * variance} ${endX},${middleY + 5 * variance}
                 L ${endX},${height - padding}
                 L ${startX},${height - padding}
                 Z
             `;
         } else {
+            // Tendance stable: ondulation variée
             linePath = `
-                M ${startX},${middleY + variability}
-                C ${startX + 30},${middleY - 3 - variability} ${endX - 60},${middleY + 3 + variability} ${endX},${middleY - variability}
+                M ${startX},${middleY + offsetY}
+                C ${startX + 30 + offsetX},${middleY - 3 * variance} 
+                  ${startX + 70 + offsetX * 2},${middleY + 3 * variance}
+                  ${endX - 40 - offsetX},${middleY - 2 * variance}
+                  ${endX},${middleY + offsetY}
             `;
             areaPath = `
-                M ${startX},${middleY + variability}
-                C ${startX + 30},${middleY - 3 - variability} ${endX - 60},${middleY + 3 + variability} ${endX},${middleY - variability}
+                M ${startX},${middleY + offsetY}
+                C ${startX + 30 + offsetX},${middleY - 3 * variance}
+                  ${startX + 70 + offsetX * 2},${middleY + 3 * variance}
+                  ${endX - 40 - offsetX},${middleY - 2 * variance}
+                  ${endX},${middleY + offsetY}
                 L ${endX},${height - padding}
                 L ${startX},${height - padding}
                 Z
@@ -417,17 +491,17 @@ function ProduitCard({ produit }) {
                         {/* Points de début et de fin avec variabilité */}
                         <circle
                             cx={startX}
-                            cy={trend === 'up' ? middleY + 5 + variability :
-                                trend === 'down' ? middleY - 5 - variability :
-                                    middleY + variability}
+                            cy={trend === 'up' ? middleY + 5 * variance :
+                                trend === 'down' ? middleY - 5 * variance :
+                                    middleY + offsetY}
                             r={3.5}
                             fill={strokeColor}
                         />
                         <circle
                             cx={endX}
-                            cy={trend === 'up' ? middleY - 5 - variability :
-                                trend === 'down' ? middleY + 5 + variability :
-                                    middleY - variability}
+                            cy={trend === 'up' ? middleY - 5 * variance :
+                                trend === 'down' ? middleY + 5 * variance :
+                                    middleY + offsetY}
                             r={3.5}
                             fill={strokeColor}
                             strokeWidth="1.5"
