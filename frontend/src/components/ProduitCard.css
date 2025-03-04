@@ -1,5 +1,23 @@
 /* frontend/src/components/ProduitCard.css */
 
+/* Variables pour les couleurs */
+:root {
+    --color-new: #1ED17E;
+    --color-used: #FF5252;
+    --color-signed: #FFD700;
+    --color-inbox: #2ED0B8;
+    --color-nobox: #FF8A48;
+    --color-ended: #8091A5;
+    --trend-up: #1ED17E;
+    --trend-down: #FF5252;
+    --trend-stable: #3AA0FE;
+    --card-bg-color: #1a2c3d;
+    --accent-color: #3AA0FE;
+    --card-height: 465px;
+    --card-image-height: 200px;
+    --sparkline-height: 38px;
+}
+
 /* Lien conteneur pour la carte */
 .produit-card-link {
     text-decoration: none;
@@ -12,7 +30,7 @@
 .produit-card {
     position: relative;
     width: 100%;
-    height: 465px; /* Hauteur fixe pour uniformité */
+    height: var(--card-height);
     display: flex;
     flex-direction: column;
     background-color: var(--card-bg-color);
@@ -20,7 +38,7 @@
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
     .produit-card:hover {
@@ -33,7 +51,9 @@
 .product-image-container {
     position: relative;
     width: 100%;
-    height: 200px;
+    height: var(--card-image-height);
+    min-height: var(--card-image-height);
+    max-height: var(--card-image-height);
     overflow: hidden;
     background-color: #1c2f41;
 }
@@ -81,42 +101,53 @@
     z-index: 10;
 }
 
+/* Badge styles - Amélioration esthétique */
 .badge {
     color: #fff;
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 0.7rem;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.5px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
     display: flex;
     align-items: center;
     justify-content: center;
     text-transform: uppercase;
+    /* Amélioration des badges */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
 }
 
+    .badge:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+    }
+
+/* Couleurs distinctes pour chaque type de badge */
 .badge-condition-new {
-    background-color: #3FCCA4; /* Vert cohérent avec les tendances à la hausse */
+    background-color: var(--color-new);
 }
 
 .badge-condition-used {
-    background-color: #FF6B6B; /* Rouge cohérent avec les tendances à la baisse */
+    background-color: var(--color-used);
 }
 
 .badge-signed {
-    background-color: #F6C143; /* Jaune ajusté pour cohérence */
+    background-color: var(--color-signed);
+    color: #333; /* Texte sombre pour le badge jaune */
 }
 
 .badge-inbox {
-    background-color: #3FCCA4; /* Vert cohérent */
+    background-color: var(--color-inbox);
 }
 
 .badge-nobox {
-    background-color: #FF6B6B; /* Rouge cohérent */
+    background-color: var(--color-nobox);
 }
 
 .badge-ended {
-    background-color: #5CB0FF; /* Bleu cohérent avec les tendances stables */
+    background-color: var(--color-ended);
 }
 
 /* Bloc principal d'informations */
@@ -128,7 +159,7 @@
     justify-content: space-between;
     z-index: 2;
     /* Assurer une hauteur cohérente */
-    height: calc(100% - 200px); /* Ajuster en fonction de la hauteur de l'image */
+    height: calc(100% - var(--card-image-height));
 }
 
 /* Titre du produit */
@@ -141,6 +172,7 @@
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     height: 2.6rem; /* Hauteur fixe pour deux lignes */
     min-height: 2.6rem; /* Hauteur minimale garantie */
+    max-height: 2.6rem; /* Hauteur maximale garantie */
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -150,11 +182,11 @@
 /* REFONTE AMÉLIORÉE DU GRAPHIQUE */
 .sparkline-container {
     position: relative;
-    height: 38px; /* Hauteur fixe */
-    min-height: 38px; /* Hauteur minimale garantie */
-    max-height: 38px; /* Hauteur maximale garantie */
+    height: var(--sparkline-height);
+    min-height: var(--sparkline-height);
+    max-height: var(--sparkline-height);
     margin: 8px 0;
-    background-color: rgba(30, 45, 60, 0.5);
+    background-color: rgba(22, 36, 51, 0.6);
     border-radius: 6px;
     overflow: hidden;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -168,7 +200,7 @@
 .sparkline {
     width: 100%;
     height: 100%;
-    padding: 3px 60px 3px 3px; /* Espace à droite augmenté pour le badge */
+    padding: 3px 60px 3px 3px; /* Espace à droite pour le badge */
     position: relative;
 }
 
@@ -193,26 +225,26 @@
 }
 
     .change-indicator.positive {
-        color: #3FCCA4; /* Harmonisé avec badge-condition-new */
-        background-color: rgba(63, 204, 164, 0.15);
+        color: var(--trend-up);
+        background-color: rgba(30, 209, 126, 0.15);
     }
 
     .change-indicator.negative {
-        color: #FF6B6B; /* Harmonisé avec badge-condition-used */
-        background-color: rgba(255, 107, 107, 0.15);
+        color: var(--trend-down);
+        background-color: rgba(255, 82, 82, 0.15);
     }
 
     .change-indicator.neutral {
-        color: #5CB0FF; /* Harmonisé avec badge-ended */
-        background-color: rgba(92, 176, 255, 0.15);
+        color: var(--trend-stable);
+        background-color: rgba(58, 160, 254, 0.15);
     }
 
 /* Section prix et tendance */
 .price-section {
-    margin: 12px 0; /* Marge plus importante */
+    margin: 12px 0;
     display: flex;
     flex-direction: column;
-    gap: 8px; /* Espacement augmenté */
+    gap: 8px;
 }
 
 .price-tag {
@@ -248,15 +280,15 @@
 }
 
 .trend-up {
-    color: #3FCCA4; /* Vert harmonisé avec badge-condition-new */
+    color: var(--trend-up);
 }
 
 .trend-down {
-    color: #FF6B6B; /* Rouge harmonisé avec badge-condition-used */
+    color: var(--trend-down);
 }
 
 .trend-stable {
-    color: #5CB0FF; /* Bleu harmonisé avec badge-ended */
+    color: var(--trend-stable);
 }
 
 /* Effets d'animation pour les tendances */
@@ -290,14 +322,14 @@
 
 /* Pied de carte avec infos supplémentaires */
 .card-footer {
-    margin-top: 14px; /* Marge augmentée */
+    margin-top: 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 0.75rem;
     color: #aab8c2;
-    border-top: 1px solid rgba(255, 255, 255, 0.08); /* Bordure plus visible */
-    padding-top: 14px; /* Padding augmenté */
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 14px;
 }
 
 .seller-info {
@@ -328,37 +360,12 @@
     font-size: 0.7rem;
 }
 
-/* Badge styles - Amélioration esthétique */
-.badge {
-    color: #fff;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-transform: uppercase;
-    /* Amélioration des badges */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.2s ease;
-}
-
-    .badge:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
-    }
-
 /* Responsive */
 @media (max-width: 768px) {
-    .produit-card {
-        height: 450px; /* Hauteur ajustée pour tablette */
-    }
-
-    .product-image-container {
-        height: 180px;
+    :root {
+        --card-height: 450px;
+        --card-image-height: 180px;
+        --sparkline-height: 36px;
     }
 
     .product-title {
@@ -369,12 +376,6 @@
         font-size: 1.4rem;
     }
 
-    .sparkline-container {
-        height: 36px; /* Légèrement réduit pour mobile */
-        min-height: 36px;
-        max-height: 36px;
-    }
-
     .change-indicator {
         font-size: 0.8rem;
         width: 55px;
@@ -382,12 +383,10 @@
 }
 
 @media (max-width: 480px) {
-    .produit-card {
-        height: 420px; /* Hauteur ajustée pour mobile */
-    }
-
-    .product-image-container {
-        height: 160px;
+    :root {
+        --card-height: 420px;
+        --card-image-height: 160px;
+        --sparkline-height: 34px;
     }
 
     .badges-container {
@@ -398,12 +397,6 @@
     .badge {
         padding: 3px 6px;
         font-size: 0.65rem;
-    }
-
-    .sparkline-container {
-        height: 34px; /* Légèrement réduit pour mobile */
-        min-height: 34px;
-        max-height: 34px;
     }
 
     .sparkline {

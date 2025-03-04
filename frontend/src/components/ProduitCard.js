@@ -1,6 +1,6 @@
 // frontend/src/components/ProduitCard.js
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -22,15 +22,16 @@ function ProduitCard({ produit }) {
 
     // Charger l'historique de prix et déterminer la tendance
     useEffect(() => {
-        fetch(`/api/produits/${produit.product_id}/historique-prix`)
-            .then(response => response.json())
-            .then(data => {
+        const fetchPriceHistory = async () => {
+            try {
+                const response = await fetch(`/api/produits/${produit.product_id}/historique-prix`);
+                const data = await response.json();
+
                 if (data.prices && data.prices.length > 0) {
                     // Utiliser tous les points d'historique, pas juste les 10 derniers
                     setPriceHistory(data.prices);
 
                     // Calculer le pourcentage de variation entre le premier et dernier point
-                    // de l'historique complet (ce qui correspond aux données de la page détail)
                     if (data.prices.length >= 2) {
                         const firstPrice = data.prices[0];
                         const lastPrice = data.prices[data.prices.length - 1];
@@ -53,20 +54,25 @@ function ProduitCard({ produit }) {
                         }
                     }
                 }
-            })
-            .catch(err => {
+            } catch (err) {
                 console.error('Erreur lors de la récupération de l\'historique', err);
+
                 // En cas d'erreur, on utilise l'API de tendance comme fallback
-                fetch(`/api/produits/${produit.product_id}/price-trend`)
-                    .then(response => response.json())
-                    .then(data => {
-                        setTrend(data.trend);
-                        if (data.trend === 'up') setTrendText('Price Rising');
-                        else if (data.trend === 'down') setTrendText('Price Falling');
-                        else setTrendText('Price Stable');
-                    })
-                    .catch(errFallback => console.error('Erreur lors de la récupération de la tendance (fallback)', errFallback));
-            });
+                try {
+                    const trendResponse = await fetch(`/api/produits/${produit.product_id}/price-trend`);
+                    const trendData = await trendResponse.json();
+
+                    setTrend(trendData.trend);
+                    if (trendData.trend === 'up') setTrendText('Price Rising');
+                    else if (trendData.trend === 'down') setTrendText('Price Falling');
+                    else setTrendText('Price Stable');
+                } catch (errFallback) {
+                    console.error('Erreur lors de la récupération de la tendance (fallback)', errFallback);
+                }
+            }
+        };
+
+        fetchPriceHistory();
     }, [produit.product_id]);
 
     // Déterminer l'icône et la classe CSS de tendance
@@ -94,25 +100,28 @@ function ProduitCard({ produit }) {
 
     // Rendu du graphique de tendance amélioré avec courbe de Bézier
     const renderSparkline = () => {
-        if (!priceHistory || priceHistory.length < 2) return null;
+        if (!priceHistory || priceHistory.length < 2) {
+            // Retourner un graphique par défaut si pas d'historique
+            return renderDefaultSparkline();
+        }
 
         // Nous utilisons le premier et le dernier point pour la tendance
         const firstPrice = priceHistory[0];
         const lastPrice = priceHistory[priceHistory.length - 1];
 
-        // Couleurs selon tendance (uniformisées avec les badges)
+        // Couleurs selon tendance (uniformisées avec les variables CSS)
         const trendColors = {
-            up: '#3FCCA4',    // Vert harmonisé avec badge-condition-new
-            down: '#FF6B6B',  // Rouge harmonisé avec badge-condition-used
-            stable: '#5CB0FF' // Bleu harmonisé avec badge-ended
+            up: '#1ED17E',    // Vert vif
+            down: '#FF5252',  // Rouge vif 
+            stable: '#3AA0FE' // Bleu vif
         };
 
         const strokeColor = trendColors[trend] || trendColors.stable;
 
         // Dimensions et configuration du graphique
-        const width = 180;    // Largeur totale du SVG augmentée
-        const height = 38;    // Hauteur du SVG adaptée au conteneur
-        const graphWidth = 158; // Largeur effective du graphique ajustée
+        const width = 180;    // Largeur totale du SVG
+        const height = 38;    // Hauteur du SVG adapté à --sparkline-height
+        const graphWidth = 158; // Largeur effective du graphique
         const padding = 4;    // Marge intérieure
 
         // Valeurs minimale et maximale pour l'échelle avec amplitude augmentée
@@ -123,7 +132,7 @@ function ProduitCard({ produit }) {
 
         // Coordonnées pour le début et la fin
         const startX = padding;
-        const endX = graphWidth - 70; // Ajusté pour l'indicateur de pourcentage plus large
+        const endX = graphWidth - 70; // Ajusté pour l'indicateur de pourcentage
 
         // Calculer les coordonnées Y en fonction des prix
         const startY = height - padding - ((firstPrice - min) / range * (height - 2 * padding));
@@ -183,7 +192,7 @@ function ProduitCard({ produit }) {
             <div className="sparkline-container">
                 <div className="sparkline">
                     <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet">
-                        {/* Points de données intermédiaires pour texture (facultatif) */}
+                        {/* Points de données intermédiaires pour texture */}
                         {trend !== 'stable' && (
                             <g className="data-points">
                                 {[0.2, 0.4, 0.6, 0.8].map((fraction) => {
@@ -269,13 +278,147 @@ function ProduitCard({ produit }) {
         );
     };
 
+    // Rendu d'un graphique par défaut si pas d'historique
+    const renderDefaultSparkline = () => {
+        // Couleurs selon tendance (uniformisées avec les variables CSS)
+        const trendColors = {
+            up: '#1ED17E',
+            down: '#FF5252',
+            stable: '#3AA0FE'
+        };
+
+        const strokeColor = trendColors[trend];
+
+        // Dimensions et configuration du graphique
+        const width = 180;
+        const height = 38;
+        const graphWidth = 158;
+        const padding = 4;
+
+        // Valeurs par défaut pour un graphique stable
+        const startX = padding;
+        const endX = graphWidth - 70;
+        const middleY = height / 2;
+
+        // Points pour un graphique simple
+        let linePath, areaPath;
+
+        if (trend === 'up') {
+            linePath = `
+                M ${startX},${middleY + 5}
+                C ${startX + 30},${middleY + 2} ${endX - 30},${middleY - 2} ${endX},${middleY - 5}
+            `;
+            areaPath = `
+                M ${startX},${middleY + 5}
+                C ${startX + 30},${middleY + 2} ${endX - 30},${middleY - 2} ${endX},${middleY - 5}
+                L ${endX},${height - padding}
+                L ${startX},${height - padding}
+                Z
+            `;
+        } else if (trend === 'down') {
+            linePath = `
+                M ${startX},${middleY - 5}
+                C ${startX + 30},${middleY - 2} ${endX - 30},${middleY + 2} ${endX},${middleY + 5}
+            `;
+            areaPath = `
+                M ${startX},${middleY - 5}
+                C ${startX + 30},${middleY - 2} ${endX - 30},${middleY + 2} ${endX},${middleY + 5}
+                L ${endX},${height - padding}
+                L ${startX},${height - padding}
+                Z
+            `;
+        } else {
+            linePath = `
+                M ${startX},${middleY}
+                C ${startX + 30},${middleY - 3} ${endX - 60},${middleY + 3} ${endX},${middleY}
+            `;
+            areaPath = `
+                M ${startX},${middleY}
+                C ${startX + 30},${middleY - 3} ${endX - 60},${middleY + 3} ${endX},${middleY}
+                L ${endX},${height - padding}
+                L ${startX},${height - padding}
+                Z
+            `;
+        }
+
+        // Format du pourcentage (si percentChange est null, on utilise 0)
+        const changeValue = percentChange !== null ? percentChange : "0.0";
+        const formattedChange = (parseFloat(changeValue) > 0 ? '+' : '') + changeValue;
+        const changeClass = parseFloat(changeValue) > 0 ? 'positive' : parseFloat(changeValue) < 0 ? 'negative' : 'neutral';
+
+        return (
+            <div className="sparkline-container">
+                <div className="sparkline">
+                    <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet">
+                        {/* Zone ombrée sous la courbe avec dégradé */}
+                        <defs>
+                            <linearGradient id={`gradient-${produit.product_id}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor={strokeColor} stopOpacity="0.3" />
+                                <stop offset="100%" stopColor={strokeColor} stopOpacity="0.05" />
+                            </linearGradient>
+                        </defs>
+                        <path
+                            d={areaPath}
+                            fill={`url(#gradient-${produit.product_id})`}
+                        />
+
+                        {/* Ligne d'axe horizontal subtile */}
+                        <line
+                            x1={startX}
+                            y1={height - padding}
+                            x2={endX}
+                            y2={height - padding}
+                            stroke="rgba(255, 255, 255, 0.1)"
+                            strokeWidth="1"
+                        />
+
+                        {/* Courbe de Bézier */}
+                        <path
+                            d={linePath}
+                            fill="none"
+                            stroke={strokeColor}
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
+
+                        {/* Points de début et de fin */}
+                        <circle
+                            cx={startX}
+                            cy={trend === 'up' ? middleY + 5 : trend === 'down' ? middleY - 5 : middleY}
+                            r={3.5}
+                            fill={strokeColor}
+                        />
+                        <circle
+                            cx={endX}
+                            cy={trend === 'up' ? middleY - 5 : trend === 'down' ? middleY + 5 : middleY}
+                            r={3.5}
+                            fill={strokeColor}
+                            strokeWidth="1.5"
+                            stroke="rgba(0,0,0,0.2)"
+                        />
+                    </svg>
+                </div>
+
+                {/* Pourcentage de variation */}
+                <div className={`change-indicator ${changeClass}`}>
+                    {formattedChange}%
+                </div>
+            </div>
+        );
+    };
+
     // Format de date pour l'affichage
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
 
         try {
             const date = new Date(dateString);
-            return date.toLocaleDateString();
+            return new Intl.DateTimeFormat('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: '2-digit'
+            }).format(date);
         } catch (e) {
             return dateString;
         }
