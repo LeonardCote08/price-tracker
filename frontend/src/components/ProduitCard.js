@@ -22,18 +22,8 @@ function ProduitCard({ produit }) {
     const sparklineRef = useRef(null);
     const [isHovered, setIsHovered] = useState(false);
 
-    // Charger la tendance via l'API
+    // Charger la tendance et l'historique de prix
     useEffect(() => {
-        fetch(`/api/produits/${produit.product_id}/price-trend`)
-            .then(response => response.json())
-            .then(data => {
-                setTrend(data.trend);
-                if (data.trend === 'up') setTrendText('Price Rising');
-                else if (data.trend === 'down') setTrendText('Price Falling');
-                else setTrendText('Price Stable');
-            })
-            .catch(err => console.error('Erreur lors de la récupération de la tendance', err));
-
         // Récupérer un minihistorique pour la sparkline
         fetch(`/api/produits/${produit.product_id}/historique-prix`)
             .then(response => response.json())
@@ -47,10 +37,37 @@ function ProduitCard({ produit }) {
                         const lastPrice = data.prices[data.prices.length - 1];
                         const change = ((lastPrice - firstPrice) / firstPrice * 100).toFixed(1);
                         setPercentChange(change);
+
+                        // Déterminer la tendance basée sur le pourcentage de variation
+                        // Utiliser un seuil de ±3% pour considérer une variation comme significative
+                        const changeValue = parseFloat(change);
+                        if (changeValue > 3) {
+                            setTrend('up');
+                            setTrendText('Price Rising');
+                        } else if (changeValue < -3) {
+                            setTrend('down');
+                            setTrendText('Price Falling');
+                        } else {
+                            setTrend('stable');
+                            setTrendText('Price Stable');
+                        }
                     }
                 }
             })
-            .catch(err => console.error('Erreur lors de la récupération de l\'historique', err));
+            .catch(err => {
+                console.error('Erreur lors de la récupération de l\'historique', err);
+
+                // En cas d'erreur, on utilise l'API de tendance comme fallback
+                fetch(`/api/produits/${produit.product_id}/price-trend`)
+                    .then(response => response.json())
+                    .then(data => {
+                        setTrend(data.trend);
+                        if (data.trend === 'up') setTrendText('Price Rising');
+                        else if (data.trend === 'down') setTrendText('Price Falling');
+                        else setTrendText('Price Stable');
+                    })
+                    .catch(errFallback => console.error('Erreur lors de la récupération de la tendance (fallback)', errFallback));
+            });
     }, [produit.product_id]);
 
     // Déterminer l'icône et la classe CSS de tendance
