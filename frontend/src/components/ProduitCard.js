@@ -108,52 +108,51 @@ function ProduitCard({ produit }) {
         const strokeColor = trendColors[trend] || trendColors.stable;
 
         // Dimensions et configuration du graphique
-        const width = 140;    // Largeur totale du SVG
-        const height = 30;    // Hauteur du SVG
-        const graphWidth = 110; // Largeur effective du graphique
-        const padding = 5;    // Marge intérieure
+        const width = 160;   // Largeur totale du SVG augmentée
+        const height = 34;   // Hauteur du SVG augmentée pour meilleure lisibilité
+        const graphWidth = 138; // Largeur effective du graphique ajustée
+        const padding = 4;    // Marge intérieure réduite
 
         // Valeurs minimale et maximale pour l'échelle
-        const valuesSpread = Math.abs(lastPrice - firstPrice) * 0.1;
+        const valuesSpread = Math.abs(lastPrice - firstPrice) * 0.2; // Augmenter l'amplitude 
         const min = Math.min(firstPrice, lastPrice) - valuesSpread;
         const max = Math.max(firstPrice, lastPrice) + valuesSpread;
         const range = max - min || 1;
 
         // Coordonnées pour le début et la fin
         const startX = padding;
-        const endX = graphWidth - padding;
+        const endX = graphWidth - 62; // Ajusté pour l'indicateur de pourcentage
 
         // Calculer les coordonnées Y en fonction des prix
         const startY = height - padding - ((firstPrice - min) / range * (height - 2 * padding));
         const endY = height - padding - ((lastPrice - min) / range * (height - 2 * padding));
 
-        // Calculer l'intensité de la courbe en fonction de la variation
-        // Plus la variation est grande, plus la courbe sera prononcée
+        // Amélioration de l'intensité de la courbe pour une meilleure visualisation
         const variationPercent = Math.abs((lastPrice - firstPrice) / firstPrice);
-        const curveIntensity = Math.min(height * 0.4, Math.max(height * 0.1, height * variationPercent * 0.5));
+        const curveIntensity = Math.min(height * 0.5, Math.max(height * 0.15, height * variationPercent * 0.8));
 
         // Points de contrôle pour la courbe de Bézier
         let controlPoint1X, controlPoint1Y, controlPoint2X, controlPoint2Y;
 
-        // Ajuster les points de contrôle selon la tendance
+        // Ajuster les points de contrôle selon la tendance pour des courbes plus marquées
         if (trend === 'up') {
-            // Courbe montante: points de contrôle pour une courbe élégante vers le haut
-            controlPoint1X = startX + (endX - startX) * 0.25;
-            controlPoint1Y = startY;
-            controlPoint2X = startX + (endX - startX) * 0.75;
+            // Courbe montante avec meilleure forme
+            controlPoint1X = startX + (endX - startX) * 0.3;
+            controlPoint1Y = startY - curveIntensity * 0.2;
+            controlPoint2X = startX + (endX - startX) * 0.7;
             controlPoint2Y = endY - curveIntensity;
         } else if (trend === 'down') {
-            // Courbe descendante: points de contrôle pour une courbe élégante vers le bas
-            controlPoint1X = startX + (endX - startX) * 0.25;
+            // Courbe descendante avec meilleure forme
+            controlPoint1X = startX + (endX - startX) * 0.3;
             controlPoint1Y = startY + curveIntensity;
-            controlPoint2X = startX + (endX - startX) * 0.75;
-            controlPoint2Y = endY;
+            controlPoint2X = startX + (endX - startX) * 0.7;
+            controlPoint2Y = endY + curveIntensity * 0.2;
         } else {
-            // Tendance stable: légère ondulation
-            controlPoint1X = startX + (endX - startX) * 0.25;
-            controlPoint1Y = Math.min(startY, endY) - height * 0.05;
-            controlPoint2X = startX + (endX - startX) * 0.75;
-            controlPoint2Y = Math.min(startY, endY) - height * 0.05;
+            // Tendance stable: ondulation plus visible
+            controlPoint1X = startX + (endX - startX) * 0.33;
+            controlPoint1Y = Math.min(startY, endY) - height * 0.07;
+            controlPoint2X = startX + (endX - startX) * 0.67;
+            controlPoint2Y = Math.min(startY, endY) - height * 0.07;
         }
 
         // Format du pourcentage avec signe
@@ -186,7 +185,7 @@ function ProduitCard({ produit }) {
                         <path
                             d={areaPath}
                             fill={strokeColor}
-                            fillOpacity="0.1"
+                            fillOpacity="0.15" // Augmenté pour plus de visibilité
                         />
 
                         {/* Courbe de Bézier */}
@@ -194,7 +193,7 @@ function ProduitCard({ produit }) {
                             d={linePath}
                             fill="none"
                             stroke={strokeColor}
-                            strokeWidth="2"
+                            strokeWidth="2.5" // Augmenté pour plus de visibilité
                             strokeLinecap="round"
                             strokeLinejoin="round"
                         />
@@ -203,13 +202,13 @@ function ProduitCard({ produit }) {
                         <circle
                             cx={startX}
                             cy={startY}
-                            r={2.5}
+                            r={3} // Augmenté pour plus de visibilité
                             fill={strokeColor}
                         />
                         <circle
                             cx={endX}
                             cy={endY}
-                            r={2.5}
+                            r={3} // Augmenté pour plus de visibilité
                             fill={strokeColor}
                         />
                     </svg>
