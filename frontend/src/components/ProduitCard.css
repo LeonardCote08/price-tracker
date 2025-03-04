@@ -158,20 +158,34 @@
         filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.2));
     }
 
-/* Animations pour les sparklines au survol */
-.produit-card:hover .sparkline svg path,
-.produit-card:hover .sparkline svg circle {
-    animation: pulse 1.5s infinite alternate ease-in-out;
-}
-
-@keyframes pulse {
+/* Nouvelle animation de pulse pour les chemins et les cercles */
+@keyframes pulsePath {
     from {
+        stroke-width: 2.8px;
         filter: brightness(1);
     }
 
     to {
+        stroke-width: 3.8px;
         filter: brightness(1.3);
     }
+}
+
+@keyframes pulseGlow {
+    from {
+        opacity: 0.5;
+        transform: scaleY(1);
+    }
+
+    to {
+        opacity: 0.8;
+        transform: scaleY(1.05);
+    }
+}
+
+/* Application des animations au survol */
+.sparkline.hovered svg path {
+    animation: pulsePath 1.5s infinite alternate ease-in-out;
 }
 
 .sparkline.trend-up path {

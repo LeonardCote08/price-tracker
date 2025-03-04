@@ -18,6 +18,7 @@ function ProduitCard({ produit }) {
     const [trendText, setTrendText] = useState('Price Stable');
     const [priceHistory, setPriceHistory] = useState(null);
     const sparklineRef = useRef(null);
+    const [isHovered, setIsHovered] = useState(false);
 
     // Charger la tendance via l'API
     useEffect(() => {
@@ -36,7 +37,7 @@ function ProduitCard({ produit }) {
             .then(response => response.json())
             .then(data => {
                 if (data.prices && data.prices.length > 0) {
-                    setPriceHistory(data.prices.slice(-8)); // On prend les 8 derniers points pour plus de détail
+                    setPriceHistory(data.prices.slice(-10)); // On prend les 10 derniers points pour plus de détail
                 }
             })
             .catch(err => console.error('Erreur lors de la récupération de l\'historique', err));
@@ -56,7 +57,7 @@ function ProduitCard({ produit }) {
     };
 
     // Fonction pour tronquer le titre
-    const truncateTitle = (title, length = 35) => {
+    const truncateTitle = (title, length = 40) => {
         if (title && title.length > length) {
             return title.substring(0, length) + '...';
         }
@@ -73,26 +74,29 @@ function ProduitCard({ produit }) {
 
         // Configuration du SVG
         const width = 100; // Pourcentage de la largeur
-        const height = 30; // Hauteur en pixels augmentée pour plus de clarté
-        const strokeWidth = 2.5; // Épaisseur de ligne plus importante
-        const dotRadius = 3; // Taille des points
+        const height = 35; // Hauteur en pixels augmentée pour plus de clarté
+        const strokeWidth = isHovered ? 3.5 : 2.8; // Épaisseur de ligne plus importante et qui change au survol
+        const dotRadius = isHovered ? 3.5 : 3; // Taille des points qui change au survol
 
         // Couleurs selon la tendance avec opacité améliorée pour le remplissage
         const trendColors = {
             up: {
                 stroke: '#3FCCA4',
-                fill: 'rgba(63, 204, 164, 0.3)',
-                dot: '#3FCCA4'
+                fill: 'rgba(63, 204, 164, 0.4)',
+                dot: '#3FCCA4',
+                glow: 'rgba(63, 204, 164, 0.7)'
             },
             down: {
                 stroke: '#D84C4A',
-                fill: 'rgba(216, 76, 74, 0.3)',
-                dot: '#D84C4A'
+                fill: 'rgba(216, 76, 74, 0.4)',
+                dot: '#D84C4A',
+                glow: 'rgba(216, 76, 74, 0.7)'
             },
             stable: {
                 stroke: '#1595EB',
-                fill: 'rgba(21, 149, 235, 0.2)',
-                dot: '#1595EB'
+                fill: 'rgba(21, 149, 235, 0.3)',
+                dot: '#1595EB',
+                glow: 'rgba(21, 149, 235, 0.7)'
             }
         };
 
@@ -133,8 +137,13 @@ function ProduitCard({ produit }) {
             areaPathD += ` L ${points[points.length - 1].x},${height} L ${points[0].x},${height} Z`;
         }
 
+        // Animation pour le chemin (dépend du hover)
+        const animationProps = isHovered ? {
+            style: { animation: 'pulsePath 1.5s infinite alternate ease-in-out' }
+        } : {};
+
         return (
-            <div className={`sparkline ${getTrendClass()}`}>
+            <div className={`sparkline ${getTrendClass()} ${isHovered ? 'hovered' : ''}`}>
                 <svg
                     width="100%"
                     height="100%"
@@ -144,23 +153,45 @@ function ProduitCard({ produit }) {
                 >
                     {/* Effet de glow pour la courbe */}
                     <filter id={`glow-${produit.product_id}`} x="-20%" y="-20%" width="140%" height="140%">
-                        <feGaussianBlur stdDeviation="1.5" result="blur" />
+                        <feGaussianBlur stdDeviation={isHovered ? "2.5" : "1.5"} result="blur" />
                         <feComposite in="SourceGraphic" in2="blur" operator="over" />
                     </filter>
 
-                    {/* Aire sous la courbe avec dégradé */}
+                    {/* Dégradé amélioré */}
                     <defs>
                         <linearGradient id={`gradient-${produit.product_id}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor={colors.fill} stopOpacity="0.7" />
-                            <stop offset="100%" stopColor={colors.fill} stopOpacity="0.1" />
+                            <stop offset="0%" stopColor={colors.fill} stopOpacity="0.8" />
+                            <stop offset="100%" stopColor={colors.fill} stopOpacity="0.2" />
+                        </linearGradient>
+
+                        {/* Dégradé pour l'effet de lueur */}
+                        <linearGradient id={`glow-gradient-${produit.product_id}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor={colors.glow} stopOpacity="0.6" />
+                            <stop offset="100%" stopColor={colors.glow} stopOpacity="0" />
                         </linearGradient>
                     </defs>
+
+                    {/* Effet de lueur sous la courbe */}
+                    {isHovered && (
+                        <path
+                            d={areaPathD}
+                            fill={`url(#glow-gradient-${produit.product_id})`}
+                            stroke="none"
+                            style={{
+                                animation: 'pulseGlow 1.5s infinite alternate ease-in-out',
+                                transformOrigin: 'center'
+                            }}
+                        />
+                    )}
 
                     {/* Aire sous la courbe avec dégradé */}
                     <path
                         d={areaPathD}
                         fill={`url(#gradient-${produit.product_id})`}
                         stroke="none"
+                        style={{
+                            transition: 'all 0.3s ease'
+                        }}
                     />
 
                     {/* Ligne de courbe lissée */}
@@ -172,22 +203,34 @@ function ProduitCard({ produit }) {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         filter={`url(#glow-${produit.product_id})`}
+                        {...animationProps}
+                        style={{
+                            transition: 'stroke-width 0.3s ease',
+                            ...animationProps.style
+                        }}
                     />
 
-                    {/* Points sur la courbe - seulement premier et dernier point */}
+                    {/* Points sur la courbe - seulement quelques points stratégiques */}
                     {points.map((point, index) => {
-                        // N'afficher que les points de début et de fin pour un look plus propre
-                        if (index === 0 || index === points.length - 1) {
+                        // N'afficher que les points stratégiques pour un look plus propre
+                        if (index === 0 || index === points.length - 1 ||
+                            (isHovered && index % Math.ceil(points.length / 5) === 0)) {
+                            const isEndPoint = index === 0 || index === points.length - 1;
+
                             return (
                                 <circle
                                     key={index}
                                     cx={point.x}
                                     cy={point.y}
-                                    r={index === points.length - 1 ? dotRadius : dotRadius - 0.5}
+                                    r={isEndPoint ? dotRadius + 0.5 : dotRadius - 0.5}
                                     fill={colors.dot}
                                     stroke="#fff"
                                     strokeWidth="1"
                                     filter={`url(#glow-${produit.product_id})`}
+                                    style={{
+                                        transition: 'r 0.3s ease, opacity 0.3s ease',
+                                        opacity: isHovered || isEndPoint ? 1 : 0.7
+                                    }}
                                 />
                             );
                         }
@@ -200,7 +243,11 @@ function ProduitCard({ produit }) {
 
     return (
         <Link to={`/produits/${produit.product_id}`} className="produit-card-link">
-            <div className="produit-card">
+            <div
+                className="produit-card"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+            >
                 {/* Image du produit et overlay */}
                 <div className="product-image-container">
                     <img

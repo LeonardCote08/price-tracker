@@ -6,12 +6,12 @@
     padding: 0 1.5rem 2rem;
 }
 
-/* Grille des produits - Équilibrée pour 3-4 produits par ligne */
+/* Grille des produits - Améliorée pour 4-5 produits par ligne */
 .produits-grid {
     margin: 1.5rem 0;
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Par défaut 3 produits par ligne */
-    gap: 1.5rem;
+    grid-template-columns: repeat(4, 1fr); /* Augmenté de 3 à 4 */
+    gap: 1.25rem; /* Réduit légèrement pour plus de densité */
     animation: fadeIn 0.5s ease-in-out;
 }
 
@@ -30,7 +30,7 @@
 
 /* En-tête de page avec bannière et stats */
 .page-header {
-    margin: 1rem 0 2rem;
+    margin: 1rem 0 1.5rem;
 }
 
 /* Bannière info transformée */
@@ -237,52 +237,6 @@
     margin-right: 0.5rem;
 }
 
-/* Pagination */
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 2rem 0 1rem;
-    gap: 0.5rem;
-}
-
-.page-button, .page-number {
-    padding: 0.5rem 1rem;
-    background-color: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 4px;
-    color: var(--text-color);
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-    .page-button:hover, .page-number:hover {
-        background-color: rgba(21, 149, 235, 0.3);
-    }
-
-    .page-button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-.page-numbers {
-    display: flex;
-    gap: 0.3rem;
-}
-
-.page-number.current {
-    background-color: var(--accent-color);
-    color: white;
-    font-weight: bold;
-}
-
-.pagination-info {
-    text-align: center;
-    font-size: 0.85rem;
-    color: #AAA;
-    margin-top: 0.5rem;
-}
-
 /* Loading et erreur */
 .loading-container {
     display: flex;
@@ -323,9 +277,13 @@
     margin: 1rem 0;
     font-size: 0.9rem;
     color: #CCC;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
 }
 
-.search-results, .filter-results {
+.search-results, .filter-results, .showing-results {
     background-color: rgba(255, 255, 255, 0.05);
     padding: 0.5rem 1rem;
     border-radius: 4px;
@@ -340,11 +298,43 @@
     grid-column: 1 / -1;
 }
 
+/* Indicateur de chargement pour l'infinite scroll */
+.load-more-indicator {
+    text-align: center;
+    padding: 1.5rem;
+    color: #CCC;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.loading-icon {
+    font-size: 1.5rem;
+    color: var(--accent-color);
+}
+
+.all-products-loaded {
+    text-align: center;
+    padding: 1rem;
+    color: #AAA;
+    font-style: italic;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 2rem;
+}
+
 /* Responsive pour différentes tailles d'écran */
 @media (min-width: 1400px) {
-    /* Pour les grands écrans, 4 produits par ligne */
+    /* Pour les grands écrans, 5 produits par ligne */
     .produits-grid {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (max-width: 1023px) {
+    /* Pour les tablettes, 3 produits par ligne */
+    .produits-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 }
 

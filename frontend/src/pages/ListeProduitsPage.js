@@ -1,5 +1,5 @@
 // frontend/src/pages/ListeProduitsPage.js
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { fetchProduits } from '../services/api';
 import ProduitCard from '../components/ProduitCard';
 import './ListeProduitsPage.css';
@@ -15,11 +15,14 @@ import {
     faSortAmountDown,
     faChartLine,
     faFilter,
-    faTag
+    faTag,
+    faSpinner
 } from '@fortawesome/free-solid-svg-icons';
 
-// Nombre de produits par page
-const ITEMS_PER_PAGE = 9;
+// Nombre initial de produits à afficher (beaucoup plus qu'avant)
+const INITIAL_ITEMS_COUNT = 24;
+// Nombre de produits à ajouter à chaque chargement
+const ITEMS_INCREMENT = 12;
 
 function ListeProduitsPage() {
     // Liste complète de produits récupérés depuis l'API
@@ -32,8 +35,12 @@ function ListeProduitsPage() {
     const [searchTerm, setSearchTerm] = useState('');
     // Option de tri
     const [sortOption, setSortOption] = useState('default');
-    // Pagination
-    const [currentPage, setCurrentPage] = useState(1);
+    // Nombre de produits à afficher
+    const [displayCount, setDisplayCount] = useState(INITIAL_ITEMS_COUNT);
+    // Indique si tous les produits sont affichés
+    const [allDisplayed, setAllDisplayed] = useState(false);
+    // Indique si on est en train de charger plus de produits
+    const [loadingMore, setLoadingMore] = useState(false);
 
     // États de chargement / erreur
     const [loading, setLoading] = useState(true);
@@ -49,6 +56,9 @@ function ListeProduitsPage() {
         fallingCount: 0,
         stableCount: 0
     });
+
+    // Référence pour la détection du scrolling
+    const loaderRef = useRef(null);
 
     useScrollRestoration(!loading);
 
@@ -167,22 +177,49 @@ function ListeProduitsPage() {
         return sortProducts(filtered, sortOption);
     }, [produits, trendById, trendFilter, searchTerm, sortOption]);
 
-    // Pagination - Calcul des pages
-    const totalPages = Math.ceil(filteredAndSortedProducts.length / ITEMS_PER_PAGE);
+    // Récupérer les produits à afficher (basé sur displayCount)
+    const displayedProducts = useMemo(() => {
+        return filteredAndSortedProducts.slice(0, displayCount);
+    }, [filteredAndSortedProducts, displayCount]);
 
-    // Récupérer les produits pour la page courante
-    const currentProducts = useMemo(() => {
-        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-        return filteredAndSortedProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-    }, [filteredAndSortedProducts, currentPage]);
+    // Observer pour l'infinite scroll
+    const observer = useRef();
+    const lastProductElementRef = useCallback(node => {
+        if (loading || loadingMore) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && !allDisplayed) {
+                loadMoreProducts();
+            }
+        }, { threshold: 0.5 });
+        if (node) observer.current.observe(node);
+    }, [loading, loadingMore, allDisplayed]);
 
-    // Changement de page
-    const handlePageChange = (newPage) => {
-        if (newPage >= 1 && newPage <= totalPages) {
-            setCurrentPage(newPage);
-            window.scrollTo(0, 0);
-        }
+    // Fonction pour charger plus de produits
+    const loadMoreProducts = () => {
+        if (loadingMore || allDisplayed) return;
+
+        setLoadingMore(true);
+
+        // Simuler un délai pour montrer le chargement (peut être supprimé en production)
+        setTimeout(() => {
+            setDisplayCount(prev => {
+                const newCount = prev + ITEMS_INCREMENT;
+                if (newCount >= filteredAndSortedProducts.length) {
+                    setAllDisplayed(true);
+                    return filteredAndSortedProducts.length;
+                }
+                return newCount;
+            });
+            setLoadingMore(false);
+        }, 500);
     };
+
+    // Réinitialiser l'état de l'affichage lors d'un changement de filtre ou de recherche
+    useEffect(() => {
+        setDisplayCount(INITIAL_ITEMS_COUNT);
+        setAllDisplayed(filteredAndSortedProducts.length <= INITIAL_ITEMS_COUNT);
+    }, [filteredAndSortedProducts.length]);
 
     if (loading) return (
         <div className="loading-container">
@@ -244,7 +281,8 @@ function ListeProduitsPage() {
                         value={searchTerm}
                         onChange={(e) => {
                             setSearchTerm(e.target.value);
-                            setCurrentPage(1); // Retour à la première page lors d'une recherche
+                            setDisplayCount(INITIAL_ITEMS_COUNT);
+                            setAllDisplayed(false);
                         }}
                         className="search-input"
                     />
@@ -281,7 +319,8 @@ function ListeProduitsPage() {
                         className={`filter-button ${trendFilter === 'all' ? 'selected' : ''}`}
                         onClick={() => {
                             setTrendFilter('all');
-                            setCurrentPage(1);
+                            setDisplayCount(INITIAL_ITEMS_COUNT);
+                            setAllDisplayed(false);
                         }}
                     >
                         <FontAwesomeIcon icon={faCircleCheck} className="button-icon" />
@@ -291,7 +330,8 @@ function ListeProduitsPage() {
                         className={`filter-button ${trendFilter === 'up' ? 'selected' : ''}`}
                         onClick={() => {
                             setTrendFilter('up');
-                            setCurrentPage(1);
+                            setDisplayCount(INITIAL_ITEMS_COUNT);
+                            setAllDisplayed(false);
                         }}
                     >
                         <FontAwesomeIcon icon={faArrowUp} className="button-icon" />
@@ -301,7 +341,8 @@ function ListeProduitsPage() {
                         className={`filter-button ${trendFilter === 'down' ? 'selected' : ''}`}
                         onClick={() => {
                             setTrendFilter('down');
-                            setCurrentPage(1);
+                            setDisplayCount(INITIAL_ITEMS_COUNT);
+                            setAllDisplayed(false);
                         }}
                     >
                         <FontAwesomeIcon icon={faArrowDown} className="button-icon" />
@@ -311,7 +352,8 @@ function ListeProduitsPage() {
                         className={`filter-button ${trendFilter === 'stable' ? 'selected' : ''}`}
                         onClick={() => {
                             setTrendFilter('stable');
-                            setCurrentPage(1);
+                            setDisplayCount(INITIAL_ITEMS_COUNT);
+                            setAllDisplayed(false);
                         }}
                     >
                         <FontAwesomeIcon icon={faChartLine} className="button-icon" />
@@ -332,74 +374,47 @@ function ListeProduitsPage() {
                         Showing {filteredAndSortedProducts.length} {trendFilter === 'up' ? 'rising' : trendFilter === 'down' ? 'falling' : 'stable'} products
                     </p>
                 )}
+                {filteredAndSortedProducts.length > 0 && (
+                    <p className="showing-results">
+                        Showing {Math.min(displayCount, filteredAndSortedProducts.length)} of {filteredAndSortedProducts.length} products
+                    </p>
+                )}
             </div>
 
             {/* Grille de produits */}
             <div className="produits-grid">
-                {currentProducts.length > 0 ? (
-                    currentProducts.map(p => (
-                        <ProduitCard key={p.product_id} produit={p} />
-                    ))
+                {displayedProducts.length > 0 ? (
+                    displayedProducts.map((p, index) => {
+                        // Si c'est le dernier élément, ajouter la référence
+                        if (index === displayedProducts.length - 1) {
+                            return (
+                                <div ref={lastProductElementRef} key={p.product_id}>
+                                    <ProduitCard produit={p} />
+                                </div>
+                            );
+                        } else {
+                            return <ProduitCard key={p.product_id} produit={p} />;
+                        }
+                    })
                 ) : (
                     <p className="no-results">No products found matching your criteria</p>
                 )}
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-                <div className="pagination">
-                    <button
-                        className="page-button"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                    >
-                        &laquo; Previous
-                    </button>
-
-                    <div className="page-numbers">
-                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                            // Calculer les numéros de page à afficher (toujours centrés sur la page actuelle si possible)
-                            let pageNum;
-                            if (totalPages <= 5) {
-                                pageNum = i + 1;
-                            } else if (currentPage <= 3) {
-                                pageNum = i + 1;
-                            } else if (currentPage >= totalPages - 2) {
-                                pageNum = totalPages - 4 + i;
-                            } else {
-                                pageNum = currentPage - 2 + i;
-                            }
-
-                            return (
-                                <button
-                                    key={pageNum}
-                                    className={`page-number ${pageNum === currentPage ? 'current' : ''}`}
-                                    onClick={() => handlePageChange(pageNum)}
-                                >
-                                    {pageNum}
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    <button
-                        className="page-button"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                    >
-                        Next &raquo;
-                    </button>
+            {/* Indicateur de chargement pour l'infinite scroll */}
+            {loadingMore && (
+                <div className="load-more-indicator" ref={loaderRef}>
+                    <FontAwesomeIcon icon={faSpinner} spin className="loading-icon" />
+                    <span>Loading more products...</span>
                 </div>
             )}
 
-            <div className="pagination-info">
-                {filteredAndSortedProducts.length > 0 ? (
-                    <p>
-                        Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
-                        {Math.min(currentPage * ITEMS_PER_PAGE, filteredAndSortedProducts.length)} of {filteredAndSortedProducts.length} products
-                    </p>
-                ) : null}
-            </div>
+            {/* Message "Plus de produits" quand tout est affiché */}
+            {allDisplayed && filteredAndSortedProducts.length > INITIAL_ITEMS_COUNT && (
+                <div className="all-products-loaded">
+                    <span>All products loaded</span>
+                </div>
+            )}
         </div>
     );
 }
