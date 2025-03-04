@@ -88,7 +88,7 @@
     font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -96,27 +96,27 @@
 }
 
 .badge-condition-new {
-    background-color: #52b69a;
+    background-color: #2A9D8F;
 }
 
 .badge-condition-used {
-    background-color: #B54C4A;
+    background-color: #E76F51;
 }
 
 .badge-signed {
-    background-color: #D0B058;
+    background-color: #E9C46A;
 }
 
 .badge-inbox {
-    background-color: #38a3a5;
+    background-color: #2A9D8F;
 }
 
 .badge-nobox {
-    background-color: #C2745A;
+    background-color: #E76F51;
 }
 
 .badge-ended {
-    background-color: #444;
+    background-color: #6c757d;
 }
 
 /* Bloc principal d'informations */
@@ -144,68 +144,62 @@
     -webkit-box-orient: vertical;
 }
 
-/* SECTION GRAPHIQUE AMÉLIORÉE */
+/* REFONTE COMPLÈTE DU GRAPHIQUE */
 .sparkline-container {
     position: relative;
-    height: 40px;
-    margin: 8px 0 12px 0;
+    height: 32px;
+    margin: 8px 0;
     background-color: rgba(36, 55, 72, 0.4);
-    border-radius: 8px;
+    border-radius: 4px;
     overflow: hidden;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
-    display: flex;
-    align-items: center;
 }
 
 /* Graphique */
 .sparkline {
     width: 100%;
     height: 100%;
+    padding: 3px 50px 3px 3px; /* Espace à droite pour le badge */
     position: relative;
 }
 
-    /* SVG styles pour les graphiques intégrés */
-    .sparkline svg {
-        overflow: visible;
-    }
-
 /* Badge de pourcentage */
-.percentage-bg {
-    fill: rgba(0, 0, 0, 0.25);
+.change-indicator {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.3);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-align: center;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    border-radius: 0 4px 4px 0;
+    z-index: 2;
 }
 
-    .percentage-bg.positive {
-        fill: rgba(63, 204, 164, 0.15);
+    .change-indicator.positive {
+        color: #2A9D8F;
     }
 
-    .percentage-bg.negative {
-        fill: rgba(216, 76, 74, 0.15);
+    .change-indicator.negative {
+        color: #E76F51;
     }
 
-    .percentage-bg.neutral {
-        fill: rgba(21, 149, 235, 0.15);
-    }
-
-.percentage-text {
-    font-size: 0.85rem;
-    font-weight: 700;
-    fill: #1595EB;
-}
-
-    .percentage-text.positive {
-        fill: #3FCCA4;
-    }
-
-    .percentage-text.negative {
-        fill: #D84C4A;
+    .change-indicator.neutral {
+        color: #4E9CD3;
     }
 
 /* Section prix et tendance */
 .price-section {
-    margin: 16px 0 10px 0;
+    margin: 10px 0;
     display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .price-tag {
@@ -216,11 +210,11 @@
 
 .price-icon {
     color: var(--accent-color);
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
 
 .price-value {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: #fff;
     font-family: 'Montserrat', sans-serif;
@@ -231,30 +225,25 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 600;
-    padding: 4px 8px;
-    border-radius: 4px;
-    background-color: rgba(0, 0, 0, 0.15);
+    padding: 3px 0;
 }
 
 .trend-icon {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 .trend-up {
-    color: #3FCCA4;
-    background-color: rgba(63, 204, 164, 0.1);
+    color: #2A9D8F;
 }
 
 .trend-down {
-    color: #D84C4A;
-    background-color: rgba(216, 76, 74, 0.1);
+    color: #E76F51;
 }
 
 .trend-stable {
-    color: #1595EB;
-    background-color: rgba(21, 149, 235, 0.1);
+    color: #4E9CD3;
 }
 
 /* Effets d'animation pour les tendances */
@@ -326,7 +315,7 @@
     font-size: 0.7rem;
 }
 
-/* Responsive  */
+/* Responsive */
 @media (max-width: 768px) {
     .product-image-container {
         height: 180px;
@@ -341,7 +330,12 @@
     }
 
     .sparkline-container {
-        height: 36px;
+        height: 30px;
+    }
+
+    .change-indicator {
+        font-size: 0.75rem;
+        width: 45px;
     }
 }
 
@@ -361,6 +355,15 @@
     }
 
     .sparkline-container {
-        height: 34px;
+        height: 28px;
+    }
+
+    .sparkline {
+        padding-right: 45px;
+    }
+
+    .change-indicator {
+        font-size: 0.7rem;
+        width: 40px;
     }
 }
