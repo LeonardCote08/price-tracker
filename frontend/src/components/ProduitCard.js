@@ -82,9 +82,11 @@ function ProduitCard({ produit }) {
         return 'trend-stable';
     };
 
-    // Fonction pour tronquer le titre
+    // Fonction pour tronquer le titre (limite stricte à 40 caractères pour uniformité)
     const truncateTitle = (title, length = 40) => {
-        if (title && title.length > length) {
+        if (!title) return '';
+
+        if (title.length > length) {
             return title.substring(0, length) + '...';
         }
         return title;
@@ -98,11 +100,11 @@ function ProduitCard({ produit }) {
         const firstPrice = priceHistory[0];
         const lastPrice = priceHistory[priceHistory.length - 1];
 
-        // Couleurs selon tendance (mises à jour pour correspondre aux changements CSS)
+        // Couleurs selon tendance (uniformisées avec les badges)
         const trendColors = {
-            up: '#3FCCA4',    // Vert plus vif
-            down: '#FF6B6B',  // Rouge plus vif
-            stable: '#5CB0FF' // Bleu plus vif
+            up: '#3FCCA4',    // Vert harmonisé avec badge-condition-new
+            down: '#FF6B6B',  // Rouge harmonisé avec badge-condition-used
+            stable: '#5CB0FF' // Bleu harmonisé avec badge-ended
         };
 
         const strokeColor = trendColors[trend] || trendColors.stable;
@@ -321,7 +323,7 @@ function ProduitCard({ produit }) {
                 {/* Contenu principal */}
                 <div className="product-info">
                     {/* Titre du produit */}
-                    <h3 className="product-title">{truncateTitle(produit.title)}</h3>
+                    <h3 className="product-title">{truncateTitle(produit.title, 40)}</h3>
 
                     {/* Sparkline (mini graphique de tendance) */}
                     {renderSparkline()}

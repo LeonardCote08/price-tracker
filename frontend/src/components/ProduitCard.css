@@ -12,7 +12,7 @@
 .produit-card {
     position: relative;
     width: 100%;
-    height: 100%;
+    height: 465px; /* Hauteur fixe pour uniformité */
     display: flex;
     flex-direction: column;
     background-color: var(--card-bg-color);
@@ -96,27 +96,27 @@
 }
 
 .badge-condition-new {
-    background-color: #2A9D8F;
+    background-color: #3FCCA4; /* Vert cohérent avec les tendances à la hausse */
 }
 
 .badge-condition-used {
-    background-color: #E76F51;
+    background-color: #FF6B6B; /* Rouge cohérent avec les tendances à la baisse */
 }
 
 .badge-signed {
-    background-color: #E9C46A;
+    background-color: #F6C143; /* Jaune ajusté pour cohérence */
 }
 
 .badge-inbox {
-    background-color: #2A9D8F;
+    background-color: #3FCCA4; /* Vert cohérent */
 }
 
 .badge-nobox {
-    background-color: #E76F51;
+    background-color: #FF6B6B; /* Rouge cohérent */
 }
 
 .badge-ended {
-    background-color: #6c757d;
+    background-color: #5CB0FF; /* Bleu cohérent avec les tendances stables */
 }
 
 /* Bloc principal d'informations */
@@ -127,6 +127,8 @@
     flex-grow: 1;
     justify-content: space-between;
     z-index: 2;
+    /* Assurer une hauteur cohérente */
+    height: calc(100% - 200px); /* Ajuster en fonction de la hauteur de l'image */
 }
 
 /* Titre du produit */
@@ -137,7 +139,8 @@
     margin: 0 0 12px 0;
     color: #fff;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    height: 2.6rem;
+    height: 2.6rem; /* Hauteur fixe pour deux lignes */
+    min-height: 2.6rem; /* Hauteur minimale garantie */
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -147,13 +150,18 @@
 /* REFONTE AMÉLIORÉE DU GRAPHIQUE */
 .sparkline-container {
     position: relative;
-    height: 38px; /* Augmenté pour un meilleur impact visuel */
+    height: 38px; /* Hauteur fixe */
+    min-height: 38px; /* Hauteur minimale garantie */
+    max-height: 38px; /* Hauteur maximale garantie */
     margin: 8px 0;
-    background-color: rgba(30, 45, 60, 0.5); /* Couleur de fond plus foncée et plus opaque */
-    border-radius: 6px; /* Bords plus arrondis */
+    background-color: rgba(30, 45, 60, 0.5);
+    border-radius: 6px;
     overflow: hidden;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.08); /* Bordure subtile */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    /* Forcer une largeur constante */
+    width: 100%;
+    flex-shrink: 0; /* Empêcher le conteneur de rétrécir */
 }
 
 /* Graphique */
@@ -170,33 +178,33 @@
     right: 0;
     top: 0;
     height: 100%;
-    width: 60px; /* Largeur augmentée */
+    width: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(0, 0, 0, 0.3); /* Plus sombre pour un meilleur contraste */
-    font-weight: 700; /* Plus gras */
-    font-size: 0.85rem; /* Plus grand */
+    background-color: rgba(0, 0, 0, 0.3);
+    font-weight: 700;
+    font-size: 0.85rem;
     text-align: center;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-    border-radius: 0 6px 6px 0; /* Cohérent avec le conteneur */
+    border-radius: 0 6px 6px 0;
     z-index: 2;
     transition: background-color 0.3s ease;
 }
 
     .change-indicator.positive {
-        color: #3FCCA4; /* Vert plus vif */
-        background-color: rgba(47, 157, 143, 0.15); /* Fond teinté */
+        color: #3FCCA4; /* Harmonisé avec badge-condition-new */
+        background-color: rgba(63, 204, 164, 0.15);
     }
 
     .change-indicator.negative {
-        color: #FF6B6B; /* Rouge plus vif */
-        background-color: rgba(231, 111, 81, 0.15); /* Fond teinté */
+        color: #FF6B6B; /* Harmonisé avec badge-condition-used */
+        background-color: rgba(255, 107, 107, 0.15);
     }
 
     .change-indicator.neutral {
-        color: #5CB0FF; /* Bleu plus vif */
-        background-color: rgba(78, 156, 211, 0.15); /* Fond teinté */
+        color: #5CB0FF; /* Harmonisé avec badge-ended */
+        background-color: rgba(92, 176, 255, 0.15);
     }
 
 /* Section prix et tendance */
@@ -240,15 +248,15 @@
 }
 
 .trend-up {
-    color: #3FCCA4; /* Vert cohérent */
+    color: #3FCCA4; /* Vert harmonisé avec badge-condition-new */
 }
 
 .trend-down {
-    color: #FF6B6B; /* Rouge cohérent */
+    color: #FF6B6B; /* Rouge harmonisé avec badge-condition-used */
 }
 
 .trend-stable {
-    color: #5CB0FF; /* Bleu cohérent */
+    color: #5CB0FF; /* Bleu harmonisé avec badge-ended */
 }
 
 /* Effets d'animation pour les tendances */
@@ -320,8 +328,35 @@
     font-size: 0.7rem;
 }
 
+/* Badge styles - Amélioration esthétique */
+.badge {
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    /* Amélioration des badges */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.2s ease;
+}
+
+    .badge:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+    }
+
 /* Responsive */
 @media (max-width: 768px) {
+    .produit-card {
+        height: 450px; /* Hauteur ajustée pour tablette */
+    }
+
     .product-image-container {
         height: 180px;
     }
@@ -336,6 +371,8 @@
 
     .sparkline-container {
         height: 36px; /* Légèrement réduit pour mobile */
+        min-height: 36px;
+        max-height: 36px;
     }
 
     .change-indicator {
@@ -345,6 +382,10 @@
 }
 
 @media (max-width: 480px) {
+    .produit-card {
+        height: 420px; /* Hauteur ajustée pour mobile */
+    }
+
     .product-image-container {
         height: 160px;
     }
@@ -361,6 +402,8 @@
 
     .sparkline-container {
         height: 34px; /* Légèrement réduit pour mobile */
+        min-height: 34px;
+        max-height: 34px;
     }
 
     .sparkline {
