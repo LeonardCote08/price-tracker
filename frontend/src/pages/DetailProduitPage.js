@@ -39,7 +39,7 @@ function DetailProduitPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Modification ici : utiliser le hook de manière cohérente
+    // Utiliser le hook avec l'ID du produit pour rendre la restauration plus précise
     useScrollRestoration(!loading, `detail-${id}`);
 
     useEffect(() => {
