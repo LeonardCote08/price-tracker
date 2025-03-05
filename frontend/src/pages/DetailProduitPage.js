@@ -7,16 +7,14 @@ import useScrollRestoration from '../hooks/useScrollRestoration';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faArrowLeft,
+    faExternalLinkAlt,
     faTag,
-    faCheckCircle,
-    faHistory,
-    faSignature,
     faBoxOpen,
     faBox,
-    faClock,
-    faArrowTrendUp,
-    faArrowTrendDown,
-    faChartLine
+    faHistory,
+    faCheckCircle,
+    faSignature,
+    faClock
 } from '@fortawesome/free-solid-svg-icons';
 import './DetailProduitPage.css';
 
@@ -33,22 +31,15 @@ function formatListingType(listingType) {
     }
 }
 
-function getTrendIcon(trend) {
-    if (trend === 'up') return faArrowTrendUp;
-    if (trend === 'down') return faArrowTrendDown;
-    return faChartLine;
-}
-
 function DetailProduitPage() {
     const { id } = useParams();
 
     const [produit, setProduit] = useState(null);
-    const [historique, setHistorique] = useState({ dates: [], prices: [], stats: {}, trend: 'stable' });
+    const [historique, setHistorique] = useState({ dates: [], prices: [], stats: {} });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useScrollRestoration(loading ? 'loading-true' : 'loading-false');
-
     useEffect(() => {
         Promise.all([fetchProduit(id), fetchHistoriquePrix(id)])
             .then(([prodData, histData]) => {
@@ -62,81 +53,53 @@ function DetailProduitPage() {
             });
     }, [id]);
 
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error: {error}</p>;
-    if (!produit) return <p>Product not found</p>;
+    if (loading) return (
+        <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading product details...</p>
+        </div>
+    );
+
+    if (error) return (
+        <div className="error-message">Error: {error}</div>
+    );
+
+    if (!produit) return (
+        <div className="error-message">Product not found</div>
+    );
 
     // Prix principal (ex. "Current Bid" ou "Fixed Price" )
     const price = typeof produit.price === 'number' ? produit.price : 0;
 
-    // Fonction pour rendu des badges
-    const renderBadges = () => {
-        const badges = [];
-
-        // Badge Condition (NEW ou USED)
-        if (produit.normalized_condition === 'New') {
-            badges.push(
-                <div key="condition" className="detail-badge detail-badge-new">
-                    <FontAwesomeIcon icon={faCheckCircle} /> New
-                </div>
-            );
-        } else if (produit.normalized_condition === 'Used') {
-            badges.push(
-                <div key="condition" className="detail-badge detail-badge-used">
-                    <FontAwesomeIcon icon={faHistory} /> Used
-                </div>
-            );
+    // Détermine la classe CSS pour la variation de prix
+    const getVariationClass = () => {
+        if (!historique || !historique.stats || typeof historique.stats.variation !== 'number') {
+            return 'neutral';
         }
+        return historique.stats.variation > 0 ? 'positive' :
+            historique.stats.variation < 0 ? 'negative' : 'neutral';
+    };
 
-        // Badge Signed
-        if (produit.signed) {
-            badges.push(
-                <div key="signed" className="detail-badge detail-badge-signed">
-                    <FontAwesomeIcon icon={faSignature} /> Signed
-                </div>
-            );
-        }
-
-        // Badge In Box / No Box
-        if (produit.in_box === true) {
-            badges.push(
-                <div key="inbox" className="detail-badge detail-badge-inbox">
-                    <FontAwesomeIcon icon={faBox} /> In Box
-                </div>
-            );
-        } else if (produit.in_box === false) {
-            badges.push(
-                <div key="nobox" className="detail-badge detail-badge-nobox">
-                    <FontAwesomeIcon icon={faBoxOpen} /> No Box
-                </div>
-            );
-        }
-
-        // Badge Ended
-        if (produit.ended) {
-            badges.push(
-                <div key="ended" className="detail-badge detail-badge-ended">
-                    <FontAwesomeIcon icon={faClock} /> Ended
-                </div>
-            );
-        }
-
-        return badges;
+    // Détermine la classe CSS pour la tendance
+    const getTrendClass = () => {
+        if (!historique || !historique.trend) return 'trend-stable';
+        return historique.trend === 'up' ? 'trend-up' :
+            historique.trend === 'down' ? 'trend-down' : 'trend-stable';
     };
 
     return (
         <div className="detail-container">
-            {/* Retour & Titre */}
-            <div className="detail-product-header">
+            {/* Navigation */}
+            <div className="detail-header-nav">
                 <Link to="/" className="back-button">
-                    <FontAwesomeIcon icon={faArrowLeft} /> Back
+                    <FontAwesomeIcon icon={faArrowLeft} className="back-icon" />
+                    Back to list
                 </Link>
-                <h2 className="detail-title">{produit.title}</h2>
             </div>
 
-            {/* Badges */}
-            <div className="detail-badges">
-                {renderBadges()}
+            {/* Titre */}
+            <div className="detail-product-header">
+                <h2 className="detail-title">{produit.title}</h2>
             </div>
 
             {/* Contenu principal : image & infos */}
@@ -147,13 +110,13 @@ function DetailProduitPage() {
 
                 <div className="detail-info">
                     {/* --- General Info --- */}
-                    <div className="general-info-block">
-                        <h4>General Information</h4>
+                    <div className="info-block">
+                        <h4>General Info</h4>
                         <dl className="info-list">
                             {/* Prix */}
                             <div className="row">
                                 <dt>Price</dt>
-                                <dd className="value-price">${price.toFixed(2)}</dd>
+                                <dd>${price.toFixed(2)}</dd>
                             </div>
 
                             {/* Condition */}
@@ -161,12 +124,12 @@ function DetailProduitPage() {
                                 <dt>Condition</dt>
                                 <dd>
                                     {produit.normalized_condition === 'New' ? (
-                                        <span className="value-new">
-                                            New
+                                        <span className="condition-new">
+                                            <FontAwesomeIcon icon={faCheckCircle} /> New
                                         </span>
                                     ) : (
-                                        <span className="value-used">
-                                            Used
+                                        <span className="condition-used">
+                                            <FontAwesomeIcon icon={faHistory} /> Used
                                         </span>
                                     )}
                                 </dd>
@@ -182,12 +145,17 @@ function DetailProduitPage() {
                             <div className="row">
                                 <dt>In Box</dt>
                                 <dd>
-                                    {produit.in_box === true
-                                        ? 'Yes'
-                                        : produit.in_box === false
-                                            ? 'No'
-                                            : 'Unknown'
-                                    }
+                                    {produit.in_box === true ? (
+                                        <span>
+                                            <FontAwesomeIcon icon={faBox} /> Yes
+                                        </span>
+                                    ) : produit.in_box === false ? (
+                                        <span>
+                                            <FontAwesomeIcon icon={faBoxOpen} /> No
+                                        </span>
+                                    ) : (
+                                        'Unknown'
+                                    )}
                                 </dd>
                             </div>
 
@@ -195,20 +163,24 @@ function DetailProduitPage() {
                             {produit.signed && (
                                 <div className="row">
                                     <dt>Signed</dt>
-                                    <dd>Yes</dd>
+                                    <dd>
+                                        <FontAwesomeIcon icon={faSignature} /> Yes
+                                    </dd>
                                 </div>
                             )}
 
                             {/* Last update */}
                             <div className="row">
                                 <dt>Last update</dt>
-                                <dd>{produit.last_scraped_date || 'N/A'}</dd>
+                                <dd>
+                                    <FontAwesomeIcon icon={faClock} /> {produit.last_scraped_date || 'N/A'}
+                                </dd>
                             </div>
                         </dl>
                     </div>
 
                     {/* --- Listing Details --- */}
-                    <div className="listing-info-block">
+                    <div className="info-block">
                         <h4>Listing Details</h4>
                         <dl className="info-list">
                             {/* Type */}
@@ -250,11 +222,12 @@ function DetailProduitPage() {
                                 <dd>
                                     {produit.url ? (
                                         <a
-                                            className="ebay-link"
+                                            className="ebay-button"
                                             href={produit.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
+                                            <FontAwesomeIcon icon={faExternalLinkAlt} className="ebay-icon" />
                                             View on eBay
                                         </a>
                                     ) : 'N/A'}
@@ -267,7 +240,9 @@ function DetailProduitPage() {
 
             {/* Graphique d'historique de prix */}
             <div className="detail-chart">
-                <h3 className="chart-title">Price History</h3>
+                <h3 style={{ textAlign: 'center', margin: '0 0 1.5rem', color: 'var(--accent-color)', fontFamily: 'Poppins, sans-serif' }}>
+                    Price History
+                </h3>
                 <HistoriquePrixChart
                     dates={historique.dates}
                     prices={historique.prices}
@@ -277,34 +252,35 @@ function DetailProduitPage() {
                     <div className="stats-grid">
                         <div className="stat-item">
                             <span className="stat-label">Average Price</span>
-                            <span className="stat-value">
+                            <span className="stat-value neutral">
                                 ${historique.stats.avg_price?.toFixed(2) || 'N/A'}
                             </span>
                         </div>
                         <div className="stat-item">
                             <span className="stat-label">Min Price</span>
-                            <span className="stat-value">
+                            <span className="stat-value neutral">
                                 ${historique.stats.min_price?.toFixed(2) || 'N/A'}
                             </span>
                         </div>
                         <div className="stat-item">
                             <span className="stat-label">Max Price</span>
-                            <span className="stat-value">
+                            <span className="stat-value neutral">
                                 ${historique.stats.max_price?.toFixed(2) || 'N/A'}
                             </span>
                         </div>
                         {historique.stats.variation !== undefined && (
                             <div className="stat-item">
                                 <span className="stat-label">Variation</span>
-                                <span className={`stat-value ${parseFloat(historique.stats.variation) > 0 ? 'trend-up' : parseFloat(historique.stats.variation) < 0 ? 'trend-down' : ''}`}>
-                                    {historique.stats.variation > 0 ? '+' : ''}{historique.stats.variation.toFixed(2)}%
+                                <span className={`stat-value ${getVariationClass()}`}>
+                                    {historique.stats.variation > 0 ? '+' : ''}
+                                    {historique.stats.variation.toFixed(2)}%
                                 </span>
                             </div>
                         )}
                         {historique.stats.seven_day_avg !== undefined && (
                             <div className="stat-item">
                                 <span className="stat-label">7-Day Avg</span>
-                                <span className="stat-value">
+                                <span className="stat-value neutral">
                                     ${historique.stats.seven_day_avg.toFixed(2)}
                                 </span>
                             </div>
@@ -312,9 +288,8 @@ function DetailProduitPage() {
                         {historique.trend && (
                             <div className="stat-item">
                                 <span className="stat-label">Trend</span>
-                                <span className={`stat-value ${historique.trend === 'up' ? 'trend-up' : historique.trend === 'down' ? 'trend-down' : 'trend-stable'}`}>
-                                    <FontAwesomeIcon icon={getTrendIcon(historique.trend)} />{' '}
-                                    {historique.trend === 'up' ? 'Rising' : historique.trend === 'down' ? 'Falling' : 'Stable'}
+                                <span className={`stat-value ${getTrendClass()}`}>
+                                    {historique.trend.toUpperCase()}
                                 </span>
                             </div>
                         )}

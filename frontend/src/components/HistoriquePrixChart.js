@@ -14,27 +14,27 @@ const HistoriquePrixChart = ({ dates, prices, trend }) => {
         switch (trend) {
             case 'up':
                 return {
-                    borderColor: '#2ECC71',
+                    borderColor: '#1ED17E',
                     backgroundColor: 'rgba(46, 204, 113, 0.25)',
-                    pointBackgroundColor: '#2ECC71',
-                    pointBorderColor: '#2ECC71',
-                    pointHoverBorderColor: '#2ECC71'
+                    pointBackgroundColor: '#1ED17E',
+                    pointBorderColor: '#1ED17E',
+                    pointHoverBorderColor: '#1ED17E'
                 };
             case 'down':
                 return {
-                    borderColor: '#E74C3C',
+                    borderColor: '#FF5252',
                     backgroundColor: 'rgba(231, 76, 60, 0.25)',
-                    pointBackgroundColor: '#E74C3C',
-                    pointBorderColor: '#E74C3C',
-                    pointHoverBorderColor: '#E74C3C'
+                    pointBackgroundColor: '#FF5252',
+                    pointBorderColor: '#FF5252',
+                    pointHoverBorderColor: '#FF5252'
                 };
             default:
                 return {
-                    borderColor: '#1595EB',
+                    borderColor: '#3AA0FE',
                     backgroundColor: 'rgba(21, 149, 235, 0.25)',
-                    pointBackgroundColor: '#1595EB',
-                    pointBorderColor: '#1595EB',
-                    pointHoverBorderColor: '#1595EB'
+                    pointBackgroundColor: '#3AA0FE',
+                    pointBorderColor: '#3AA0FE',
+                    pointHoverBorderColor: '#3AA0FE'
                 };
         }
     };
@@ -120,6 +120,7 @@ const HistoriquePrixChart = ({ dates, prices, trend }) => {
                 labels: {
                     color: '#F5F5F5',
                     font: {
+                        family: "'Poppins', sans-serif", // Assurer la cohérence de la police
                         size: 14,
                         weight: 'bold'
                     },
@@ -131,6 +132,7 @@ const HistoriquePrixChart = ({ dates, prices, trend }) => {
                 text: 'Price History',
                 color: '#F5F5F5',
                 font: {
+                    family: "'Poppins', sans-serif",
                     size: 18
                 }
             },
@@ -146,9 +148,11 @@ const HistoriquePrixChart = ({ dates, prices, trend }) => {
                 padding: 12,
                 cornerRadius: 6,
                 bodyFont: {
+                    family: "'Poppins', sans-serif",
                     size: 14
                 },
                 titleFont: {
+                    family: "'Poppins', sans-serif",
                     size: 16,
                     weight: 'bold'
                 },
@@ -170,6 +174,7 @@ const HistoriquePrixChart = ({ dates, prices, trend }) => {
                     text: 'Date',
                     color: '#F5F5F5',
                     font: {
+                        family: "'Poppins', sans-serif",
                         size: 14,
                         weight: 'bold'
                     },
@@ -180,6 +185,7 @@ const HistoriquePrixChart = ({ dates, prices, trend }) => {
                     maxRotation: 45,
                     minRotation: 45,
                     font: {
+                        family: "'Poppins', sans-serif",
                         size: 12
                     },
                     // Fonction pour limiter le nombre de ticks affichés si beaucoup de données
@@ -205,6 +211,7 @@ const HistoriquePrixChart = ({ dates, prices, trend }) => {
                     text: 'Price in $',
                     color: '#F5F5F5',
                     font: {
+                        family: "'Poppins', sans-serif",
                         size: 14,
                         weight: 'bold'
                     },
@@ -213,6 +220,7 @@ const HistoriquePrixChart = ({ dates, prices, trend }) => {
                 ticks: {
                     color: '#F5F5F5',
                     font: {
+                        family: "'Poppins', sans-serif",
                         size: 12
                     },
                     callback: function (value) {
