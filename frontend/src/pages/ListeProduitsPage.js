@@ -47,6 +47,8 @@ function ListeProduitsPage() {
     const [showSortOptions, setShowSortOptions] = useState(false);
     // État pour le panneau de filtres avancés
     const [showFilters, setShowFilters] = useState(false);
+    // État pour indiquer quand la page est initialement chargée
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
 
     // États de chargement / erreur
     const [loading, setLoading] = useState(true);
@@ -68,7 +70,9 @@ function ListeProduitsPage() {
     const loaderRef = useRef(null);
     const sortDropdownRef = useRef(null);
 
-    useScrollRestoration(!loading, `liste-${trendFilter}-${sortOption}-${searchTerm}`);
+    // Utiliser une clé STABLE pour le scroll restoration
+    // La clé ne change pas quand les filtres changent pour maintenir la position quand on revient
+    useScrollRestoration(!loading && !isInitialLoad, `products-list`);
 
     // Fermer le dropdown quand on clique ailleurs
     useEffect(() => {
@@ -91,6 +95,8 @@ function ListeProduitsPage() {
             .then(data => {
                 setProduits(data);
                 setLoading(false);
+                // Marquer le chargement initial comme terminé
+                setIsInitialLoad(false);
 
                 // Extraire des statistiques de base
                 if (data.length > 0) {
@@ -107,6 +113,7 @@ function ListeProduitsPage() {
             .catch(err => {
                 setError(err.message);
                 setLoading(false);
+                setIsInitialLoad(false);
                 setTrendsLoading(false); // Assurez-vous que trendsLoading est mis à false en cas d'erreur
             });
     }, []);

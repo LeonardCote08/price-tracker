@@ -38,8 +38,10 @@ function DetailProduitPage() {
     const [historique, setHistorique] = useState({ dates: [], prices: [], stats: {} });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-    useScrollRestoration(!loading, `detail-${id}`);
+    // Utiliser une clé stable pour le scroll restoration
+    useScrollRestoration(!loading && !isInitialLoad, `detail-product`);
 
     useEffect(() => {
         Promise.all([fetchProduit(id), fetchHistoriquePrix(id)])
@@ -47,10 +49,12 @@ function DetailProduitPage() {
                 setProduit(prodData);
                 setHistorique(histData);
                 setLoading(false);
+                setIsInitialLoad(false);
             })
             .catch((err) => {
                 setError(err.message);
                 setLoading(false);
+                setIsInitialLoad(false);
             });
     }, [id]);
 
