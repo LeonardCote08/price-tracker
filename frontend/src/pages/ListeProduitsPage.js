@@ -50,6 +50,7 @@ function ListeProduitsPage() {
 
     // États de chargement / erreur
     const [loading, setLoading] = useState(true);
+    const [trendsLoading, setTrendsLoading] = useState(true); // Nouvel état pour le chargement des tendances
     const [error, setError] = useState(null);
 
     // État pour les statistiques
@@ -106,6 +107,7 @@ function ListeProduitsPage() {
             .catch(err => {
                 setError(err.message);
                 setLoading(false);
+                setTrendsLoading(false); // Assurez-vous que trendsLoading est mis à false en cas d'erreur
             });
     }, []);
 
@@ -116,6 +118,9 @@ function ListeProduitsPage() {
         let stableCount = 0;
 
         const fetchTrends = async () => {
+            // Définir trendsLoading à true avant de commencer
+            setTrendsLoading(true);
+
             for (const prod of produits) {
                 try {
                     const response = await fetch(`/api/produits/${prod.product_id}/price-trend`);
@@ -142,10 +147,15 @@ function ListeProduitsPage() {
                 fallingCount,
                 stableCount
             }));
+
+            // Marquer le chargement des tendances comme terminé
+            setTrendsLoading(false);
         };
 
         if (produits.length > 0) {
             fetchTrends();
+        } else {
+            setTrendsLoading(false); // Pas de produits, donc pas besoin de charger les tendances
         }
     }, [produits]);
 
@@ -268,6 +278,48 @@ function ListeProduitsPage() {
         setShowFilters(!showFilters);
     };
 
+    // Rendu du contenu de la carte des tendances à la hausse
+    const renderRisingContent = () => {
+        if (trendsLoading) {
+            return (
+                <div className="stat-content loading-content">
+                    <div className="loading-animation">
+                        <FontAwesomeIcon icon={faSpinner} className="loading-icon" spin />
+                    </div>
+                    <div className="stat-label">Calculating</div>
+                </div>
+            );
+        }
+
+        return (
+            <div className="stat-content">
+                <div className="stat-value">{stats.risingCount}</div>
+                <div className="stat-label">Rising</div>
+            </div>
+        );
+    };
+
+    // Rendu du contenu de la carte des tendances à la baisse
+    const renderFallingContent = () => {
+        if (trendsLoading) {
+            return (
+                <div className="stat-content loading-content">
+                    <div className="loading-animation">
+                        <FontAwesomeIcon icon={faSpinner} className="loading-icon" spin />
+                    </div>
+                    <div className="stat-label">Calculating</div>
+                </div>
+            );
+        }
+
+        return (
+            <div className="stat-content">
+                <div className="stat-value">{stats.fallingCount}</div>
+                <div className="stat-label">Falling</div>
+            </div>
+        );
+    };
+
     if (loading) return (
         <div className="loading-container">
             <div className="loading-spinner"></div>
@@ -302,20 +354,14 @@ function ListeProduitsPage() {
                         <div className="stat-icon-container">
                             <FontAwesomeIcon icon={faArrowUp} className="stat-icon" />
                         </div>
-                        <div className="stat-content">
-                            <div className="stat-value">{stats.risingCount}</div>
-                            <div className="stat-label">Rising</div>
-                        </div>
+                        {renderRisingContent()}
                     </div>
 
                     <div className="stat-card trend-down">
                         <div className="stat-icon-container">
                             <FontAwesomeIcon icon={faArrowDown} className="stat-icon" />
                         </div>
-                        <div className="stat-content">
-                            <div className="stat-value">{stats.fallingCount}</div>
-                            <div className="stat-label">Falling</div>
-                        </div>
+                        {renderFallingContent()}
                     </div>
 
                     <div className="stat-card">
@@ -455,6 +501,7 @@ function ListeProduitsPage() {
                                     setDisplayCount(INITIAL_ITEMS_COUNT);
                                     setAllDisplayed(false);
                                 }}
+                                disabled={trendsLoading}
                             >
                                 <FontAwesomeIcon icon={faArrowUp} className="filter-button-icon up" />
                                 <span>Price Rising</span>
@@ -466,6 +513,7 @@ function ListeProduitsPage() {
                                     setDisplayCount(INITIAL_ITEMS_COUNT);
                                     setAllDisplayed(false);
                                 }}
+                                disabled={trendsLoading}
                             >
                                 <FontAwesomeIcon icon={faArrowDown} className="filter-button-icon down" />
                                 <span>Price Falling</span>
@@ -477,6 +525,7 @@ function ListeProduitsPage() {
                                     setDisplayCount(INITIAL_ITEMS_COUNT);
                                     setAllDisplayed(false);
                                 }}
+                                disabled={trendsLoading}
                             >
                                 <FontAwesomeIcon icon={faChartLine} className="filter-button-icon" />
                                 <span>Price Stable</span>

@@ -145,6 +145,31 @@
     z-index: 2;
 }
 
+/* Nouveaux styles pour l'état de chargement des statistiques */
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-animation {
+    margin-bottom: 0.3rem;
+}
+
+.loading-content .loading-icon {
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.stat-card.trend-up .loading-icon {
+    color: #3FCCA4;
+}
+
+.stat-card.trend-down .loading-icon {
+    color: #D84C4A;
+}
+
 .stat-value {
     font-size: 1.5rem;
     font-weight: 700;
@@ -159,6 +184,12 @@
     color: #bbb;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+/* Désactivation des boutons pendant le chargement */
+button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
 /* NOUVELLE INTERFACE DE RECHERCHE ET FILTRES */
