@@ -8,7 +8,12 @@ import {
     faArrowTrendDown,
     faChartLine,
     faClock,
-    faTag
+    faTag,
+    faCheckCircle,
+    faHistory,
+    faSignature,
+    faBoxOpen,
+    faBox
 } from '@fortawesome/free-solid-svg-icons';
 import './ProduitCard.css';
 
@@ -534,6 +539,61 @@ function ProduitCard({ produit }) {
         }
     };
 
+    // Fonction pour rendre les badges avec les icônes
+    const renderBadges = () => {
+        const badges = [];
+
+        // Badge Condition (NEW ou USED)
+        if (produit.normalized_condition === 'New') {
+            badges.push(
+                <div key="condition" className="badge badge-condition-new">
+                    <span><FontAwesomeIcon icon={faCheckCircle} /> New</span>
+                </div>
+            );
+        } else if (produit.normalized_condition === 'Used') {
+            badges.push(
+                <div key="condition" className="badge badge-condition-used">
+                    <span><FontAwesomeIcon icon={faHistory} /> Used</span>
+                </div>
+            );
+        }
+
+        // Badge Signed
+        if (produit.signed) {
+            badges.push(
+                <div key="signed" className="badge badge-signed">
+                    <span><FontAwesomeIcon icon={faSignature} /> Signed</span>
+                </div>
+            );
+        }
+
+        // Badge In Box / No Box
+        if (produit.in_box === true) {
+            badges.push(
+                <div key="inbox" className="badge badge-inbox">
+                    <span><FontAwesomeIcon icon={faBox} /> In Box</span>
+                </div>
+            );
+        } else if (produit.in_box === false) {
+            badges.push(
+                <div key="nobox" className="badge badge-nobox">
+                    <span><FontAwesomeIcon icon={faBoxOpen} /> No Box</span>
+                </div>
+            );
+        }
+
+        // Badge Ended
+        if (produit.ended) {
+            badges.push(
+                <div key="ended" className="badge badge-ended">
+                    <span><FontAwesomeIcon icon={faClock} /> Ended</span>
+                </div>
+            );
+        }
+
+        return badges;
+    };
+
     return (
         <Link to={`/produits/${produit.product_id}`} className="produit-card-link">
             <div
@@ -554,23 +614,7 @@ function ProduitCard({ produit }) {
 
                 {/* Badges */}
                 <div className="badges-container">
-                    {/* Badge condition */}
-                    {produit.normalized_condition === 'New' && (
-                        <span className="badge badge-condition-new">New</span>
-                    )}
-                    {produit.normalized_condition === 'Used' && (
-                        <span className="badge badge-condition-used">Used</span>
-                    )}
-
-                    {/* Badge Signed */}
-                    {produit.signed && <span className="badge badge-signed">Signed</span>}
-
-                    {/* Badge In Box / No Box */}
-                    {produit.in_box === true && <span className="badge badge-inbox">In Box</span>}
-                    {produit.in_box === false && <span className="badge badge-nobox">No Box</span>}
-
-                    {/* Badge Ended */}
-                    {produit.ended && <span className="badge badge-ended">Ended</span>}
+                    {renderBadges()}
                 </div>
 
                 {/* Contenu principal */}
