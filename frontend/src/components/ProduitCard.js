@@ -547,13 +547,13 @@ function ProduitCard({ produit }) {
         if (produit.normalized_condition === 'New') {
             badges.push(
                 <div key="condition" className="badge badge-condition-new">
-                    <span><FontAwesomeIcon icon={faCheckCircle} /> New</span>
+                    <FontAwesomeIcon icon={faCheckCircle} /> New
                 </div>
             );
         } else if (produit.normalized_condition === 'Used') {
             badges.push(
                 <div key="condition" className="badge badge-condition-used">
-                    <span><FontAwesomeIcon icon={faHistory} /> Used</span>
+                    <FontAwesomeIcon icon={faHistory} /> Used
                 </div>
             );
         }
@@ -562,7 +562,7 @@ function ProduitCard({ produit }) {
         if (produit.signed) {
             badges.push(
                 <div key="signed" className="badge badge-signed">
-                    <span><FontAwesomeIcon icon={faSignature} /> Signed</span>
+                    <FontAwesomeIcon icon={faSignature} /> Signed
                 </div>
             );
         }
@@ -571,13 +571,13 @@ function ProduitCard({ produit }) {
         if (produit.in_box === true) {
             badges.push(
                 <div key="inbox" className="badge badge-inbox">
-                    <span><FontAwesomeIcon icon={faBox} /> In Box</span>
+                    <FontAwesomeIcon icon={faBox} /> In Box
                 </div>
             );
         } else if (produit.in_box === false) {
             badges.push(
                 <div key="nobox" className="badge badge-nobox">
-                    <span><FontAwesomeIcon icon={faBoxOpen} /> No Box</span>
+                    <FontAwesomeIcon icon={faBoxOpen} /> No Box
                 </div>
             );
         }
@@ -586,7 +586,7 @@ function ProduitCard({ produit }) {
         if (produit.ended) {
             badges.push(
                 <div key="ended" className="badge badge-ended">
-                    <span><FontAwesomeIcon icon={faClock} /> Ended</span>
+                    <FontAwesomeIcon icon={faClock} /> Ended
                 </div>
             );
         }
@@ -612,11 +612,6 @@ function ProduitCard({ produit }) {
                     <div className="image-overlay"></div>
                 </div>
 
-                {/* Badges */}
-                <div className="badges-container">
-                    {renderBadges()}
-                </div>
-
                 {/* Contenu principal */}
                 <div className="product-info">
                     {/* Titre du produit */}
@@ -632,9 +627,16 @@ function ProduitCard({ produit }) {
                             <span className="price-value">${price.toFixed(2)}</span>
                         </div>
 
-                        <div className={`price-trend ${getTrendClass()}`}>
-                            <FontAwesomeIcon icon={getTrendIcon()} className="trend-icon" />
-                            <span className="trend-text">{trendText}</span>
+                        <div className="price-trend-row">
+                            <div className={`price-trend ${getTrendClass()}`}>
+                                <FontAwesomeIcon icon={getTrendIcon()} className="trend-icon" />
+                                <span className="trend-text">{trendText}</span>
+                            </div>
+
+                            {/* Badges déplacés ici */}
+                            <div className="badges-row">
+                                {renderBadges()}
+                            </div>
                         </div>
                     </div>
 

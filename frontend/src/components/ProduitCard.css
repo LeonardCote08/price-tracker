@@ -2,12 +2,12 @@
 
 /* Variables pour les couleurs et dimensions */
 :root {
-    --color-new: #1ED17E;
-    --color-used: #FF5252;
-    --color-signed: #FFD700;
-    --color-inbox: #2ED0B8;
-    --color-nobox: #FF8A48;
-    --color-ended: #8091A5;
+    --color-new: #1aa068;
+    --color-used: #d44a4a;
+    --color-signed: #b59400;
+    --color-inbox: #1a8a80;
+    --color-nobox: #b5652d;
+    --color-ended: #566a81;
     --trend-up: #1ED17E;
     --trend-down: #FF5252;
     --trend-stable: #3AA0FE;
@@ -97,137 +97,63 @@
     -webkit-backface-visibility: hidden;
 }
 
-/* AMÉLIORATION DES BADGES */
-.badges-container {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+/* BADGES SYSTEM - REDESIGNED */
+.badges-row {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     gap: 6px;
-    align-items: flex-end;
-    z-index: 10;
+    margin-top: 8px;
+    min-height: 24px;
 }
 
-/* Style de base pour tous les badges */
 .badge {
-    color: #fff;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    text-transform: uppercase;
-    font-family: 'Poppins', sans-serif;
-    position: relative;
-    overflow: hidden;
-    min-width: 60px;
-    text-align: center;
-    transition: all 0.2s ease-in-out;
-    animation: badgeFadeIn 0.5s forwards;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #fff;
+    background-color: rgba(26, 44, 61, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
 }
 
-@keyframes badgeFadeIn {
-    from {
-        opacity: 0;
-        transform: translateX(10px);
+    .badge svg {
+        margin-right: 3px;
+        font-size: 0.65rem;
     }
 
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.badge:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4);
-}
-
-/* Effet de brillance subtil */
-.badge::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient( to bottom right, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 0.1) 100% );
-    transform: rotate(30deg);
-    transition: transform 0.5s ease-out;
-    pointer-events: none;
-    opacity: 0.5;
-    z-index: 1;
-}
-
-.badge:hover::after {
-    transform: rotate(30deg) translate(50%, 50%);
-}
-
-/* Contenu du badge au-dessus de l'effet de brillance */
-.badge span {
-    position: relative;
-    z-index: 2;
-}
-
-/* Badge NEW */
 .badge-condition-new {
-    background: linear-gradient(135deg, #17bc72 0%, #0f8652 100%);
-    border-left: 3px solid #9aefca;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    color: var(--color-new);
+    border-color: rgba(26, 160, 104, 0.4);
 }
 
-/* Badge USED */
 .badge-condition-used {
-    background: linear-gradient(135deg, #ff3c3c 0%, #c42b2b 100%);
-    border-left: 3px solid #ffadad;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    color: var(--color-used);
+    border-color: rgba(212, 74, 74, 0.4);
 }
 
-/* Badge SIGNED */
 .badge-signed {
-    background: linear-gradient(135deg, #ffd100 0%, #e6b800 100%);
-    border-left: 3px solid #ffee99;
-    color: #333;
-    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.3);
+    color: var(--color-signed);
+    border-color: rgba(181, 148, 0, 0.4);
 }
 
-/* Badge IN BOX */
 .badge-inbox {
-    background: linear-gradient(135deg, #1cbcaf 0%, #15948a 100%);
-    border-left: 3px solid #a4f0ea;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    color: var(--color-inbox);
+    border-color: rgba(26, 138, 128, 0.4);
 }
 
-/* Badge NO BOX */
 .badge-nobox {
-    background: linear-gradient(135deg, #ff8134 0%, #e46b1f 100%);
-    border-left: 3px solid #ffc8a4;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    color: var(--color-nobox);
+    border-color: rgba(181, 101, 45, 0.4);
 }
 
-/* Badge ENDED */
 .badge-ended {
-    background: linear-gradient(135deg, #657d96 0%, #4e6178 100%);
-    border-left: 3px solid #a6bcd2;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-/* Gestion des éléments empilés pour éviter les problèmes d'espacement */
-.badges-container > *:nth-child(1) {
-    animation-delay: 0s;
-}
-
-.badges-container > *:nth-child(2) {
-    animation-delay: 0.1s;
-}
-
-.badges-container > *:nth-child(3) {
-    animation-delay: 0.2s;
+    color: var(--color-ended);
+    border-color: rgba(86, 106, 129, 0.4);
 }
 
 /* Bloc principal d'informations */
@@ -321,14 +247,10 @@
 
 /* Section prix et tendance */
 .price-section {
-    margin: 12px 0;
+    margin: 12px 0 8px 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    /* Hauteur fixe pour éviter les variations */
-    height: 70px;
-    min-height: 70px;
-    max-height: 70px;
+    gap: 6px;
 }
 
 .price-tag {
@@ -348,6 +270,12 @@
     color: #fff;
     font-family: 'Montserrat', sans-serif;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.price-trend-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .price-trend {
@@ -478,9 +406,13 @@
     }
 
     .badge {
-        font-size: 0.65rem;
-        padding: 5px 8px;
+        font-size: 0.6rem;
+        padding: 2px 5px;
     }
+
+        .badge svg {
+            font-size: 0.6rem;
+        }
 }
 
 @media (max-width: 480px) {
@@ -492,16 +424,15 @@
         --card-min-width: 180px;
     }
 
-    .badges-container {
-        top: 8px;
-        right: 8px;
+    .badge {
+        padding: 1px 4px;
+        font-size: 0.55rem;
     }
 
-    .badge {
-        padding: 4px 7px;
-        font-size: 0.6rem;
-        min-width: 50px;
-    }
+        .badge svg {
+            font-size: 0.55rem;
+            margin-right: 2px;
+        }
 
     .change-indicator {
         font-size: 0.75rem;
