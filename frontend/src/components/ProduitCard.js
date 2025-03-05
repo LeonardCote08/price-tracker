@@ -620,27 +620,29 @@ function ProduitCard({ produit }) {
                     {/* Sparkline (mini graphique de tendance) */}
                     {renderSparkline()}
 
-                    {/* Prix et tendance */}
+                    {/* Prix et tendance avec badges */}
                     <div className="price-section">
+                        {/* Prix */}
                         <div className="price-tag">
                             <FontAwesomeIcon icon={faTag} className="price-icon" />
                             <span className="price-value">${price.toFixed(2)}</span>
                         </div>
 
+                        {/* Tendance et badges */}
                         <div className="price-trend-row">
                             <div className={`price-trend ${getTrendClass()}`}>
                                 <FontAwesomeIcon icon={getTrendIcon()} className="trend-icon" />
                                 <span className="trend-text">{trendText}</span>
                             </div>
 
-                            {/* Badges déplacés ici */}
+                            {/* Badges */}
                             <div className="badges-row">
                                 {renderBadges()}
                             </div>
                         </div>
                     </div>
 
-                    {/* Infos supplémentaires */}
+                    {/* Infos vendeur et mise à jour */}
                     <div className="card-footer">
                         <div className="seller-info">
                             {produit.seller_username && (

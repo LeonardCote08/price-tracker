@@ -101,9 +101,10 @@
 .badges-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 8px;
-    min-height: 24px;
+    gap: 4px;
+    justify-content: flex-end;
+    align-items: center;
+    min-height: 22px;
 }
 
 .badge {
@@ -247,10 +248,11 @@
 
 /* Section prix et tendance */
 .price-section {
-    margin: 12px 0 8px 0;
+    margin: 0 0 8px 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
+    flex-shrink: 0;
 }
 
 .price-tag {
@@ -341,10 +343,9 @@
     font-size: 0.75rem;
     color: #aab8c2;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding-top: 14px;
-    height: 30px; /* Hauteur fixe */
-    min-height: 30px;
-    max-height: 30px;
+    padding-top: 10px;
+    min-height: 24px;
+    width: 100%;
 }
 
 .seller-info {
