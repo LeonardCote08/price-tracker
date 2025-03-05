@@ -1,40 +1,48 @@
 // src/hooks/useScrollRestoration.js
 
-import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
 
-const useScrollRestoration = (key) => {
+const useScrollRestoration = (shouldRestore = true, extraKey = '') => {
+    const location = useLocation();
+    const pathKey = location.pathname + (extraKey ? `-${extraKey}` : '');
+    const restoredRef = useRef(false);
+
+    // Restaurer la position de défilement
     useEffect(() => {
-        // Construct a consistent storage key
-        const storageKey = `scrollPosition_${key}`;
+        if (!shouldRestore || restoredRef.current) return;
 
-        // Restore position on mount
-        const savedPosition = sessionStorage.getItem(storageKey);
-        if (savedPosition) {
-            // Small delay to ensure content is rendered before scrolling
-            setTimeout(() => {
+        // Fonction pour restaurer la position de défilement
+        const restoreScrollPosition = () => {
+            const savedPosition = sessionStorage.getItem(`scrollPosition_${pathKey}`);
+            if (savedPosition) {
                 window.scrollTo(0, parseInt(savedPosition, 10));
-            }, 100);
-        }
+                restoredRef.current = true;
+            }
+        };
 
-        // Save position on scroll with throttling to improve performance
-        let timeoutId = null;
+        // Ajouter un délai pour s'assurer que la page est complètement rendue
+        const timeoutId = setTimeout(restoreScrollPosition, 150);
+
+        return () => clearTimeout(timeoutId);
+    }, [pathKey, shouldRestore]);
+
+    // Enregistrer la position de défilement lors du scroll
+    useEffect(() => {
+        if (!shouldRestore) return;
+
         const handleScroll = () => {
-            if (timeoutId) clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => {
-                sessionStorage.setItem(storageKey, window.scrollY.toString());
-            }, 100);
+            sessionStorage.setItem(`scrollPosition_${pathKey}`, window.scrollY);
         };
 
         window.addEventListener('scroll', handleScroll);
 
-        // Clean up on unmount
+        // Aussi enregistrer la position au moment du démontage du composant
         return () => {
+            handleScroll(); // Capture la dernière position
             window.removeEventListener('scroll', handleScroll);
-            if (timeoutId) clearTimeout(timeoutId);
-            // Save final position before unmounting
-            sessionStorage.setItem(storageKey, window.scrollY.toString());
         };
-    }, [key]); // Re-run effect if key changes
+    }, [pathKey, shouldRestore]);
 };
 
 export default useScrollRestoration;

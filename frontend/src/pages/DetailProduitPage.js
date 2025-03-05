@@ -39,7 +39,9 @@ function DetailProduitPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useScrollRestoration(`productDetail_${id}`);
+    // Modification ici : utiliser le hook de manière cohérente
+    useScrollRestoration(!loading, `detail-${id}`);
+
     useEffect(() => {
         Promise.all([fetchProduit(id), fetchHistoriquePrix(id)])
             .then(([prodData, histData]) => {
@@ -221,25 +223,25 @@ function DetailProduitPage() {
                                 <dt>eBay listing</dt>
                                 <dd>
                                     {produit.url ? (
-                                        <a
-                                            className="ebay-button"
-                                            href={produit.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            <FontAwesomeIcon icon={faExternalLinkAlt} className="ebay-icon" />
-                                            View on eBay
-                                        </a>
-                                    ) : 'N/A'}
-                                </dd>
-                            </div>
-                        </dl>
-                    </div>
-                </div>
-            </div>
 
-            {/* Graphique d'historique de prix */}
-            <div className="detail-chart">
+                                        className = "ebay-button"
+                                            href={produit.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                        >
+                                    <FontAwesomeIcon icon={faExternalLinkAlt} className="ebay-icon" />
+                                    View on eBay
+                                </a>
+                                    ) : 'N/A'}
+                            </dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+            </div >
+
+        {/* Graphique d'historique de prix */ }
+        < div className = "detail-chart" >
                 <h3 style={{ textAlign: 'center', margin: '0 0 1.5rem', color: 'var(--accent-color)', fontFamily: 'Poppins, sans-serif' }}>
                     Price History
                 </h3>
@@ -248,55 +250,57 @@ function DetailProduitPage() {
                     prices={historique.prices}
                     trend={historique.trend}
                 />
-                {historique.stats && (
-                    <div className="stats-grid">
-                        <div className="stat-item">
-                            <span className="stat-label">Average Price</span>
-                            <span className="stat-value neutral">
-                                ${historique.stats.avg_price?.toFixed(2) || 'N/A'}
-                            </span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-label">Min Price</span>
-                            <span className="stat-value neutral">
-                                ${historique.stats.min_price?.toFixed(2) || 'N/A'}
-                            </span>
-                        </div>
-                        <div className="stat-item">
-                            <span className="stat-label">Max Price</span>
-                            <span className="stat-value neutral">
-                                ${historique.stats.max_price?.toFixed(2) || 'N/A'}
-                            </span>
-                        </div>
-                        {historique.stats.variation !== undefined && (
-                            <div className="stat-item">
-                                <span className="stat-label">Variation</span>
-                                <span className={`stat-value ${getVariationClass()}`}>
-                                    {historique.stats.variation > 0 ? '+' : ''}
-                                    {historique.stats.variation.toFixed(2)}%
-                                </span>
-                            </div>
-                        )}
-                        {historique.stats.seven_day_avg !== undefined && (
-                            <div className="stat-item">
-                                <span className="stat-label">7-Day Avg</span>
-                                <span className="stat-value neutral">
-                                    ${historique.stats.seven_day_avg.toFixed(2)}
-                                </span>
-                            </div>
-                        )}
-                        {historique.trend && (
-                            <div className="stat-item">
-                                <span className="stat-label">Trend</span>
-                                <span className={`stat-value ${getTrendClass()}`}>
-                                    {historique.trend.toUpperCase()}
-                                </span>
-                            </div>
-                        )}
+    {
+        historique.stats && (
+            <div className="stats-grid">
+                <div className="stat-item">
+                    <span className="stat-label">Average Price</span>
+                    <span className="stat-value neutral">
+                        ${historique.stats.avg_price?.toFixed(2) || 'N/A'}
+                    </span>
+                </div>
+                <div className="stat-item">
+                    <span className="stat-label">Min Price</span>
+                    <span className="stat-value neutral">
+                        ${historique.stats.min_price?.toFixed(2) || 'N/A'}
+                    </span>
+                </div>
+                <div className="stat-item">
+                    <span className="stat-label">Max Price</span>
+                    <span className="stat-value neutral">
+                        ${historique.stats.max_price?.toFixed(2) || 'N/A'}
+                    </span>
+                </div>
+                {historique.stats.variation !== undefined && (
+                    <div className="stat-item">
+                        <span className="stat-label">Variation</span>
+                        <span className={`stat-value ${getVariationClass()}`}>
+                            {historique.stats.variation > 0 ? '+' : ''}
+                            {historique.stats.variation.toFixed(2)}%
+                        </span>
+                    </div>
+                )}
+                {historique.stats.seven_day_avg !== undefined && (
+                    <div className="stat-item">
+                        <span className="stat-label">7-Day Avg</span>
+                        <span className="stat-value neutral">
+                            ${historique.stats.seven_day_avg.toFixed(2)}
+                        </span>
+                    </div>
+                )}
+                {historique.trend && (
+                    <div className="stat-item">
+                        <span className="stat-label">Trend</span>
+                        <span className={`stat-value ${getTrendClass()}`}>
+                            {historique.trend.toUpperCase()}
+                        </span>
                     </div>
                 )}
             </div>
-        </div>
+        )
+    }
+            </div >
+        </div >
     );
 }
 

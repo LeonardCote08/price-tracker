@@ -68,8 +68,7 @@ function ListeProduitsPage() {
     const loaderRef = useRef(null);
     const sortDropdownRef = useRef(null);
 
-    const scrollKey = `productsList_${trendFilter}_${searchTerm}_${sortOption}`;
-    useScrollRestoration(scrollKey);
+    useScrollRestoration(!loading, `liste-${trendFilter}-${sortOption}-${searchTerm}`);
 
     // Fermer le dropdown quand on clique ailleurs
     useEffect(() => {
