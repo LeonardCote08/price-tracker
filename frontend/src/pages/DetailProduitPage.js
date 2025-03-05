@@ -39,7 +39,7 @@ function DetailProduitPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    useScrollRestoration(loading ? 'loading-true' : 'loading-false');
+    useScrollRestoration(`productDetail_${id}`);
     useEffect(() => {
         Promise.all([fetchProduit(id), fetchHistoriquePrix(id)])
             .then(([prodData, histData]) => {

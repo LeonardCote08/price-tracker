@@ -1,28 +1,40 @@
 // src/hooks/useScrollRestoration.js
 
-import { useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 
 const useScrollRestoration = (key) => {
     useEffect(() => {
-        // Restaurer la position de défilement au montage
-        const savedPosition = sessionStorage.getItem(`scrollPosition_${key}`);
+        // Construct a consistent storage key
+        const storageKey = `scrollPosition_${key}`;
+
+        // Restore position on mount
+        const savedPosition = sessionStorage.getItem(storageKey);
         if (savedPosition) {
-            window.scrollTo(0, parseInt(savedPosition, 10));
+            // Small delay to ensure content is rendered before scrolling
+            setTimeout(() => {
+                window.scrollTo(0, parseInt(savedPosition, 10));
+            }, 100);
         }
 
-        // Enregistrer la position de défilement avant de quitter
+        // Save position on scroll with throttling to improve performance
+        let timeoutId = null;
         const handleScroll = () => {
-            sessionStorage.setItem(`scrollPosition_${key}`, window.scrollY);
+            if (timeoutId) clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                sessionStorage.setItem(storageKey, window.scrollY.toString());
+            }, 100);
         };
 
         window.addEventListener('scroll', handleScroll);
 
-        // Nettoyer l'écouteur d'événements
+        // Clean up on unmount
         return () => {
             window.removeEventListener('scroll', handleScroll);
+            if (timeoutId) clearTimeout(timeoutId);
+            // Save final position before unmounting
+            sessionStorage.setItem(storageKey, window.scrollY.toString());
         };
-    }, [key]); // Dépendance sur la clé pour réexécuter l'effet lors des changements de page
+    }, [key]); // Re-run effect if key changes
 };
 
 export default useScrollRestoration;
