@@ -1,18 +1,47 @@
-﻿// frontend/src/pages/DetailProduitPage.js
+// frontend/src/pages/DetailProduitPage.js
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchProduit, fetchHistoriquePrix } from '../services/api';
 import HistoriquePrixChart from '../components/HistoriquePrixChart';
 import useScrollRestoration from '../hooks/useScrollRestoration';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+    faArrowLeft,
+    faExternalLinkAlt,
+    faTag,
+    faBoxOpen,
+    faBox,
+    faHistory,
+    faCheckCircle,
+    faSignature,
+    faClock
+} from '@fortawesome/free-solid-svg-icons';
 import './DetailProduitPage.css';
 
+function formatListingType(listingType) {
+    switch (listingType) {
+        case 'fixed_price':
+            return 'Fixed Price';
+        case 'auction':
+            return 'Auction';
+        case 'auction_with_bin':
+            return 'Auction + BIN';
+        default:
+            return 'N/A';
+    }
+}
+
 function DetailProduitPage() {
-    useScrollRestoration();
     const { id } = useParams();
+
     const [produit, setProduit] = useState(null);
-    const [historique, setHistorique] = useState({ dates: [], prices: [] });
+    const [historique, setHistorique] = useState({ dates: [], prices: [], stats: {} });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+    // Utiliser une clé stable pour le scroll restoration
+    useScrollRestoration(!loading && !isInitialLoad, `detail-product`);
 
     useEffect(() => {
         Promise.all([fetchProduit(id), fetchHistoriquePrix(id)])
@@ -20,25 +49,61 @@ function DetailProduitPage() {
                 setProduit(prodData);
                 setHistorique(histData);
                 setLoading(false);
+                setIsInitialLoad(false);
             })
             .catch((err) => {
                 setError(err.message);
                 setLoading(false);
+                setIsInitialLoad(false);
             });
     }, [id]);
 
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error: {error}</p>;
-    if (!produit) return <p>Product not found</p>;
+    if (loading) return (
+        <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading product details...</p>
+        </div>
+    );
 
-    // Prix principal (ex. "Current Bid" ou "Fixed Price")
+    if (error) return (
+        <div className="error-message">Error: {error}</div>
+    );
+
+    if (!produit) return (
+        <div className="error-message">Product not found</div>
+    );
+
+    // Prix principal (ex. "Current Bid" ou "Fixed Price" )
     const price = typeof produit.price === 'number' ? produit.price : 0;
+
+    // Détermine la classe CSS pour la variation de prix
+    const getVariationClass = () => {
+        if (!historique || !historique.stats || typeof historique.stats.variation !== 'number') {
+            return 'neutral';
+        }
+        return historique.stats.variation > 0 ? 'positive' :
+            historique.stats.variation < 0 ? 'negative' : 'neutral';
+    };
+
+    // Détermine la classe CSS pour la tendance
+    const getTrendClass = () => {
+        if (!historique || !historique.trend) return 'trend-stable';
+        return historique.trend === 'up' ? 'trend-up' :
+            historique.trend === 'down' ? 'trend-down' : 'trend-stable';
+    };
 
     return (
         <div className="detail-container">
-            {/* Retour & Titre */}
+            {/* Navigation */}
+            <div className="detail-header-nav">
+                <Link to="/" className="back-button">
+                    <FontAwesomeIcon icon={faArrowLeft} className="back-icon" />
+                    Back to list
+                </Link>
+            </div>
+
+            {/* Titre */}
             <div className="detail-product-header">
-                <Link to="/" className="back-button">← Back to list</Link>
                 <h2 className="detail-title">{produit.title}</h2>
             </div>
 
@@ -50,7 +115,7 @@ function DetailProduitPage() {
 
                 <div className="detail-info">
                     {/* --- General Info --- */}
-                    <div className="general-info-block">
+                    <div className="info-block">
                         <h4>General Info</h4>
                         <dl className="info-list">
                             {/* Prix */}
@@ -64,12 +129,12 @@ function DetailProduitPage() {
                                 <dt>Condition</dt>
                                 <dd>
                                     {produit.normalized_condition === 'New' ? (
-                                        <span style={{ color: 'limegreen', fontWeight: 'bold' }}>
-                                            New
+                                        <span className="condition-new">
+                                            <FontAwesomeIcon icon={faCheckCircle} /> New
                                         </span>
                                     ) : (
-                                        <span style={{ color: 'tomato', fontWeight: 'bold' }}>
-                                            Used
+                                        <span className="condition-used">
+                                            <FontAwesomeIcon icon={faHistory} /> Used
                                         </span>
                                     )}
                                 </dd>
@@ -85,12 +150,17 @@ function DetailProduitPage() {
                             <div className="row">
                                 <dt>In Box</dt>
                                 <dd>
-                                    {produit.in_box === true
-                                        ? 'Yes'
-                                        : produit.in_box === false
-                                            ? 'No'
-                                            : 'Unknown'
-                                    }
+                                    {produit.in_box === true ? (
+                                        <span>
+                                            <FontAwesomeIcon icon={faBox} /> Yes
+                                        </span>
+                                    ) : produit.in_box === false ? (
+                                        <span>
+                                            <FontAwesomeIcon icon={faBoxOpen} /> No
+                                        </span>
+                                    ) : (
+                                        'Unknown'
+                                    )}
                                 </dd>
                             </div>
 
@@ -98,26 +168,30 @@ function DetailProduitPage() {
                             {produit.signed && (
                                 <div className="row">
                                     <dt>Signed</dt>
-                                    <dd>Yes</dd>
+                                    <dd>
+                                        <FontAwesomeIcon icon={faSignature} /> Yes
+                                    </dd>
                                 </div>
                             )}
 
                             {/* Last update */}
                             <div className="row">
                                 <dt>Last update</dt>
-                                <dd>{produit.last_scraped_date || 'N/A'}</dd>
+                                <dd>
+                                    <FontAwesomeIcon icon={faClock} /> {produit.last_scraped_date || 'N/A'}
+                                </dd>
                             </div>
                         </dl>
                     </div>
 
                     {/* --- Listing Details --- */}
-                    <div className="listing-info-block">
+                    <div className="info-block">
                         <h4>Listing Details</h4>
                         <dl className="info-list">
                             {/* Type */}
                             <div className="row">
                                 <dt>Type</dt>
-                                <dd>{produit.listing_type || 'N/A'}</dd>
+                                <dd>{formatListingType(produit.listing_type)}</dd>
                             </div>
 
                             {/* Auction-specific fields */}
@@ -149,15 +223,11 @@ function DetailProduitPage() {
 
                             {/* Lien eBay */}
                             <div className="row">
-                                <dt>Original eBay listing</dt>
+                                <dt>eBay listing</dt>
                                 <dd>
                                     {produit.url ? (
-                                        <a
-                                            className="ebay-link"
-                                            href={produit.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
+                                        <a className="ebay-button" href={produit.url} target="_blank" rel="noopener noreferrer">
+                                            <FontAwesomeIcon icon={faExternalLinkAlt} className="ebay-icon" />
                                             View on eBay
                                         </a>
                                     ) : 'N/A'}
@@ -170,13 +240,61 @@ function DetailProduitPage() {
 
             {/* Graphique d'historique de prix */}
             <div className="detail-chart">
-                <h3 style={{ textAlign: 'center', margin: '0 0 1rem' }}>
+                <h3 style={{ textAlign: 'center', margin: '0 0 1.5rem', color: 'var(--accent-color)', fontFamily: 'Poppins, sans-serif' }}>
                     Price History
                 </h3>
                 <HistoriquePrixChart
                     dates={historique.dates}
                     prices={historique.prices}
+                    trend={historique.trend}
                 />
+                {historique.stats && (
+                    <div className="stats-grid">
+                        <div className="stat-item">
+                            <span className="stat-label">Average Price</span>
+                            <span className="stat-value neutral">
+                                ${historique.stats.avg_price?.toFixed(2) || 'N/A'}
+                            </span>
+                        </div>
+                        <div className="stat-item">
+                            <span className="stat-label">Min Price</span>
+                            <span className="stat-value neutral">
+                                ${historique.stats.min_price?.toFixed(2) || 'N/A'}
+                            </span>
+                        </div>
+                        <div className="stat-item">
+                            <span className="stat-label">Max Price</span>
+                            <span className="stat-value neutral">
+                                ${historique.stats.max_price?.toFixed(2) || 'N/A'}
+                            </span>
+                        </div>
+                        {historique.stats.variation !== undefined && (
+                            <div className="stat-item">
+                                <span className="stat-label">Variation</span>
+                                <span className={`stat-value ${getVariationClass()}`}>
+                                    {historique.stats.variation > 0 ? '+' : ''}
+                                    {historique.stats.variation.toFixed(2)}%
+                                </span>
+                            </div>
+                        )}
+                        {historique.stats.seven_day_avg !== undefined && (
+                            <div className="stat-item">
+                                <span className="stat-label">7-Day Avg</span>
+                                <span className="stat-value neutral">
+                                    ${historique.stats.seven_day_avg.toFixed(2)}
+                                </span>
+                            </div>
+                        )}
+                        {historique.trend && (
+                            <div className="stat-item">
+                                <span className="stat-label">Trend</span>
+                                <span className={`stat-value ${getTrendClass()}`}>
+                                    {historique.trend.toUpperCase()}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

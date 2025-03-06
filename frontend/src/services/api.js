@@ -1,11 +1,11 @@
-// src/services/api.js
+// frontend/src/services/api.js
 
-export const fetchProduits = async (status = "active") => {
-    const response = await fetch(`/api/produits?status=${status}`);
+export const fetchProduits = async () => {
+    // Appel simple: on ne passe plus de paramètre ?status=...
+    const response = await fetch(`/api/produits`);
     if (!response.ok) throw new Error('Erreur lors du chargement des produits');
     return response.json();
 };
-
 
 export const fetchProduit = async (id) => {
     const response = await fetch(`/api/produits/${id}`);

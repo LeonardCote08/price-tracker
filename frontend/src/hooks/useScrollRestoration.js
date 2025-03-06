@@ -1,39 +1,97 @@
 // src/hooks/useScrollRestoration.js
-import { useLayoutEffect, useEffect } from 'react';
+
 import { useLocation } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 
-export default function useScrollRestoration(shouldRestore = true) {
+const useScrollRestoration = (shouldRestore = true, extraKey = '') => {
     const location = useLocation();
-    const key = location.pathname; // cl� bas�e sur le chemin
+    const pathKey = location.pathname + (extraKey ? `-${extraKey}` : '');
+    const restoredRef = useRef(false);
+    const [attemptCount, setAttemptCount] = useState(0);
+    const maxAttempts = 5; // Essayer plusieurs fois si nécessaire
 
-    useLayoutEffect(() => {
-        console.log(`[useScrollRestoration] Mount for key: ${key}, shouldRestore: ${shouldRestore}`);
-        if (shouldRestore) {
-            const savedPosition = sessionStorage.getItem(`scroll-${key}`);
-            console.log(`[useScrollRestoration] Retrieved saved position for ${key}: ${savedPosition}`);
-            if (savedPosition !== null) {
-                const pos = parseInt(savedPosition, 10);
-                window.scrollTo(0, pos);
-                console.log(`[useScrollRestoration] Scrolled to position ${pos}`);
-            } else {
-                window.scrollTo(0, 0);
-                console.log(`[useScrollRestoration] No saved position for ${key}, scrolling to top`);
-            }
-        }
-    }, [key, shouldRestore]);
-
+    // Effet pour réinitialiser le status de restauration quand le chemin change
     useEffect(() => {
-        return () => {
-            // Pour la page de liste (key === "/"), on ne sauvegarde pas ici car on le fait manuellement dans le Link
-            if (key !== '/') {
-                const currentPos = window.pageYOffset;
-                sessionStorage.setItem(`scroll-${key}`, currentPos.toString());
-                console.log(`[useScrollRestoration] Cleanup for key: ${key}. Saving position: ${currentPos}`);
-            } else {
-                console.log(`[useScrollRestoration] Cleanup for key: ${key} skipped manual saving.`);
+        restoredRef.current = false;
+        setAttemptCount(0);
+    }, [location.pathname]);
+
+    // Restaurer la position de défilement
+    useEffect(() => {
+        if (!shouldRestore || restoredRef.current || attemptCount >= maxAttempts) return;
+
+        // Fonction pour restaurer la position de défilement
+        const restoreScrollPosition = () => {
+            try {
+                const savedPosition = sessionStorage.getItem(`scrollPosition_${pathKey}`);
+
+                if (savedPosition) {
+                    const scrollPos = parseInt(savedPosition, 10);
+
+                    // Vérifier que la position est valide
+                    if (!isNaN(scrollPos) && scrollPos >= 0) {
+                        window.scrollTo(0, scrollPos);
+                        console.log(`[ScrollRestoration] Restored to ${scrollPos}px for ${pathKey}`);
+                        restoredRef.current = true;
+                        return true;
+                    }
+                }
+            } catch (error) {
+                console.error('[ScrollRestoration] Error restoring scroll position:', error);
+            }
+            return false;
+        };
+
+        // Si restauration réussie, ne plus essayer
+        if (restoreScrollPosition()) {
+            return;
+        }
+
+        // Sinon, augmenter le compteur d'essais et réessayer plus tard
+        // Délai progressif (plus l'attempt est élevé, plus le délai est long)
+        const delay = 200 + (attemptCount * 150); // 200ms, 350ms, 500ms, etc.
+        const timeoutId = setTimeout(() => {
+            setAttemptCount(prev => prev + 1);
+        }, delay);
+
+        return () => clearTimeout(timeoutId);
+    }, [pathKey, shouldRestore, attemptCount, maxAttempts]);
+
+    // Enregistrer la position de défilement lors du scroll
+    useEffect(() => {
+        if (!shouldRestore) return;
+
+        const handleScroll = () => {
+            try {
+                // Ne sauvegarder que si nous avons défilé significativement (>10px)
+                if (window.scrollY > 10) {
+                    sessionStorage.setItem(`scrollPosition_${pathKey}`, window.scrollY.toString());
+                }
+            } catch (error) {
+                console.error('[ScrollRestoration] Error saving scroll position:', error);
             }
         };
-    }, [key]);
 
-    return null;
-}
+        // Utiliser throttle pour éviter trop d'appels pendant le défilement
+        let scrollTimeout;
+        const throttledScroll = () => {
+            if (!scrollTimeout) {
+                scrollTimeout = setTimeout(() => {
+                    handleScroll();
+                    scrollTimeout = null;
+                }, 100);
+            }
+        };
+
+        window.addEventListener('scroll', throttledScroll);
+
+        // Aussi enregistrer la position au moment du démontage du composant
+        return () => {
+            window.removeEventListener('scroll', throttledScroll);
+            if (scrollTimeout) clearTimeout(scrollTimeout);
+            handleScroll(); // Capture la dernière position
+        };
+    }, [pathKey, shouldRestore]);
+};
+
+export default useScrollRestoration;

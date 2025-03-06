@@ -10,7 +10,11 @@ code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-/* Liens : même couleur de texte que le body, sauf au survol */
+html {
+    scrollbar-gutter: stable;
+}
+
+/* Liens : mÃªme couleur de texte que le body, sauf au survol */
 a {
     color: var(--text-color);
     text-decoration: none;
@@ -19,3 +23,5 @@ a {
     a:hover {
         color: var(--accent-color);
     }
+
+

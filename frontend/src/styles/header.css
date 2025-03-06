@@ -12,7 +12,7 @@
 }
 
 .site-title {
-    font-family: 'Orbitron', sans-serif; /* Assure-toi d'importer cette police dans ton index.html */
+    font-family: 'Poppins', sans-serif; /* Assure-toi d'importer cette police dans ton index.html */
     font-size: 2rem;
     color: var(--accent-color);
     margin: 0;

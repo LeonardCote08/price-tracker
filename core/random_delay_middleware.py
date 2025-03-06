@@ -5,10 +5,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Quelques codes ANSI basiques pour la coloration
+ANSI_GREEN = "\033[92m"
+ANSI_RESET = "\033[0m"
+
+def shorten_url(url, max_length=60):
+    """Retourne l'URL tronquée si elle dépasse max_length caractères."""
+    return url if len(url) <= max_length else url[:max_length] + "..."
+
 class RandomDelayMiddleware:
-    # Délais aléatoires entre 2 et 5 secondes
     def process_request(self, request, spider):
         delay = random.uniform(2, 5)
-        logger.debug(f"Pause de {delay:.2f} secondes avant la requête {request.url}")
         time.sleep(delay)
-

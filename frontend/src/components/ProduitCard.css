@@ -1,131 +1,441 @@
 /* frontend/src/components/ProduitCard.css */
 
+/* Variables pour les couleurs et dimensions */
+:root {
+    --color-new: #1aa068;
+    --color-used: #d44a4a;
+    --color-signed: #b59400;
+    --color-inbox: #1a8a80;
+    --color-nobox: #b5652d;
+    --color-ended: #566a81;
+    --trend-up: #1ED17E;
+    --trend-down: #FF5252;
+    --trend-stable: #3AA0FE;
+    --card-bg-color: #1a2c3d;
+    --accent-color: #3AA0FE;
+    --card-height: 465px;
+    --card-width: 100%;
+    --card-max-width: 300px; /* Largeur maximale des cartes */
+    --card-min-width: 230px; /* Largeur minimale des cartes */
+    --card-image-height: 200px;
+    --sparkline-height: 38px;
+    --change-indicator-width: 60px;
+}
+
+/* Lien conteneur pour la carte */
+.produit-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.3s ease;
+    width: var(--card-width);
+    min-width: var(--card-min-width);
+    max-width: var(--card-max-width);
+}
+
 /* Carte produit principale */
 .produit-card {
-    max-width: 350px; 
+    position: relative;
     width: 100%;
+    height: var(--card-height);
     display: flex;
-    flex-direction: column; /* Empile l�image et le texte en colonne */
-    align-items: center; /* Centre horizontalement */
-    text-align: center; /* Centre le texte */
-
+    flex-direction: column;
     background-color: var(--card-bg-color);
-    border-radius: 10px;
-    padding: 1rem;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
     .produit-card:hover {
-        transform: translateY(-2px) scale(1.005);
-        box-shadow: 0 6px 15px rgba(0,0,0,0.35);
+        transform: translateY(-6px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        border-color: rgba(21, 149, 235, 0.4);
     }
 
-/* Image du produit */
-.product-image {
-    width: 150px;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 4px;
-    margin-bottom: 0.5rem; /* plus d�espace en bas de l�image */
+/* Conteneur d'image avec effet de zoom */
+.product-image-container {
+    position: relative;
+    width: 100%;
+    height: var(--card-image-height);
+    min-height: var(--card-image-height);
+    max-height: var(--card-image-height);
+    overflow: hidden;
+    background-color: #1c2f41;
+    flex-shrink: 0; /* Empêche le conteneur de rétrécir */
 }
 
-/* Bloc d'infos (titre + prix) */
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.5s ease;
+    /* Optimisations de performance */
+    transform-origin: center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: transform;
+}
+
+.produit-card:hover .product-image {
+    transform: scale(1.05);
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(36, 55, 72, 0) 60%, rgba(36, 55, 72, 0.8) 100%);
+    pointer-events: none;
+    /* Optimisations de performance */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+
+/* BADGES SYSTEM - REDESIGNED */
+.badges-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: flex-end;
+    align-items: center;
+    min-height: 22px;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #fff;
+    background-color: rgba(26, 44, 61, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+}
+
+    .badge svg {
+        margin-right: 3px;
+        font-size: 0.65rem;
+    }
+
+.badge-condition-new {
+    color: var(--color-new);
+    border-color: rgba(26, 160, 104, 0.4);
+}
+
+.badge-condition-used {
+    color: var(--color-used);
+    border-color: rgba(212, 74, 74, 0.4);
+}
+
+.badge-signed {
+    color: var(--color-signed);
+    border-color: rgba(181, 148, 0, 0.4);
+}
+
+.badge-inbox {
+    color: var(--color-inbox);
+    border-color: rgba(26, 138, 128, 0.4);
+}
+
+.badge-nobox {
+    color: var(--color-nobox);
+    border-color: rgba(181, 101, 45, 0.4);
+}
+
+.badge-ended {
+    color: var(--color-ended);
+    border-color: rgba(86, 106, 129, 0.4);
+}
+
+/* Bloc principal d'informations */
 .product-info {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    padding: 16px;
+    flex-grow: 1;
+    justify-content: space-between;
+    z-index: 2;
+    /* Assurer une hauteur cohérente */
+    height: calc(100% - var(--card-image-height));
 }
-
-    .product-info p {
-        margin: 0.2rem 0;
-        font-size: 0.9rem;
-        color: var(--text-color);
-    }
-
 
 /* Titre du produit */
 .product-title {
-    font-size: 1.1rem; /* au lieu de 1rem */
-    font-weight: 600; /* un peu plus gras */
-    margin: 0 0 0.4rem;
-    color: var(--text-color);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0 0 12px 0;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    height: 2.6rem; /* Hauteur fixe pour deux lignes */
+    min-height: 2.6rem; /* Hauteur minimale garantie */
+    max-height: 2.6rem; /* Hauteur maximale garantie */
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
+/* REFONTE AMÉLIORÉE DU GRAPHIQUE */
+.sparkline-container {
+    position: relative;
+    height: var(--sparkline-height);
+    min-height: var(--sparkline-height);
+    max-height: var(--sparkline-height);
+    margin: 8px 0;
+    background-color: rgba(22, 36, 51, 0.6);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    /* Dimensions forcées */
+    width: 100%;
+    flex-shrink: 0; /* Empêcher le conteneur de rétrécir */
+}
 
-/* Bloc contenant le prix (total + breakdown) */
-.price-block {
+/* Graphique */
+.sparkline {
+    width: 100%;
+    height: 100%;
+    padding: 3px var(--change-indicator-width) 3px 3px; /* Espace exact à droite pour le badge */
+    position: relative;
+}
+
+/* Badge de pourcentage */
+.change-indicator {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: var(--change-indicator-width);
     display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
-}
-
-/* Une ligne de prix : label + valeur */
-.price-line {
-    display: flex;
-    gap: 0.4rem;
-    align-items: baseline;
-    margin: 0.25rem 0; /* un petit espace vertical */
-}
-
-/* Petit label (Current Bid, Buy It Now, etc.) */
-.price-label {
-    font-size: 0.85rem;
-    color: #bbb; /* un gris un peu plus discret */
-    font-weight: 400;
-}
-
-/* Valeur du prix en plus grand */
-.price-value {
-    font-size: 1.2rem;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.3);
     font-weight: 700;
-    color: var(--price-color); 
-    font-family: 'Montserrat', sans-serif;
-}
-
-/* Prix total (le plus important) */
-.price-total {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--price-color); 
-    font-family: 'Montserrat', sans-serif;
-}
-
-/* Breakdown en plus petit, m�me couleur de base */
-.price-breakdown {
     font-size: 0.85rem;
-    color: var(--text-color);
-    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    border-radius: 0 6px 6px 0;
+    z-index: 2;
+    transition: background-color 0.3s ease;
 }
 
+    .change-indicator.positive {
+        color: var(--trend-up);
+        background-color: rgba(30, 209, 126, 0.15);
+    }
 
+    .change-indicator.negative {
+        color: var(--trend-down);
+        background-color: rgba(255, 82, 82, 0.15);
+    }
 
+    .change-indicator.neutral {
+        color: var(--trend-stable);
+        background-color: rgba(58, 160, 254, 0.15);
+    }
 
-
-/* Prix de base et frais de livraison */
-.price-base,
-.price-shipping {
-    font-weight: 500;
-    color: var(--text-color);
-}
-
+/* Section prix et tendance */
 .price-section {
+    margin: 0 0 8px 0;
     display: flex;
     flex-direction: column;
-    align-items: center; /* centre horizontalement */
-    margin-top: 0.5rem; /* un petit espace au-dessus */
+    gap: 4px;
+    flex-shrink: 0;
 }
 
+.price-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
-/* Paragraphes �ventuels */
-.produit-card p {
-    margin: 0.25em 0;
+.price-icon {
+    color: var(--accent-color);
     font-size: 0.9rem;
-    color: var(--text-color);
 }
 
-    .produit-card p.updated-date {
-        font-size: 0.6rem;
-        color: #bbb;
-        margin-top: 0.5rem;
+.price-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.price-trend-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.price-trend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 0;
+}
+
+.trend-icon {
+    font-size: 0.8rem;
+}
+
+.trend-up {
+    color: var(--trend-up);
+}
+
+.trend-down {
+    color: var(--trend-down);
+}
+
+.trend-stable {
+    color: var(--trend-stable);
+}
+
+/* Effets d'animation pour les tendances */
+.trend-up .trend-icon {
+    animation: floatUp 2s infinite alternate ease-in-out;
+}
+
+.trend-down .trend-icon {
+    animation: floatDown 2s infinite alternate ease-in-out;
+}
+
+@keyframes floatUp {
+    from {
+        transform: translateY(0);
     }
+
+    to {
+        transform: translateY(-3px);
+    }
+}
+
+@keyframes floatDown {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(3px);
+    }
+}
+
+/* Pied de carte avec infos supplémentaires */
+.card-footer {
+    margin-top: auto; /* Pousse le footer vers le bas */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: #aab8c2;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 10px;
+    min-height: 24px;
+    width: 100%;
+}
+
+.seller-info {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 60%;
+}
+
+.seller {
+    font-style: italic;
+}
+
+.update-info {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.update-icon {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.update-date {
+    font-size: 0.7rem;
+}
+
+/* Conteneur de grille pour les cartes produit */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
+    gap: 20px;
+    width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    :root {
+        --card-height: 450px;
+        --card-image-height: 180px;
+        --sparkline-height: 36px;
+        --change-indicator-width: 55px;
+        --card-min-width: 200px;
+    }
+
+    .product-title {
+        font-size: 0.9rem;
+    }
+
+    .price-value {
+        font-size: 1.4rem;
+    }
+
+    .change-indicator {
+        font-size: 0.8rem;
+    }
+
+    .badge {
+        font-size: 0.6rem;
+        padding: 2px 5px;
+    }
+
+        .badge svg {
+            font-size: 0.6rem;
+        }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --card-height: 420px;
+        --card-image-height: 160px;
+        --sparkline-height: 34px;
+        --change-indicator-width: 50px;
+        --card-min-width: 180px;
+    }
+
+    .badge {
+        padding: 1px 4px;
+        font-size: 0.55rem;
+    }
+
+        .badge svg {
+            font-size: 0.55rem;
+            margin-right: 2px;
+        }
+
+    .change-indicator {
+        font-size: 0.75rem;
+    }
+}

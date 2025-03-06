@@ -58,7 +58,6 @@ def get_produits():
     cursor.close()
     conn.close()
 
-    # Transformation et retour au format JSON (inchangé)
     result = []
     for row in rows:
         product_id           = row[0]
@@ -67,7 +66,7 @@ def get_produits():
         item_condition       = row[3]
         normalized_condition = row[4]
         signed               = row[5]
-        in_box               = row[6]
+        in_box_val           = row[6]  # Valeur brute (0, 1, ou None)
         url                  = row[7]
         image_url            = row[8]
         seller_username      = row[9]
@@ -80,6 +79,12 @@ def get_produits():
         last_scraped_date    = row[17]
         buy_it_now_price     = row[18]
 
+        # Conversion in_box : 0/1/None => bool ou None
+        if in_box_val is None:
+            in_box_bool = None
+        else:
+            in_box_bool = bool(in_box_val)
+
         result.append({
             "product_id": product_id,
             "item_id": item_id,
@@ -87,7 +92,7 @@ def get_produits():
             "item_condition": item_condition,
             "normalized_condition": normalized_condition,
             "signed": bool(signed),
-            "in_box": in_box,
+            "in_box": in_box_bool,  # <-- On renvoie le booléen ou None
             "url": url,
             "image_url": image_url,
             "seller_username": seller_username,
@@ -101,7 +106,6 @@ def get_produits():
         })
 
     return jsonify(result)
-
 
 @api_bp.route('/produits/<int:product_id>', methods=['GET'])
 def get_produit(product_id):
@@ -156,7 +160,7 @@ def get_produit(product_id):
         item_condition       = row[3]
         normalized_condition = row[4]
         signed               = row[5]
-        in_box               = row[6]
+        in_box_val           = row[6]  # Valeur brute
         url                  = row[7]
         image_url            = row[8]
         seller_username      = row[9]
@@ -169,6 +173,12 @@ def get_produit(product_id):
         last_scraped_date    = row[17]
         buy_it_now_price     = row[18]
 
+        # Conversion in_box : 0/1/None => bool ou None
+        if in_box_val is None:
+            in_box_bool = None
+        else:
+            in_box_bool = bool(in_box_val)
+
         result = {
             "product_id": product_id,
             "item_id": item_id,
@@ -176,7 +186,7 @@ def get_produit(product_id):
             "item_condition": item_condition,
             "normalized_condition": normalized_condition,
             "signed": bool(signed),
-            "in_box": in_box,
+            "in_box": in_box_bool,
             "url": url,
             "image_url": image_url,
             "seller_username": seller_username,
@@ -192,12 +202,53 @@ def get_produit(product_id):
     else:
         return jsonify({"error": "Produit non trouvé"}), 404
 
+@api_bp.route('/produits/<int:product_id>/price-trend', methods=['GET'])
+def get_price_trend(product_id):
+    """
+    Retourne la tendance de prix d'un produit en comparant le premier et dernier prix.
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    # Récupérer tous les prix triés par date
+    cursor.execute("""
+        SELECT price 
+        FROM price_history 
+        WHERE product_id = %s 
+        ORDER BY date_scraped ASC
+    """, (product_id,))
+    
+    prices = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    if len(prices) < 2:
+        return jsonify({"trend": "stable"})  # Pas assez de données, on assume stable
+
+    first_price = prices[0][0]
+    last_price = prices[-1][0]
+    
+    # Calculer le pourcentage de variation
+    if first_price > 0:
+        variation = ((last_price - first_price) / first_price) * 100
+    else:
+        variation = 0
+    
+    # Utiliser un seuil de ±3% pour considérer une variation comme significative
+    if variation > 3:
+        trend = "up"
+    elif variation < -3:
+        trend = "down"
+    else:
+        trend = "stable"
+        
+    return jsonify({
+        "trend": trend,
+        "variation": variation
+    })
+
 @api_bp.route('/produits/<int:product_id>/historique-prix', methods=['GET'])
 def get_historique_prix(product_id):
-    """
-    Retourne l'historique de prix d'un produit, c'est-à-dire
-    toutes les lignes de price_history associées à product_id.
-    """
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
@@ -210,8 +261,39 @@ def get_historique_prix(product_id):
     cursor.close()
     conn.close()
 
+    prices = [float(row[1]) for row in rows]
+    dates = [row[0] for row in rows]
+    if not prices:
+        return jsonify({"dates": [], "prices": [], "stats": {}, "trend": "N/A"})
+
+    # Statistiques avancées
+    avg_price = sum(prices) / len(prices)
+    min_price = min(prices)
+    max_price = max(prices)
+    
+    # Calculer la variation en pourcentage entre le premier et le dernier prix
+    variation = ((prices[-1] - prices[0]) / prices[0] * 100) if prices[0] != 0 else 0
+    
+    seven_day_avg = sum(prices[-7:]) / min(len(prices), 7) if prices else 0
+    
+    # Déterminer la tendance en fonction de la variation
+    if variation > 3:
+        trend = "up"
+    elif variation < -3:
+        trend = "down"
+    else:
+        trend = "stable"
+
     data = {
-        "dates": [row[0] for row in rows],
-        "prices": [float(row[1]) for row in rows]
+        "dates": dates,
+        "prices": prices,
+        "stats": {
+            "avg_price": avg_price,
+            "min_price": min_price,
+            "max_price": max_price,
+            "variation": variation,
+            "seven_day_avg": seven_day_avg
+        },
+        "trend": trend
     }
     return jsonify(data)

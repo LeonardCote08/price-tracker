@@ -6,6 +6,7 @@ import './styles/variables.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+// Désactiver la restauration automatique du défilement par le navigateur
 if ('scrollRestoration' in window.history) {
     window.history.scrollRestoration = 'manual';
 }

@@ -4,7 +4,7 @@
 .price-tracker-app {
     opacity: 0;
     animation: fadeInUp 0.4s ease forwards;
-    animation-delay: 1s; /* on peut différer un peu l'apparition */
+    animation-delay: 0.5s; /* RÃ©duit pour une apparition plus rapide */
 }
 
 @keyframes fadeInUp {
@@ -22,65 +22,190 @@
 /* Header principal */
 .app-header {
     font-family: 'Poppins', sans-serif;
-    font-size: 2rem;
-    padding: 1rem 2rem;
     color: var(--accent-color);
-    /* Ajout du dégradé de fond */
-    background: linear-gradient(135deg, #1D2A39 0%, #34495E 100%);
+    background: linear-gradient(135deg, #1a2c3d 0%, #2d455c 100%);
     border-bottom: 2px solid var(--accent-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+    .app-header:hover {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+.header-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0.8rem 2rem;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
 }
 
+/* Logo et titre */
+.header-logo a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--accent-color);
+    transition: all 0.3s ease;
+}
+
+    .header-logo a:hover {
+        transform: translateY(-2px);
+        text-shadow: 0 0 8px rgba(21, 149, 235, 0.6);
+    }
+
+.logo-icon {
+    font-size: 1.8rem;
+    margin-right: 0.5rem;
+    color: var(--accent-color);
+}
+
+.logo-text {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: linear-gradient(45deg, #1595eb, #64e0e3);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Navigation */
+.header-nav ul {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: 2rem;
+}
+
+.header-nav li {
+    position: relative;
+}
+
+.header-nav a {
+    display: flex;
+    align-items: center;
+    color: #f5f5f5;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0.5rem 0;
+    transition: all 0.3s ease;
+}
+
+    .header-nav a:hover, .header-nav a.active {
+        color: var(--accent-color);
+    }
+
+        .header-nav a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent-color);
+            box-shadow: 0 0 8px rgba(21, 149, 235, 0.8);
+            transform-origin: center;
+            animation: expandWidth 0.3s ease-out forwards;
+        }
+
+@keyframes expandWidth {
+    from {
+        transform: scaleX(0);
+    }
+
+    to {
+        transform: scaleX(1);
+    }
+}
+
+.nav-icon {
+    margin-right: 0.5rem;
+    font-size: 1rem;
+}
+
+/* Bouton du menu mobile (cachÃ© par dÃ©faut) */
+.mobile-menu-toggle {
+    display: none;
+    font-size: 1.5rem;
+    color: var(--accent-color);
+    cursor: pointer;
+    z-index: 1001;
+}
 
 /* Mise en page principale */
 .content {
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding: 1rem 2rem;
+    padding: 1.5rem;
+    max-width: 1280px;
 }
 
-/* Section des graphiques (DetailProduitPage), si besoin */
-.charts-section {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-bottom: 1rem;
-}
-
-.chart-container {
-    background-color: var(--card-bg-color);
-    border: 1px solid var(--accent-color);
-    border-radius: 8px;
-    padding: 1rem;
-    max-width: 600px;
-    width: 100%;
-    box-shadow: 0 0 8px rgba(41, 128, 185, 0.3);
-}
-
-    .chart-container canvas {
-        display: block;
-        max-width: 100%;
-        height: auto;
-        margin: 0 auto;
+/* Responsive design */
+@media (max-width: 768px) {
+    .header-container {
+        padding: 0.8rem 1rem;
     }
 
-.subheader {
-    display: block;
-    width: fit-content; /* Ajuste la largeur au contenu */
-    white-space: nowrap;
-    margin: 1rem auto; /* Centre horizontalement le bloc */
-    padding: 0.5rem 1rem;
-    text-align: center;
-    color: #ddd;
-    font-size: 1rem;
-    font-style: italic;
-    background: rgba(255, 255, 255, 0.07);
-    border-radius: 4px;
-    max-width: 600px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    .logo-text {
+        font-size: 1.5rem;
+    }
+
+    .mobile-menu-toggle {
+        display: block;
+    }
+
+    .header-nav {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        height: 100vh;
+        background: linear-gradient(135deg, #1c2f42 0%, #314763 100%);
+        transition: all 0.3s ease-in-out;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        padding-top: 5rem;
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+    }
+
+        .header-nav.mobile-open {
+            right: 0;
+        }
+
+        .header-nav ul {
+            flex-direction: column;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .header-nav a {
+            font-size: 1.2rem;
+        }
 }
 
+@media (max-width: 480px) {
+    .logo-icon {
+        font-size: 1.5rem;
+    }
+
+    .logo-text {
+        font-size: 1.3rem;
+    }
+
+    .header-nav {
+        width: 80%;
+    }
+}

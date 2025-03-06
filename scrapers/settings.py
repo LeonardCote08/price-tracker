@@ -7,8 +7,8 @@ NEWSPIDER_MODULE = "scrapers.spiders"
 
 ROBOTSTXT_OBEY = False
 
-DOWNLOAD_DELAY = 5
-CONCURRENT_REQUESTS = 1
+DOWNLOAD_DELAY = 3
+CONCURRENT_REQUESTS = 2
 COOKIES_ENABLED = True
 
 DEFAULT_REQUEST_HEADERS = {
@@ -45,8 +45,18 @@ AUTOTHROTTLE_MAX_DELAY = 10.0
 AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0
 
 
-LOG_LEVEL = "DEBUG"
+LOG_LEVEL = "INFO"
 
-ITEM_PIPELINES = {
-    'scrapers.pipelines.MySQLPipeline': 300,
+#ITEM_PIPELINES = {
+ #   'scrapers.pipelines.MySQLPipeline': 300,
+#}
+
+# ---- Export FEEDS configuration to output a structured JSON file ----
+FEEDS = {
+    'scraped_data.json': {        # Output file name
+         'format': 'json',         # Change to 'csv' for CSV export
+         'encoding': 'utf8',
+         'indent': 4,
+         'overwrite': True,
+    }
 }

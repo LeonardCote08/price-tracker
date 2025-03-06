@@ -1,74 +1,582 @@
-/* ListeProduitsPage.css */
+/* frontend/src/pages/ListeProduitsPage.css */
 
-/* Grille des produits (inchang�e) */
+.products-page-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1.5rem 2rem;
+}
+
+/* Grille des produits - Améliorée pour 4-5 produits par ligne */
 .produits-grid {
-    max-width: 1200px;
-    margin: 0rem auto;
-    padding: 1.5rem;
+    margin: 1.5rem 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(4, 1fr); /* Augmenté de 3 à 4 */
+    gap: 1.25rem; /* Réduit légèrement pour plus de densité */
+    animation: fadeIn 0.5s ease-in-out;
 }
 
-/* SUBHEADER : seulement la banni�re */
-.subheader {
-    margin: 1rem auto;
-    padding: 0.5rem 1rem;
-    max-width: 600px;
-    background: rgba(255, 255, 255, 0.07);
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    text-align: center; /* centre le texte du message */
+/* Animation pour la grille */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.banner-text {
-    font-size: 1rem;
-    color: #ddd;
-    margin: 0; /* pas de marge suppl�mentaire */
+/* En-tête de page avec bannière et stats */
+.page-header {
+    margin: 1rem 0 1.5rem;
 }
 
-/* Boutons de filtre dans un conteneur s�par�, centr� */
-.button-group-centered {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin: 1rem 0; /* un peu d'espace au-dessus et en dessous */
-}
-
-/* Style des boutons */
-.filter-button {
-    background-color: #1d6a90;
-    color: #fff;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+/* Bannière info transformée */
+.info-banner {
+    background: rgba(21, 149, 235, 0.15);
+    border-left: 4px solid var(--accent-color);
+    color: var(--text-color);
+    padding: 0.8rem 1.2rem;
     font-size: 0.9rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    border-radius: 0 4px 4px 0;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
 }
 
-    .filter-button:hover {
-        background-color: #2980B9; /* nuance plus sombre au survol */
+    .info-banner:hover {
+        background: rgba(21, 149, 235, 0.25);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
-    /* Quand le bouton est "s�lectionn�" */
-    .filter-button.selected {
-        background-color: #2980B9; /* ou un autre effet, ex: plus fonc� */
-        
-        /* ou box-shadow: 0 0 5px rgba(255,255,255,0.6); */
+    .info-banner .info-icon {
+        font-size: 1.2rem;
+        color: var(--accent-color);
+        margin-right: 0.8rem;
     }
 
-.general-info-block,
-.listing-info-block {
-    background-color: var(--card-bg-color);
-    padding: 1rem;
+    .info-banner p {
+        margin: 0;
+    }
+
+/* Refonte complète de la section statistiques */
+.stats-dashboard {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, rgba(36, 55, 72, 0.8) 0%, rgba(45, 69, 92, 0.9) 100%);
+    border-radius: 10px;
+    padding: 1.2rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(21, 149, 235, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        border-color: rgba(21, 149, 235, 0.3);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.1), transparent 70%);
+        opacity: 0.5;
+        z-index: 1;
+    }
+
+.stat-icon-container {
+    background: rgba(21, 149, 235, 0.2);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+.stat-card.trend-up .stat-icon-container {
+    background: rgba(63, 204, 164, 0.2);
+}
+
+.stat-card.trend-down .stat-icon-container {
+    background: rgba(216, 76, 74, 0.2);
+}
+
+.stat-icon {
+    font-size: 1.4rem;
+    color: var(--accent-color);
+}
+
+.stat-card.trend-up .stat-icon {
+    color: #3FCCA4;
+    animation: floatUp 2s infinite alternate ease-in-out;
+}
+
+.stat-card.trend-down .stat-icon {
+    color: #D84C4A;
+    animation: floatDown 2s infinite alternate ease-in-out;
+}
+
+.stat-content {
+    flex: 1;
+    position: relative;
+    z-index: 2;
+}
+
+/* Nouveaux styles pour l'état de chargement des statistiques */
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-animation {
+    margin-bottom: 0.3rem;
+}
+
+.loading-content .loading-icon {
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.stat-card.trend-up .loading-icon {
+    color: #3FCCA4;
+}
+
+.stat-card.trend-down .loading-icon {
+    color: #D84C4A;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.2rem;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    font-family: 'Montserrat', sans-serif;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #bbb;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Désactivation des boutons pendant le chargement */
+button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* NOUVELLE INTERFACE DE RECHERCHE ET FILTRES */
+.enhanced-search-section {
+    margin: 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.search-filters-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* Barre de recherche améliorée */
+.enhanced-search-container {
+    flex: 1;
+    position: relative;
+    min-width: 250px;
+    background-color: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    margin-top: 0.5rem;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s;
 }
 
-    .general-info-block p,
-    .listing-info-block p {
-        margin: 0.3rem 0;
+    .enhanced-search-container:focus-within {
+        background-color: rgba(255, 255, 255, 0.15);
+        box-shadow: 0 0 0 2px rgba(21, 149, 235, 0.4);
+        border-color: var(--accent-color);
     }
 
+.enhanced-search-icon {
+    color: #8899AA;
+    font-size: 1rem;
+    margin-left: 1rem;
+}
+
+.enhanced-search-input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: none;
+    background-color: transparent;
+    color: var(--text-color);
+    font-size: 0.95rem;
+}
+
+    .enhanced-search-input:focus {
+        outline: none;
+    }
+
+.clear-search-btn {
+    background: transparent;
+    border: none;
+    color: #8899AA;
+    padding: 0.5rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.5rem;
+    transition: all 0.2s;
+}
+
+    .clear-search-btn:hover {
+        color: #fff;
+    }
+
+/* Tri amélioré */
+.enhanced-sort-container {
+    position: relative;
+    z-index: 100;
+}
+
+.sort-button {
+    background: linear-gradient(135deg, rgba(36, 55, 72, 0.8) 0%, rgba(45, 69, 92, 0.9) 100%);
+    border: 1px solid rgba(21, 149, 235, 0.2);
+    border-radius: 8px;
+    padding: 0.8rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #fff;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-width: 180px;
+}
+
+    .sort-button:hover {
+        background: linear-gradient(135deg, rgba(36, 55, 72, 0.9) 0%, rgba(45, 69, 92, 1) 100%);
+        border-color: rgba(21, 149, 235, 0.4);
+        transform: translateY(-2px);
+    }
+
+.sort-icon {
+    color: var(--accent-color);
+}
+
+.sort-options-dropdown {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    width: 100%;
+    background: linear-gradient(135deg, rgba(36, 55, 72, 0.95) 0%, rgba(45, 69, 92, 0.95) 100%);
+    border: 1px solid rgba(21, 149, 235, 0.3);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    z-index: 10;
+}
+
+.sort-option {
+    padding: 0.8rem 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+    .sort-option:hover {
+        background-color: rgba(21, 149, 235, 0.15);
+    }
+
+    .sort-option.selected {
+        background-color: rgba(21, 149, 235, 0.25);
+        color: var(--accent-color);
+        font-weight: 600;
+    }
+
+    .sort-option:last-child {
+        border-bottom: none;
+    }
+
+/* Bouton de filtres avancés */
+.filter-advanced-button {
+    background: linear-gradient(135deg, rgba(36, 55, 72, 0.8) 0%, rgba(45, 69, 92, 0.9) 100%);
+    border: 1px solid rgba(21, 149, 235, 0.2);
+    border-radius: 8px;
+    padding: 0.8rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #fff;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+    .filter-advanced-button:hover, .filter-advanced-button.active {
+        background: linear-gradient(135deg, rgba(36, 55, 72, 0.9) 0%, rgba(45, 69, 92, 1) 100%);
+        border-color: rgba(21, 149, 235, 0.4);
+        transform: translateY(-2px);
+    }
+
+    .filter-advanced-button.active {
+        box-shadow: 0 0 0 2px rgba(21, 149, 235, 0.4);
+    }
+
+.filter-icon {
+    color: var(--accent-color);
+}
+
+/* Panneau de filtres avancés */
+.enhanced-filter-panel {
+    background: linear-gradient(135deg, rgba(36, 55, 72, 0.7) 0%, rgba(45, 69, 92, 0.8) 100%);
+    border: 1px solid rgba(21, 149, 235, 0.2);
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-top: 0.5rem;
+    animation: fadeIn 0.3s ease-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.filter-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.filter-panel-icon {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+}
+
+.filter-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #fff;
+    font-weight: 500;
+}
+
+.trend-filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: flex-start;
+}
+
+.enhanced-filter-button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(21, 149, 235, 0.3);
+    border-radius: 8px;
+    padding: 0.8rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #fff;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-width: 150px;
+}
+
+    .enhanced-filter-button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .enhanced-filter-button.selected {
+        background: rgba(21, 149, 235, 0.2);
+        border-color: var(--accent-color);
+        color: #fff;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+.filter-button-icon {
+    color: var(--accent-color);
+}
+
+    .filter-button-icon.up {
+        color: #3FCCA4;
+    }
+
+    .filter-button-icon.down {
+        color: #D84C4A;
+    }
+
+/* Informations de résultats */
+.results-info {
+    margin: 1rem 0;
+    font-size: 0.9rem;
+    color: #CCC;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
+.search-results, .filter-results, .showing-results {
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.no-results {
+    text-align: center;
+    padding: 3rem;
+    color: #AAA;
+    font-style: italic;
+    grid-column: 1 / -1;
+}
+
+/* Indicateur de chargement pour l'infinite scroll */
+.load-more-indicator {
+    text-align: center;
+    padding: 1.5rem;
+    color: #CCC;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.loading-icon {
+    font-size: 1.5rem;
+    color: var(--accent-color);
+}
+
+.all-products-loaded {
+    text-align: center;
+    padding: 1rem;
+    color: #AAA;
+    font-style: italic;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 2rem;
+}
+
+/* Loading et erreur */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50vh;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(21, 149, 235, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--accent-color);
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.error-message {
+    text-align: center;
+    color: #D84C4A;
+    padding: 2rem;
+    background-color: rgba(216, 76, 74, 0.1);
+    border-radius: 8px;
+    margin: 2rem auto;
+    max-width: 500px;
+}
+
+/* Responsive design pour la section statistiques */
+@media (max-width: 1023px) {
+    .stats-dashboard {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .search-filters-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .sort-button, .filter-advanced-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .trend-filter-buttons {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    .enhanced-filter-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Responsive pour différentes tailles d'écran */
+@media (min-width: 1400px) {
+    /* Pour les grands écrans, 5 produits par ligne */
+    .produits-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (max-width: 1023px) {
+    /* Pour les tablettes, 3 produits par ligne */
+    .produits-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 767px) {
+    /* Pour les tablettes et mobiles, 2 produits par ligne */
+    .produits-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 479px) {
+    /* Pour petits mobiles, 1 produit par ligne */
+    .produits-grid {
+        grid-template-columns: 1fr;
+    }
+}

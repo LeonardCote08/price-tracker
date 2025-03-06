@@ -1,16 +1,18 @@
 /* frontend/src/styles/variables.css */
 :root {
-    --bg-color: #192734; /* Fond global */
+    --bg-color: #243748; /* Fond global */
     --text-color: #F5F5F5; /* Texte clair */
-    --card-bg-color: #2A3C4E; /* Fond cartes */
-    --accent-color: #2980B9; /* Couleur principale (PriceTracker) */
-    --price-color: var(--accent-color); /* On rend le prix identique à l'accent */
+    --card-bg-color: #2D455C; /* Fond cartes */
+    --accent-color: #1595EB; /* Couleur principale (PriceTracker) */
+    --price-color: var(--accent-color); /* On rend le prix identique Ã  l'accent */
+
+    --header-gradient: linear-gradient(135deg, #243748 0%, #416589 100%);
 }
 
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Poppins', sans-serif;
     margin: 0;
     padding: 0;
 }
