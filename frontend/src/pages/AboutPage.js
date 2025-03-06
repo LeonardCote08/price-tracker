@@ -54,50 +54,41 @@ function AboutPage() {
             </div>
 
             {/* New Developer Section */}
-            <div className="developer-card">
+            <div className="developer-section">
                 <h2>About the Developer</h2>
                 <p>
-                    PriceTracker was developed by [Your Name], a full-stack developer specializing in
-                    data-driven applications and web scraping solutions. With expertise in both
-                    backend data processing and frontend visualization, I create tools that transform
-                    raw data into actionable insights.
+                    This project was designed and developed by Léonard Côté, a full-stack developer
+                    specializing in data-driven applications and web scraping solutions.
+                </p>
+                <p>
+                    PriceTracker demonstrates my end-to-end development capabilities from
+                    data acquisition to processing to visualization, as well as my attention
+                    to user experience and design.
                 </p>
 
-                <div className="skills-container">
-                    <span className="skills-tag">Python</span>
-                    <span className="skills-tag">Scrapy</span>
-                    <span className="skills-tag">Flask</span>
-                    <span className="skills-tag">React</span>
-                    <span className="skills-tag">MySQL</span>
-                    <span className="skills-tag">Data Visualization</span>
-                    <span className="skills-tag">Web Scraping</span>
+                <div className="tech-tags">
+                    <span className="tech-tag">Python</span>
+                    <span className="tech-tag">Scrapy</span>
+                    <span className="tech-tag">MySQL</span>
+                    <span className="tech-tag">React</span>
+                    <span className="tech-tag">Flask</span>
+                    <span className="tech-tag">REST API</span>
+                    <span className="tech-tag">Chart.js</span>
                 </div>
 
-                <h3>Looking for similar solutions?</h3>
                 <p>
-                    I can help you build custom price tracking, data scraping, or market intelligence
-                    tools tailored to your business needs. Whether you need to monitor competitors'
-                    pricing, track market trends, or gather data at scale, I can deliver a complete
-                    solution from data acquisition to beautiful visualization.
+                    Looking for similar solutions? I can help you build custom price tracking,
+                    data scraping, or market intelligence tools tailored to your business needs.
                 </p>
 
-                <div className="contact-buttons">
-                    <a href="mailto:your.email@example.com" className="contact-button">
-                        <span className="contact-button-icon">✉️</span> Contact Me
-                    </a>
-                    <a href="https://yourportfolio.com" target="_blank" rel="noopener noreferrer" className="contact-button">
-                        <span className="contact-button-icon">🔗</span> Portfolio
-                    </a>
-                    <a href="https://linkedin.com/in/yourprofile" target="_blank" rel="noopener noreferrer" className="contact-button">
-                        <span className="contact-button-icon">👔</span> LinkedIn
-                    </a>
+                <div className="contact-info">
+                    <p>Contact me at: leonard.cote08@gmail.com</p>
                 </div>
             </div>
 
             <div className="about-footer">
                 <p>© 2025 PriceTracker - All Rights Reserved</p>
             </div>
-
         </div>
     );
 }
