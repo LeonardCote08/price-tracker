@@ -97,6 +97,7 @@ function AboutPage() {
             <div className="about-footer">
                 <p>© 2025 PriceTracker - All Rights Reserved</p>
             </div>
+
         </div>
     );
 }
