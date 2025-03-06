@@ -1,9 +1,3 @@
-![image](https://github.com/user-attachments/assets/fda2d815-58f4-42d4-ada5-d19e84e10a75)
-
-![image](https://github.com/user-attachments/assets/0de1ad74-7d97-4e85-9e59-df8234820a42)
-
-
-
 # eBay Price Tracker
 
 A portfolio project that scrapes eBay listings, stores product and price data in a MySQL database, and provides a React-based interface to visualize price history and listing details. Currently, it tracks *Funko Pop Doctor Doom #561* as a demonstration, but it can be extended to monitor any eBay product.
@@ -17,6 +11,14 @@ This project demonstrates my expertise in Python web scraping, database manageme
 - **Data Visualization**: A React front end displays listings in a grid view and offers a detailed page with a price history chart.
 - **Filtering**: Filter listings by active/ended status, "signed" items, or "in box" status.
 - **Automated Updates**: Includes a script (`refresh_products.py`) to periodically check listing status (e.g., ended auctions).
+
+## Screenshots
+
+### Web Interface
+![image](https://github.com/user-attachments/assets/fda2d815-58f4-42d4-ada5-d19e84e10a75)
+
+### Scraper Execution
+![image](https://github.com/user-attachments/assets/0de1ad74-7d97-4e85-9e59-df8234820a42)
 
 ## Why This Project?
 
