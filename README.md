@@ -21,10 +21,6 @@ This project demonstrates my expertise in Python web scraping, database manageme
 ### Scraper Execution
 ![image](https://github.com/user-attachments/assets/a277022e-d3f9-4321-9f64-278d3a510ccb)
 
-![image](https://github.com/user-attachments/assets/02e99616-81dd-47ea-9a6d-e25adbf8d239)
-
-
-
 ## Why This Project?
 
 This project is designed to help businesses, resellers, and collectors effortlessly monitor and analyze eBay price trends. By providing an easy-to-use interface and detailed price history tracking, users can make informed decisions, identify market trends, and optimize their buying or selling strategies. It offers valuable insights for eBay users who need to stay competitive in a dynamic marketplace.
