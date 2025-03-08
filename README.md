@@ -15,10 +15,15 @@ This project demonstrates my expertise in Python web scraping, database manageme
 ## Screenshots
 
 ### Web Interface
-![image](https://github.com/user-attachments/assets/fda2d815-58f4-42d4-ada5-d19e84e10a75)
+![image](https://github.com/user-attachments/assets/f257dec4-fba5-45d8-a338-696dc5e81c56)
+
 
 ### Scraper Execution
-![image](https://github.com/user-attachments/assets/0de1ad74-7d97-4e85-9e59-df8234820a42)
+![image](https://github.com/user-attachments/assets/a277022e-d3f9-4321-9f64-278d3a510ccb)
+
+![image](https://github.com/user-attachments/assets/02e99616-81dd-47ea-9a6d-e25adbf8d239)
+
+
 
 ## Why This Project?
 
